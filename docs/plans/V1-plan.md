@@ -494,11 +494,19 @@ The core job: load chat messages, call RubyLLM, save response, update task state
 - Create: `test/jobs/llm_job_test.rb`
 - Create: `app/jobs/llm_job.rb`
 
+**Architecture note — pre-saved user messages:**
+
+The controller saves the user's message immediately (for instant Turbo Stream display). This means when LlmJob runs, the user message is already in `chat.messages`. We cannot use `chat.ask(content)` — that would add the user message a second time. Instead, the job builds the full conversation history from all saved messages and calls RubyLLM's lower-level API to get a completion.
+
+The stub target is `chat` itself (the `complete` method, or whatever RubyLLM exposes for "send these messages, get a completion"). **Verify the exact method during Task 1** by reading the generated model from `rails generate ruby_llm:install` — look for what `acts_as_chat` adds to the model beyond `ask`. If no such method exists, build history manually: `RubyLLM.chat(messages: built_array).complete`.
+
 **Step 1: Write the failing test**
 
 ```ruby
 # test/jobs/llm_job_test.rb
 require "test_helper"
+
+FakeResponse = Struct.new(:content)
 
 class LlmJobTest < ActiveSupport::TestCase
   setup do
@@ -509,92 +517,71 @@ class LlmJobTest < ActiveSupport::TestCase
       max_turns: 3
     )
     @chat = Chat.create!(agent: @agent, model_id: @agent.model_name)
-    # Simulate human message — create directly since we're testing the job, not RubyLLM's ask
     @chat.messages.create!(role: "user", content: "Hello agent")
   end
 
   test "calls LLM and saves assistant message" do
-    # Stub RubyLLM chat to avoid real API call
-    mock_response = Minitest::Mock.new
-    mock_response.expect(:content, "Hello human!")
-
-    RubyLLM.stub(:chat, ->(*_args) {
-      obj = Object.new
-      obj.define_singleton_method(:with_model) { |_| self }
-      obj.define_singleton_method(:with_instructions) { |_| self }
-      obj.define_singleton_method(:ask) { |_| mock_response }
-      obj
-    }) do
-      LlmJob.perform_now(@chat)
-    end
+    stub_llm(@chat, "Hello human!") { LlmJob.perform_now(@chat) }
 
     assert_equal 2, @chat.messages.count
     assert_equal "assistant", @chat.messages.last.role
+    assert_equal "Hello human!", @chat.messages.last.content
+  end
+
+  test "sends full conversation history to LLM, not just last message" do
+    # Add a prior turn so history has 3 messages
+    @chat.messages.create!(role: "assistant", content: "Hi there")
+    @chat.messages.create!(role: "user", content: "Follow-up question")
+
+    captured_messages = nil
+    @chat.stub(:complete, ->(messages:, **) {
+      captured_messages = messages
+      FakeResponse.new("Got it")
+    }) do
+      LlmJob.perform_now(@chat)
+    end
+
+    # All 3 prior messages must be in context — not just the last one
+    assert_equal 3, captured_messages.length
+    assert_equal "user", captured_messages.first[:role]
+    assert_equal "Hello agent", captured_messages.first[:content]
   end
 
   test "increments turn_count" do
-    RubyLLM.stub(:chat, ->(*_args) {
-      obj = Object.new
-      obj.define_singleton_method(:with_model) { |_| self }
-      obj.define_singleton_method(:with_instructions) { |_| self }
-      obj.define_singleton_method(:ask) { |_| OpenStruct.new(content: "Hi") }
-      obj
-    }) do
-      LlmJob.perform_now(@chat)
-    end
-
+    stub_llm(@chat, "Hi") { LlmJob.perform_now(@chat) }
     assert_equal 1, @chat.reload.turn_count
   end
 
-  test "sets task_status to in_progress then completed" do
-    RubyLLM.stub(:chat, ->(*_args) {
-      obj = Object.new
-      obj.define_singleton_method(:with_model) { |_| self }
-      obj.define_singleton_method(:with_instructions) { |_| self }
-      obj.define_singleton_method(:ask) { |_| OpenStruct.new(content: "Done") }
-      obj
-    }) do
-      LlmJob.perform_now(@chat)
-    end
-
+  test "sets task_status to completed after text response" do
+    stub_llm(@chat, "Done") { LlmJob.perform_now(@chat) }
     assert_equal "completed", @chat.reload.task_status
   end
 
   test "sets task_status to blocked when max_turns reached" do
     @chat.update!(turn_count: @agent.max_turns - 1)
-
-    RubyLLM.stub(:chat, ->(*_args) {
-      obj = Object.new
-      obj.define_singleton_method(:with_model) { |_| self }
-      obj.define_singleton_method(:with_instructions) { |_| self }
-      obj.define_singleton_method(:ask) { |_| OpenStruct.new(content: "Blocked") }
-      obj
-    }) do
-      LlmJob.perform_now(@chat)
-    end
-
+    stub_llm(@chat, "Blocked") { LlmJob.perform_now(@chat) }
     assert_equal "blocked", @chat.reload.task_status
   end
 
-  test "updates agent status to busy during execution" do
-    RubyLLM.stub(:chat, ->(*_args) {
-      obj = Object.new
-      obj.define_singleton_method(:with_model) { |_| self }
-      obj.define_singleton_method(:with_instructions) { |_| self }
-      obj.define_singleton_method(:ask) do |_|
-        # Agent should be busy at this point
-        OpenStruct.new(content: "Working")
-      end
-      obj
-    }) do
-      LlmJob.perform_now(@chat)
-    end
-
+  test "agent is idle after job completes" do
+    stub_llm(@chat, "Working") { LlmJob.perform_now(@chat) }
     assert_equal "idle", @chat.agent.reload.status
   end
 
-  test "uses Solid Queue concurrency controls" do
-    assert_equal "chat_#{@chat.id}", LlmJob.new(@chat).concurrency_key
+  test "sets task_status to failed and reraises on exception" do
+    @chat.stub(:complete, ->(**) { raise "LLM down" }) do
+      assert_raises(RuntimeError) { LlmJob.perform_now(@chat) }
+    end
+    assert_equal "failed", @chat.reload.task_status
+    assert_equal "idle", @chat.agent.reload.status
+  end
+
+  private
+
+  def stub_llm(chat, response_content)
+    chat.stub(:complete, ->(**) { FakeResponse.new(response_content) }) do
+      yield
+    end
   end
 end
 ```
@@ -616,19 +603,27 @@ class LlmJob < ApplicationJob
     chat.update!(task_status: "in_progress")
     chat.agent.update!(status: "busy")
 
-    # Build context: system prompt + all messages
-    llm_chat = RubyLLM.chat
-      .with_model(chat.agent.model_name)
-      .with_instructions(chat.agent.system_prompt)
+    # Build full conversation history from all saved messages.
+    # The user message was already saved by the controller for instant display —
+    # we must NOT call chat.ask() here as that would add the user message again.
+    messages = chat.messages.order(:created_at).map do |m|
+      { role: m.role, content: m.content }
+    end
 
-    # Get the last user message to send
-    last_user_message = chat.messages.where(role: "user").order(:created_at).last
-    response = llm_chat.ask(last_user_message.content)
+    # complete() sends the full history and returns the assistant response.
+    # Verify the exact method name from acts_as_chat during Task 1 step 6.
+    # If acts_as_chat doesn't expose this, use:
+    #   RubyLLM.chat(messages: messages)
+    #     .with_model(chat.agent.model_name)
+    #     .with_instructions(chat.agent.system_prompt)
+    #     .complete
+    response = chat.complete(
+      messages: messages,
+      model: chat.agent.model_name,
+      instructions: chat.agent.system_prompt
+    )
 
-    # Save assistant response
     chat.messages.create!(role: "assistant", content: response.content)
-
-    # Update turn count and task status
     chat.increment!(:turn_count)
 
     if chat.max_turns_reached?
@@ -643,21 +638,10 @@ class LlmJob < ApplicationJob
     chat.agent.update!(status: "idle")
     raise
   end
-
-  def concurrency_key
-    "chat_#{arguments.first.id}"
-  end
 end
 ```
 
-**Important:** The stubs in the tests above approximate RubyLLM's API. When implementing, verify that `RubyLLM.chat.with_model(...).with_instructions(...).ask(...)` matches the actual API. If RubyLLM uses `acts_as_chat` and `chat.ask(...)` directly on the ActiveRecord model, refactor to use that instead:
-
-```ruby
-# Alternative if acts_as_chat handles it:
-response = chat.ask(last_user_message.content)
-```
-
-Check the RubyLLM docs and adjust both tests and implementation to match the real API. The test stubs should mock whatever method is actually called.
+**Implementation note:** The `chat.complete(messages:, model:, instructions:)` call above is illustrative. Verify the actual signature from the RubyLLM source after running `rails generate ruby_llm:install`. The key invariant the tests enforce: **all messages in `chat.messages` must be passed as context** — not just the last one.
 
 **Step 4: Run tests to verify they pass**
 
@@ -708,11 +692,14 @@ class MessageTest < ActiveSupport::TestCase
     end
   end
 
-  test "does not enqueue LlmJob when chat is in_progress" do
+  test "always enqueues LlmJob for user messages regardless of task_status" do
+    # Solid Queue's concurrency_key (limits_concurrency to: 1) is the deduplication
+    # mechanism — not task_status. If a job is already running, Solid Queue queues
+    # the second one and runs it after the first completes.
     @chat.update!(task_status: "in_progress")
 
-    assert_no_enqueued_jobs(only: LlmJob) do
-      @chat.messages.create!(role: "user", content: "Another message")
+    assert_enqueued_with(job: LlmJob) do
+      @chat.messages.create!(role: "user", content: "Follow-up while busy")
     end
   end
 end
@@ -736,9 +723,10 @@ class Message < ApplicationRecord
 
   def trigger_heartbeat
     return unless role == "user"
-    return if chat.task_status == "in_progress"
 
-    chat.update!(task_status: "pending") if chat.task_status.in?(%w[completed blocked failed])
+    # Always enqueue — Solid Queue's limits_concurrency on LlmJob (key: chat_ID)
+    # ensures only one LLM Job runs per chat at a time. If one is running,
+    # Solid Queue queues this one and runs it after. D29/D22.
     LlmJob.perform_later(chat)
   end
 end
@@ -1373,7 +1361,7 @@ git commit -m "feat: Turbo Stream broadcasts for live message updates"
 
 ---
 
-## Task 9: Agent Status Broadcast
+## Task 10: Agent Status Broadcast
 
 Update the sidebar in real time when agent status changes (idle/busy).
 
