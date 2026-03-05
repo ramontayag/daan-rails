@@ -30,8 +30,8 @@ The thinnest possible end-to-end slice. A human sends a message to the Chief of 
 
 | Part | Mechanism | From |
 |------|-----------|------|
-| **V1.1** | **Data model (subset)** — Agent (name, status), Thread (two participants, per-thread concurrency lock key), Message (thread, sender, sender_type [human/agent], content, message_type [text], metadata JSON), Task (state [pending/in_progress/completed/failed], assigned_agent, turn_count, max_turns) | A1 |
-| **V1.2** | **Agent loader (single agent)** — Read `lib/daan/core/agents/chief_of_staff.md`, parse YAML frontmatter (name, model, max_turns). Create/sync Agent DB record on boot. No deployment overrides yet. | A2 |
+| **V1.1** | **Data model (subset)** — `Daan::Agent` plain Ruby struct (name, display_name, model_name, system_prompt, max_turns), in-memory via `Daan::AgentRegistry`. No agents table. Chat/Thread (agent_name:string, task_status, turn_count — thread = task per D19), Message (chat, role [user/assistant], content, metadata JSON). | A1 |
+| **V1.2** | **Agent loader (single agent)** — Read `lib/daan/core/agents/chief_of_staff.md`, parse YAML frontmatter. Register a `Daan::Agent` into `Daan::AgentRegistry` at boot. No deployment overrides yet. | A2 |
 | **V1.3** | **LLM Job (text-only loop)** — Heartbeat rule: new message in idle thread enqueues LLM Job via Solid Queue. LLM Job loads thread messages, calls RubyLLM with agent's model and system prompt, saves response as Message with token metadata. Text-only response marks task completed. Turn counter increments per LLM Job, enforces max_turns (task goes to blocked state). Per-thread concurrency via Solid Queue concurrency_key. | A3 |
 | **V1.4** | **Chat UI (minimal)** — Sidebar: list of agents (just CoS) with name and status. Main area: message thread for the selected DM. Input box at bottom to compose and send. Messages right-aligned for human, left-aligned for agent. Turbo Streams over WebSocket for live message delivery. Full page reload renders normal HTML. ViewComponents for message bubble, sidebar agent item, compose bar. Lookbook previews for all component states. Tailwind CSS. | A7 |
 
@@ -52,33 +52,32 @@ The thinnest possible end-to-end slice. A human sends a message to the Chief of 
 
 | # | Affordance | Type | Wires Out |
 |---|-----------|------|-----------|
-| N1 | Agent loader | Service | Reads definition file, syncs Agent record |
-| N2 | Heartbeat check | Callback | On Message create: if thread idle (no in-flight LLM Job), enqueue LlmJob |
-| N3 | LlmJob | Job | Load messages, call RubyLLM, save response Message, update Task turn_count. If max_turns hit → task.blocked! |
-| N4 | Thread concurrency lock | Solid Queue concurrency_key | One LLM Job per thread at a time |
-| N5 | Task state machine | Model concern | pending → in_progress → completed/failed/blocked |
-| N6 | Agent status updater | Callback | Task in_progress → agent busy. Task completed/blocked/failed → agent idle. |
-| N7 | Turbo broadcast | After Message create | Broadcasts message to thread's Turbo Stream channel |
+| N1 | Agent loader | Service | Reads definition files, registers `Daan::Agent` into `Daan::AgentRegistry` |
+| N2 | Heartbeat | Callback | On user Message create: always enqueue LlmJob. Solid Queue concurrency_key deduplicates. |
+| N3 | LlmJob | Job | Load all messages as context, call RubyLLM with full history, save response Message, increment turn_count. If max_turns hit → task blocked. |
+| N4 | Thread concurrency lock | Solid Queue concurrency_key | One LLM Job per chat at a time |
+| N5 | Chat task state | Column on Chat | pending → in_progress → completed/failed/blocked |
+| N6 | Agent status broadcast | after_update_commit on Chat | When task_status changes → broadcast AgentItemComponent to sidebar stream |
+| N7 | Message broadcast | after_create_commit on Message | Broadcasts MessageComponent to thread's Turbo Stream channel |
 
 ### Wiring
 
 ```
 Human types message (U5) → Send (U6)
-  → Creates Message(sender_type: human) + Task(pending)
-  → N7 broadcasts message to thread stream → U3 renders bubble
+  → Controller creates Message(role: user) in Chat
+  → N7 broadcasts → U3 renders user bubble
   → N2 heartbeat fires → enqueues N3 (LlmJob)
-  → N5 transitions task: pending → in_progress
-  → N6 updates agent status → U1 shows "busy"
-  → U4 shows thinking indicator
 
 N3 (LlmJob) runs:
-  → Loads thread messages
-  → Calls RubyLLM (agent model + system prompt + messages)
-  → Saves response as Message(sender_type: agent)
-  → N7 broadcasts → U3 renders agent bubble, U4 hides
+  → chat.task_status = "in_progress"
+  → N6 broadcasts AgentItemComponent → U1 shows yellow dot
+  → Loads all chat.messages as context
+  → Calls RubyLLM (full history + system prompt)
+  → Saves response as Message(role: assistant)
+  → N7 broadcasts → U3 renders agent bubble
   → Increments turn_count
-  → If text response: N5 task → completed, N6 agent → idle
-  → If max_turns hit: N5 task → blocked, N6 agent → idle
+  → chat.task_status = "completed" (or "blocked" if max_turns hit)
+  → N6 broadcasts AgentItemComponent → U1 shows green dot
 ```
 
 ### What We Defer
