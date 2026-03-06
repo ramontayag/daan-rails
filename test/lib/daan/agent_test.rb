@@ -28,7 +28,7 @@ class Daan::AgentTest < ActiveSupport::TestCase
   end
 
   test "busy? is true when agent has an in-progress chat" do
-    Chat.create!(agent_name: "chief_of_staff", model_id: "claude-sonnet-4-20250514").start!
+    Chat.create!(agent_name: "chief_of_staff").start!
     assert @agent.busy?
   end
 

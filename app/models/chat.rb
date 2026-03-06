@@ -29,6 +29,8 @@ class Chat < ApplicationRecord
     end
   end
 
+  # TODO: AgentRegistry must be seeded at boot (Task 4: Agent Definition Loader)
+  #       before any Chat can call #agent — raises KeyError otherwise.
   def agent
     Daan::AgentRegistry.find(agent_name)
   end
