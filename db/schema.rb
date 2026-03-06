@@ -10,11 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_06_152415) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_06_154916) do
   create_table "chats", force: :cascade do |t|
+    t.string "agent_name", null: false
     t.datetime "created_at", null: false
     t.integer "model_id"
+    t.string "task_status", default: "pending", null: false
+    t.integer "turn_count", default: 0, null: false
     t.datetime "updated_at", null: false
+    t.index ["agent_name"], name: "index_chats_on_agent_name"
     t.index ["model_id"], name: "index_chats_on_model_id"
   end
 
