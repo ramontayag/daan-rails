@@ -11,6 +11,13 @@ After completing each task:
 
 Do not chain multiple tasks together without stopping for review.
 
+## Let it crash
+
+Write for the happy path. Don't add defensive guards for inputs that can't
+arrive if the UI is correct. If something unexpected slips through, let Rails
+catch it and return a 500 — don't silently swallow edge cases with rescue
+blocks or early returns. Trust the framework.
+
 ## Models are narrow
 
 Models should not reach out to jobs, services, or external systems. Avoid
