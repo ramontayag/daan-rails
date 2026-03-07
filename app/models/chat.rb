@@ -29,13 +29,21 @@ class Chat < ApplicationRecord
     end
   end
 
-  # TODO: AgentRegistry must be seeded at boot (Task 4: Agent Definition Loader)
-  #       before any Chat can call #agent — raises KeyError otherwise.
   def agent
     Daan::AgentRegistry.find(agent_name)
   end
 
   def max_turns_reached?
     agent.max_turns_reached?(turn_count)
+  end
+
+  # Called explicitly by ConversationRunner after each AASM transition — not a callback.
+  # See CLAUDE.md: broadcasts that render components belong in the caller.
+  def broadcast_agent_status
+    broadcast_replace_to(
+      "agents",
+      target: "agent_#{agent_name}",
+      renderable: AgentItemComponent.new(agent: agent)
+    )
   end
 end
