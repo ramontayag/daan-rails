@@ -3,27 +3,17 @@
   <main class="flex-1 flex flex-col overflow-hidden">
     <% if @chat %>
       <div data-testid="thread-view" class="flex-1 overflow-y-auto p-4">
+        <%= turbo_stream_from "chat_#{@chat.id}" %>
         <div id="messages">
           <% @chat.messages.order(:created_at).each do |message| %>
-            <div data-testid="message" class="mb-4 <%= message.role == 'user' ? 'text-right' : 'text-left' %>">
-              <span class="inline-block max-w-lg px-4 py-2 rounded-lg
-                <%= message.role == 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200' %>">
-                <%= message.content %>
-              </span>
-            </div>
+            <%= render MessageComponent.new(role: message.role, body: message.content,
+                                           dom_id: "message_#{message.id}") %>
           <% end %>
         </div>
       </div>
     <% end %>
     <% if @agent %>
-      <div data-testid="compose-bar" class="border-t p-4">
-        <%= form_with url: agent_messages_path(@agent), method: :post, class: "flex gap-2" do |f| %>
-          <%= f.text_field :content, name: "message[content]",
-              placeholder: "Message #{@agent.display_name}...",
-              class: "flex-1 border rounded-lg px-4 py-2", autofocus: true, required: true %>
-          <%= f.submit "Send", class: "bg-blue-500 text-white px-4 py-2 rounded-lg cursor-pointer" %>
-        <% end %>
-      </div>
+      <%= render ComposeBarComponent.new(agent: @agent) %>
     <% end %>
   </main>
 </div>
