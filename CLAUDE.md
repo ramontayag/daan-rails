@@ -26,6 +26,18 @@ beyond the model itself (enqueueing jobs, sending broadcasts, calling services).
 
 Put that logic in the controller or service that owns the action instead.
 
+This includes Turbo Stream broadcasts that render components — those are not
+trivial notifications; they do real work. They belong in the caller.
+
+## Single place to create a resource
+
+If a resource is created in more than one place, extract a service that is
+the only place it is created. Any side effects (broadcasts, job enqueueing)
+live in that service, not in the model.
+
+Example: `Daan::CreateMessage` is the only place `Message` records are
+created. It handles creation and the Turbo Stream broadcast together.
+
 ## Jobs are thin wrappers around services
 
 Jobs call a service and nothing else. The service holds all logic.

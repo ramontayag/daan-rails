@@ -15,7 +15,7 @@ class ChatsController < ApplicationController
 
   def create_message
     @chat = current_chat_for(@agent) || Chat.create!(agent_name: @agent.name)
-    @chat.messages.create!(role: "user", content: message_params[:content])
+    Daan::CreateMessage.call(@chat, role: "user", content: message_params[:content])
     LlmJob.perform_later(@chat)
     redirect_to agent_chat_path(@agent)
   end
