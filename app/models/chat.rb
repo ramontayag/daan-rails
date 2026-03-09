@@ -27,6 +27,10 @@ class Chat < ApplicationRecord
     event :fail do
       transitions from: %i[pending in_progress], to: :failed
     end
+
+    event :continue do
+      transitions from: %i[completed blocked failed], to: :pending
+    end
   end
 
   def agent

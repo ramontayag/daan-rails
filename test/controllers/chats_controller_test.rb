@@ -37,11 +37,25 @@ class ChatsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "POST creates a new chat if none exists for this agent" do
-    Chat.where(agent_name: "chief_of_staff").destroy_all # clear hello_cos fixture
+    Chat.where(agent_name: "chief_of_staff").destroy_all
     assert_difference "Chat.count", 1 do
       post agent_messages_path("chief_of_staff"),
            params: { message: { content: "First message" } }
     end
+  end
+
+  test "POST reuses completed chat so conversation history is preserved" do
+    chat = Chat.create!(agent_name: "chief_of_staff")
+    chat.start!
+    chat.finish!
+    assert chat.completed?
+
+    assert_no_difference "Chat.count" do
+      post agent_messages_path("chief_of_staff"),
+           params: { message: { content: "Follow-up" } }
+    end
+
+    assert chat.reload.pending?
   end
 
   test "returns 404 for unknown agent name" do
