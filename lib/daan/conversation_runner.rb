@@ -68,11 +68,18 @@ module Daan
     private_class_method :broadcast_tool_call_running
 
     def self.broadcast_new_messages(chat, since_id)
-      chat.messages
-          .includes(:tool_calls)
-          .where("messages.id > ?", since_id)
-          .order(:id)
-          .each do |message|
+      messages = chat.messages
+                     .includes(:tool_calls)
+                     .where("messages.id > ?", since_id)
+                     .order(:id)
+
+      # Pre-load tool results keyed by tool_call_id to avoid N+1 in ToolCallComponent.
+      results_by_tool_call_id = messages
+        .select { |m| m.role == "tool" }
+        .index_by(&:tool_call_id)
+        .transform_values(&:content)
+
+      messages.each do |message|
         next if message.role == "tool"
         next if message.role == "user"
 
@@ -81,7 +88,10 @@ module Daan
             Turbo::StreamsChannel.broadcast_replace_to(
               "chat_#{chat.id}",
               target: "tool_call_#{tool_call.id}",
-              renderable: ToolCallComponent.new(tool_call: tool_call)
+              renderable: ToolCallComponent.new(
+                tool_call: tool_call,
+                result: results_by_tool_call_id[tool_call.id]
+              )
             )
           end
         else
