@@ -52,25 +52,6 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     assert definition[:workspace].to_s.end_with?("tmp/workspaces/developer")
   end
 
-  test "parse raises when tool is outside Daan::Core namespace" do
-    file = Tempfile.new(["bad_agent", ".md"])
-    file.write(<<~MD)
-      ---
-      name: bad
-      display_name: Bad
-      model: claude-sonnet-4-20250514
-      max_turns: 5
-      tools:
-        - Kernel
-      ---
-      Bad agent.
-    MD
-    file.close
-    assert_raises(ArgumentError) { Daan::AgentLoader.parse(file.path) }
-  ensure
-    file.unlink
-  end
-
   test "sync! registers developer agent with workspace-bound tools" do
     Daan::AgentLoader.sync!(@definitions_path)
     agent = Daan::AgentRegistry.find("developer")

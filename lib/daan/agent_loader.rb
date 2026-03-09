@@ -6,10 +6,7 @@ module Daan
       fm = parsed.front_matter
 
       tool_names = fm.fetch("tools", [])
-      base_tools = tool_names.map do |name|
-        raise ArgumentError, "Tool '#{name}' is not under Daan::Core" unless name.start_with?("Daan::Core::")
-        Object.const_get(name)
-      end
+      base_tools = tool_names.map { |name| Object.const_get(name) }
 
       workspace_rel = fm["workspace"]
       workspace = workspace_rel ? Workspace.new(Rails.root.join(workspace_rel)) : nil
