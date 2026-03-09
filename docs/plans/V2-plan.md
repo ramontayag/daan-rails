@@ -912,6 +912,517 @@ git commit -m "fix: address test suite failures in V2"
 
 ---
 
+### Task 9: Threaded DMs — Slack-style thread panel (D19)
+
+**Goal:** Slack-like threading. The DM view shows a list of threads (one per `Chat`), each displaying the first user message. Clicking "N replies" opens a right-side thread panel showing the full exchange with its own reply bar. On mobile the panel takes the full screen. Sending from the DM compose bar always starts a NEW thread.
+
+**Why now:** Required to smoke-test both tools. The demo script's step 7 ("Now read it back to me") must be a *reply* in the same thread as step 3 — the agent needs that prior context. Without threading UI, every compose bar submission creates a fresh chat or silently reuses the last one.
+
+**Layout:**
+
+```
+┌─────────────┬──────────────────────────────┬───────────────────────────┐
+│ Agent       │ Thread list (DM view)        │ Thread panel (when open)  │
+│ sidebar     │                              │                           │
+│             │  ● Create file hello.txt     │  You: Create file...      │
+│             │    2 replies  10:30am   ───► │  ✎ write(hello.txt)       │
+│             │                              │  Done — created hello.txt │
+│             │  ● What's 2+2?               │                           │
+│             │    1 reply   10:15am         │  You: Now read it back    │
+│             │                              │  ✎ read(hello.txt)        │
+│ [New msg]   │                              │  Hello, world!            │
+│             │                              │  ─────────────────────    │
+│             │                              │  [Reply...]   [Send]      │
+└─────────────┴──────────────────────────────┴───────────────────────────┘
+Mobile: thread panel covers full screen when open (no list visible).
+```
+
+**Routes (new) — nested resources with `shallow: true`:**
+
+```ruby
+scope "chat" do
+  resources :agents, only: [:show], param: :agent_name, path: "agents", controller: "chats" do
+    resources :threads, only: [:show, :create], shallow: true do
+      resources :messages, only: [:create]
+    end
+  end
+end
+```
+
+Generates:
+```
+GET  /chat/agents/:agent_name         → chats#show         (DM view, thread list)
+POST /chat/agents/:agent_name/threads → threads#create     (new thread)
+GET  /chat/threads/:id                → threads#show       (thread panel, shallow)
+POST /chat/threads/:id/messages       → messages#create    (reply, shallow)
+```
+
+Named helpers: `chat_agent_path(agent)`, `chat_agent_threads_path(agent)`, `thread_path(chat)`, `thread_messages_path(chat)`.
+
+`ChatsController` — `show` only (DM view showing thread list per agent).
+`ThreadsController` — `show` + `create`.
+`MessagesController` — `create` only.
+
+With shallow routing, `threads#show` and `messages#create` don't receive `params[:agent_name]` — they derive `@agent` from the chat (`Daan::AgentRegistry.find(@chat.agent_name)`). Cleaner: the agent is implicit in the thread ID.
+
+**How the panel opens (Turbo Frame):**
+
+The thread panel is a `<turbo-frame id="thread_panel">`. "N replies" links use `data-turbo-frame="thread_panel"` so only the panel updates without a full page reload. `threads#show` renders a full page with both thread list and a populated panel — this makes direct links and mobile work correctly.
+
+**Files:**
+- Modify: `config/routes.rb`
+- Modify: `app/controllers/chats_controller.rb` (remove show/create/create_reply — keep index only)
+- Create: `app/controllers/threads_controller.rb`
+- Create: `app/controllers/messages_controller.rb`
+- Keep `app/views/chats/show.html.erb` (repurpose as DM thread list — controller action is `show`); create `app/views/threads/show.html.erb`
+- Create: `app/views/chats/_dm_view.html.erb`, `app/views/threads/_thread_panel.html.erb`
+- Create: `app/components/thread_list_item_component.rb` + template + test + Lookbook preview
+- Create: `app/components/chat_message_component.rb` + template + test + Lookbook preview
+- Modify: `app/components/compose_bar_component.rb` + template (accept `action:` param)
+- Modify: `test/controllers/chats_controller_test.rb`
+- Create: `test/controllers/threads_controller_test.rb`
+- Create: `test/controllers/messages_controller_test.rb`
+
+**Step 1: Write failing tests**
+
+`test/controllers/chats_controller_test.rb` — DM view only:
+
+```ruby
+require "test_helper"
+
+class ChatsControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+  end
+
+  test "GET /chat shows sidebar with agents" do
+    get chat_path
+    assert_response :success
+    assert_select "[data-testid='sidebar']"
+    assert_select "[data-testid='agent-item']", count: 2
+  end
+
+  test "GET /chat/agents/:agent_name shows thread list" do
+    Chat.create!(agent_name: "chief_of_staff")
+    Chat.create!(agent_name: "chief_of_staff")
+    get chat_agent_path("chief_of_staff")
+    assert_response :success
+    assert_select "[data-testid='thread-list-item']", count: 2
+  end
+
+  test "returns 404 for unknown agent" do
+    get chat_agent_path("nobody")
+    assert_response :not_found
+  end
+end
+```
+
+`test/controllers/threads_controller_test.rb`:
+
+```ruby
+require "test_helper"
+
+class ThreadsControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
+  setup do
+    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    @agent = Daan::AgentRegistry.find("chief_of_staff")
+  end
+
+  test "GET shows thread panel with messages" do
+    chat = Chat.create!(agent_name: "chief_of_staff")
+    chat.messages.create!(role: "user", content: "Hello")
+    get thread_path(chat)
+    assert_response :success
+    assert_select "[data-testid='thread-panel']"
+    assert_select "[data-testid='message']", minimum: 1
+  end
+
+  test "POST always creates a new chat" do
+    Chat.create!(agent_name: "chief_of_staff")
+    assert_difference "Chat.count", 1 do
+      post chat_agent_threads_path(@agent),
+           params: { message: { content: "New task" } }
+    end
+    assert_response :redirect
+  end
+
+  test "POST creates user message and enqueues LlmJob" do
+    assert_enqueued_with(job: LlmJob) do
+      post chat_agent_threads_path(@agent),
+           params: { message: { content: "Hello CoS" } }
+    end
+    assert_equal "user", Message.last.role
+    assert_equal "Hello CoS", Message.last.content
+  end
+end
+```
+
+`test/controllers/messages_controller_test.rb`:
+
+```ruby
+require "test_helper"
+
+class MessagesControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
+  setup do
+    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+  end
+
+  test "POST adds reply to existing thread" do
+    chat = Chat.create!(agent_name: "chief_of_staff")
+    chat.start!
+    chat.finish!
+    assert_no_difference "Chat.count" do
+      post thread_messages_path(chat),
+           params: { message: { content: "Follow-up" } }
+    end
+    assert chat.reload.pending?
+  end
+
+  test "POST enqueues LlmJob" do
+    chat = Chat.create!(agent_name: "chief_of_staff")
+    assert_enqueued_with(job: LlmJob) do
+      post thread_messages_path(chat),
+           params: { message: { content: "Reply" } }
+    end
+  end
+end
+```
+
+**Step 2: Run to confirm failures**
+
+```
+bin/rails test test/controllers/
+```
+
+**Step 3: Update routes**
+
+```ruby
+# config/routes.rb
+Rails.application.routes.draw do
+  if Rails.env.development?
+    mount Lookbook::Engine, at: "/rails/lookbook"
+  end
+
+  root "chats#index"
+  get "chat", to: "chats#index", as: :chat
+
+  scope "chat", as: "chat" do
+    resources :agents, only: [:show], param: :agent_name, path: "agents", controller: "chats" do
+      resources :threads, only: [:show, :create], shallow: true do
+        resources :messages, only: [:create]
+      end
+    end
+  end
+
+  get "up" => "rails/health#show", as: :rails_health_check
+end
+```
+
+Route helpers in use: `chat_agent_path(agent)`, `chat_agent_threads_path(agent)`, `thread_path(chat)`, `thread_messages_path(chat)`.
+
+**Step 4: Controllers**
+
+`app/controllers/chats_controller.rb` — `show` only (DM view for one agent):
+
+```ruby
+class ChatsController < ApplicationController
+  before_action :set_agents
+  before_action :set_agent
+
+  rescue_from KeyError, with: :agent_not_found
+
+  def index
+    # Root chat view — no agent selected yet
+  end
+
+  def show
+    @chats = Chat.where(agent_name: @agent.name).order(created_at: :desc).includes(:messages)
+  end
+
+  private
+
+  def set_agents
+    @agents = Daan::AgentRegistry.all
+  end
+
+  def set_agent
+    @agent = Daan::AgentRegistry.find(params[:agent_name]) if params[:agent_name]
+  end
+
+  def agent_not_found
+    head :not_found
+  end
+end
+```
+
+`app/controllers/threads_controller.rb`:
+
+```ruby
+class ThreadsController < ApplicationController
+  before_action :set_agents
+  before_action :set_agent_from_params, only: :create
+  before_action :set_chat, only: :show
+
+  rescue_from KeyError, with: :agent_not_found
+
+  def show
+    # @agent and @chats derived from @chat (shallow route — no agent_name param)
+    @agent = Daan::AgentRegistry.find(@chat.agent_name)
+    @chats = Chat.where(agent_name: @agent.name).order(created_at: :desc).includes(:messages)
+  end
+
+  def create
+    @chat = Chat.create!(agent_name: @agent.name)
+    Daan::CreateMessage.call(@chat, role: "user", content: message_params[:content])
+    LlmJob.perform_later(@chat)
+    redirect_to thread_path(@chat)
+  end
+
+  private
+
+  def set_agents
+    @agents = Daan::AgentRegistry.all
+  end
+
+  def set_agent_from_params
+    @agent = Daan::AgentRegistry.find(params[:agent_name])
+  end
+
+  def set_chat
+    @chat = Chat.find(params[:id])
+  end
+
+  def message_params
+    params.require(:message).permit(:content)
+  end
+
+  def agent_not_found
+    head :not_found
+  end
+end
+```
+
+`app/controllers/messages_controller.rb`:
+
+```ruby
+class MessagesController < ApplicationController
+  before_action :set_chat
+
+  def create
+    @chat.continue! if @chat.may_continue?
+    Daan::CreateMessage.call(@chat, role: "user", content: message_params[:content])
+    LlmJob.perform_later(@chat)
+    redirect_to thread_path(@chat)
+  end
+
+  private
+
+  def set_chat
+    @chat = Chat.find(params[:thread_id])
+  end
+
+  def message_params
+    params.require(:message).permit(:content)
+  end
+end
+```
+
+**Step 5: Views**
+
+`app/views/chats/show.html.erb` (repurpose — now the DM thread list view):
+
+```erb
+<div class="flex h-screen" data-testid="chat-layout">
+  <%= render "sidebar", agents: @agents, current_agent: @agent %>
+  <%= render "chats/dm_view", agent: @agent, chats: @chats, open_chat: nil %>
+</div>
+```
+
+`app/views/threads/show.html.erb`:
+
+```erb
+<div class="flex h-screen" data-testid="chat-layout">
+  <%= render "sidebar", agents: @agents, current_agent: @agent %>
+  <%= render "chats/dm_view", agent: @agent, chats: @chats, open_chat: @chat %>
+</div>
+```
+
+`app/views/chats/_dm_view.html.erb`:
+
+```erb
+<div class="flex flex-1 overflow-hidden">
+  <%# Thread list — hidden on mobile when a thread is open %>
+  <div class="<%= open_chat ? 'hidden md:flex' : 'flex' %> flex-col w-full md:w-96 border-r border-gray-200"
+       data-testid="thread-list-column">
+    <div class="flex-1 overflow-y-auto">
+      <% if chats&.any? %>
+        <ul>
+          <% chats.each do |chat| %>
+            <%= render ThreadListItemComponent.new(chat: chat) %>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-gray-400 text-sm p-4">No conversations yet.</p>
+      <% end %>
+    </div>
+    <%= render ComposeBarComponent.new(action: chat_agent_threads_path(agent)) %>
+  </div>
+
+  <%# Thread panel %>
+  <%= turbo_frame_tag "thread_panel",
+        class: "#{open_chat ? 'flex' : 'hidden md:flex'} flex-col flex-1 border-l border-gray-200" do %>
+    <% if open_chat %>
+      <%= render "threads/thread_panel", agent: agent, chat: open_chat %>
+    <% end %>
+  <% end %>
+</div>
+```
+
+`app/components/thread_list_item_component.rb`:
+
+```ruby
+class ThreadListItemComponent < ViewComponent::Base
+  def initialize(chat:)
+    @chat = chat
+  end
+
+  private
+
+  attr_reader :chat
+
+  def preview_text
+    chat.messages.where(role: "user").first&.content&.truncate(80) || "(empty)"
+  end
+
+  def reply_count = chat.messages.count
+  def timestamp   = chat.created_at.strftime("%b %d %H:%M")
+end
+```
+
+`app/components/thread_list_item_component.html.erb`:
+
+```erb
+<li data-testid="thread-list-item" class="border-b border-gray-100 hover:bg-gray-50">
+  <div class="px-4 py-3">
+    <p class="text-sm text-gray-900 truncate"><%= preview_text %></p>
+    <div class="flex items-center gap-3 mt-1">
+      <span class="text-xs text-gray-400"><%= timestamp %></span>
+      <%= link_to "#{reply_count} #{"reply".pluralize(reply_count)}",
+                   thread_path(chat),
+                   class: "text-xs text-blue-600 hover:underline",
+                   data: { turbo_frame: "thread_panel" } %>
+    </div>
+  </div>
+</li>
+```
+
+`app/components/chat_message_component.rb`:
+
+```ruby
+class ChatMessageComponent < ViewComponent::Base
+  def initialize(message:)
+    @message = message
+  end
+
+  private
+
+  attr_reader :message
+
+  def render?
+    message.role != "tool"
+  end
+end
+```
+
+`app/components/chat_message_component.html.erb`:
+
+```erb
+<% if message.tool_calls.any? %>
+  <% message.tool_calls.each do |tool_call| %>
+    <%= render ToolCallComponent.new(tool_call: tool_call) %>
+  <% end %>
+  <% if message.content.present? %>
+    <%= render MessageComponent.new(role: "assistant", body: message.content,
+                                   dom_id: "message_#{message.id}") %>
+  <% end %>
+<% else %>
+  <%= render MessageComponent.new(role: message.role, body: message.content,
+                                 dom_id: "message_#{message.id}") %>
+<% end %>
+```
+
+`app/views/threads/_thread_panel.html.erb`:
+
+```erb
+<div data-testid="thread-panel" class="flex flex-col h-full">
+  <div class="md:hidden px-4 py-2 border-b border-gray-200">
+    <%= link_to "← Back", chat_agent_path(agent), class: "text-sm text-blue-600" %>
+  </div>
+  <div class="flex-1 overflow-y-auto p-4">
+    <%= turbo_stream_from "chat_#{chat.id}" %>
+    <div id="messages">
+      <% chat.messages.includes(:tool_calls).order(:created_at).each do |message| %>
+        <%= render ChatMessageComponent.new(message: message) %>
+      <% end %>
+    </div>
+    <div id="typing_indicator"></div>
+  </div>
+  <%= render ComposeBarComponent.new(action: thread_messages_path(chat)) %>
+</div>
+```
+
+**Step 6: Update ComposeBarComponent to accept `action:`**
+
+```ruby
+# app/components/compose_bar_component.rb
+def initialize(action:)
+  @action = action
+end
+```
+
+Update template: `form_with url: @action`.
+
+**Step 7: Run tests**
+
+```
+bin/rails test test/controllers/
+bin/rails test
+```
+
+**Step 8: Commit**
+
+Also update `ConversationRunner#broadcast_new_messages` to use `ChatMessageComponent` instead of the inline branching it currently does — single broadcast per message, dispatch handled by the component.
+
+```bash
+git add config/routes.rb \
+        app/controllers/chats_controller.rb \
+        app/controllers/threads_controller.rb \
+        app/controllers/messages_controller.rb \
+        app/views/chats/ \
+        app/views/threads/ \
+        app/components/thread_list_item_component.rb \
+        app/components/thread_list_item_component.html.erb \
+        app/components/chat_message_component.rb \
+        app/components/chat_message_component.html.erb \
+        app/components/compose_bar_component.rb \
+        app/components/compose_bar_component.html.erb \
+        lib/daan/conversation_runner.rb \
+        test/controllers/chats_controller_test.rb \
+        test/controllers/threads_controller_test.rb \
+        test/controllers/messages_controller_test.rb \
+        test/components/thread_list_item_component_test.rb \
+        test/components/previews/thread_list_item_component_preview.rb \
+        test/components/chat_message_component_test.rb \
+        test/components/previews/chat_message_component_preview.rb
+git commit -m "feat: Slack-style thread panel — DM list with N replies opens right pane (D19)"
+```
+
+---
+
 # V2: Agent Uses Tools — Slice Detail
 
 The job chain extends beyond a single LLM call. When the LLM returns tool calls, Tool Jobs execute them and post results back, triggering the next LLM Job. Human sees tool calls and results as collapsible blocks in the thread, with a "Typing..." indicator while any job is in flight.
