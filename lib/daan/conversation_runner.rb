@@ -69,18 +69,18 @@ module Daan
         next if message.role == "tool"
         next if message.role == "user"
 
-        if message.tool_calls.any?
-          message.tool_calls.each do |tool_call|
-            Turbo::StreamsChannel.broadcast_append_to(
-              "chat_#{chat.id}",
-              target: "messages",
-              renderable: ToolCallComponent.new(
-                tool_call: tool_call,
-                result: results_by_tool_call_id[tool_call.id]
-              )
+        message.tool_calls.each do |tool_call|
+          Turbo::StreamsChannel.broadcast_append_to(
+            "chat_#{chat.id}",
+            target: "messages",
+            renderable: ToolCallComponent.new(
+              tool_call: tool_call,
+              result: results_by_tool_call_id[tool_call.id]
             )
-          end
-        else
+          )
+        end
+
+        if message.tool_calls.none? || message.content.present?
           Turbo::StreamsChannel.broadcast_append_to(
             "chat_#{chat.id}",
             target: "messages",
