@@ -6,7 +6,10 @@ module Daan
       fm = parsed.front_matter
 
       tool_names = fm.fetch("tools", [])
-      tools = tool_names.map { |name| Object.const_get(name) }
+      base_tools = tool_names.map { |name| Object.const_get(name) }
+
+      workspace_rel = fm["workspace"]
+      workspace = workspace_rel ? Rails.root.join(workspace_rel).to_s : nil
 
       {
         name:          fm.fetch("name"),
@@ -14,7 +17,8 @@ module Daan
         model_name:    fm.fetch("model"),
         max_turns:     fm.fetch("max_turns"),
         system_prompt: parsed.content.strip,
-        tools:         tools
+        base_tools:    base_tools,
+        workspace:     workspace
       }
     rescue => e
       raise "Invalid agent definition at #{file_path}: #{e.message}"

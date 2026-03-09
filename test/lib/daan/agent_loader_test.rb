@@ -31,21 +31,31 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     assert_equal 2, Daan::AgentRegistry.all.length
   end
 
-  test "parse returns empty tools array when not in frontmatter" do
+  test "parse returns empty base_tools array when not in frontmatter" do
     definition = Daan::AgentLoader.parse(@definitions_path.join("chief_of_staff.md"))
-    assert_equal [], definition[:tools]
+    assert_equal [], definition[:base_tools]
   end
 
-  test "parse returns tools array for developer agent" do
+  test "parse returns nil workspace when not in frontmatter" do
+    definition = Daan::AgentLoader.parse(@definitions_path.join("chief_of_staff.md"))
+    assert_nil definition[:workspace]
+  end
+
+  test "parse returns base_tools array for developer agent" do
     definition = Daan::AgentLoader.parse(@definitions_path.join("developer.md"))
-    assert_includes definition[:tools], Daan::Core::Read
-    assert_includes definition[:tools], Daan::Core::Write
+    assert_includes definition[:base_tools], Daan::Core::Read
+    assert_includes definition[:base_tools], Daan::Core::Write
   end
 
-  test "sync! registers developer agent with tools" do
+  test "parse returns workspace for developer agent" do
+    definition = Daan::AgentLoader.parse(@definitions_path.join("developer.md"))
+    assert definition[:workspace].end_with?("tmp/workspaces/developer")
+  end
+
+  test "sync! registers developer agent with workspace-bound tools" do
     Daan::AgentLoader.sync!(@definitions_path)
     agent = Daan::AgentRegistry.find("developer")
-    assert_includes agent.tools, Daan::Core::Read
-    assert_includes agent.tools, Daan::Core::Write
+    assert_not_nil agent.workspace
+    assert agent.tools.all? { |t| t.workspace == agent.workspace }
   end
 end

@@ -37,7 +37,15 @@ class Daan::AgentTest < ActiveSupport::TestCase
     assert_not @agent.max_turns_reached?(9)
   end
 
-  test "tools defaults to empty array when not provided" do
+  test "workspace defaults to nil when not provided" do
+    agent = Daan::Agent.new(
+      name: "test", display_name: "Test", model_name: "m",
+      system_prompt: "p", max_turns: 5
+    )
+    assert_nil agent.workspace
+  end
+
+  test "tools returns empty array when no base_tools" do
     agent = Daan::Agent.new(
       name: "test", display_name: "Test", model_name: "m",
       system_prompt: "p", max_turns: 5
@@ -45,11 +53,31 @@ class Daan::AgentTest < ActiveSupport::TestCase
     assert_equal [], agent.tools
   end
 
-  test "tools stores the provided array" do
+  test "tools returns workspace-bound subclasses" do
+    workspace = Dir.mktmpdir
+    tool_class = Class.new(RubyLLM::Tool) { description "test" }
     agent = Daan::Agent.new(
       name: "test", display_name: "Test", model_name: "m",
-      system_prompt: "p", max_turns: 5, tools: ["Foo"]
+      system_prompt: "p", max_turns: 5,
+      workspace: workspace, base_tools: [tool_class]
     )
-    assert_equal ["Foo"], agent.tools
+    bound = agent.tools
+    assert_equal 1, bound.length
+    assert_equal workspace, bound.first.workspace
+  ensure
+    FileUtils.rm_rf(workspace)
+  end
+
+  test "tools is memoized" do
+    workspace = Dir.mktmpdir
+    tool_class = Class.new(RubyLLM::Tool) { description "test" }
+    agent = Daan::Agent.new(
+      name: "test", display_name: "Test", model_name: "m",
+      system_prompt: "p", max_turns: 5,
+      workspace: workspace, base_tools: [tool_class]
+    )
+    assert_same agent.tools, agent.tools
+  ensure
+    FileUtils.rm_rf(workspace)
   end
 end

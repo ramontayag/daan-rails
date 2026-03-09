@@ -1,10 +1,20 @@
 # lib/daan/agent.rb
 module Daan
-  Agent = Struct.new(:name, :display_name, :model_name, :system_prompt, :max_turns, :tools,
-                     keyword_init: true) do
+  Agent = Struct.new(:name, :display_name, :model_name, :system_prompt, :max_turns,
+                     :workspace, :base_tools, keyword_init: true) do
     def initialize(**)
       super
-      self.tools ||= []
+      self.base_tools ||= []
+    end
+
+    def tools
+      @tools ||= base_tools.map do |tool_class|
+        wp = workspace
+        Class.new(tool_class) do
+          @workspace = wp
+          class << self; attr_reader :workspace; end
+        end
+      end
     end
 
     def to_param
