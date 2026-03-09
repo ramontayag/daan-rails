@@ -55,7 +55,10 @@ class Daan::AgentTest < ActiveSupport::TestCase
 
   test "tools returns workspace-bound subclasses" do
     workspace = Dir.mktmpdir
-    tool_class = Class.new(RubyLLM::Tool) { description "test" }
+    tool_class = Class.new(RubyLLM::Tool) do
+      description "test"
+      def execute = "ok"
+    end
     agent = Daan::Agent.new(
       name: "test", display_name: "Test", model_name: "m",
       system_prompt: "p", max_turns: 5,

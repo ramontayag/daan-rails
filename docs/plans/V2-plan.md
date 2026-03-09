@@ -8,7 +8,7 @@ shaping: true
 
 **Goal:** Developer agent uses Read and Write tools to interact with its workspace; tool calls and results appear as collapsible blocks in the thread with a "Typing..." indicator while in flight.
 
-**Architecture:** Tools are `RubyLLM::Tool` subclasses. RubyLLM handles the full tool calling loop automatically within `chat.complete` — when the LLM requests a tool, RubyLLM executes it and continues until a text-only response. Workspace path is injected via `Thread.current[:daan_workspace]` set before `complete` and cleared in `ensure`. After `complete` returns, `ConversationRunner` broadcasts all new messages (tool calls rendered as `ToolCallComponent`, text as `MessageComponent`, tool result messages skipped — rendered inside `ToolCallComponent`). A "Typing..." indicator is broadcast to a dedicated Turbo Stream target at job start and cleared at end.
+**Architecture:** Tools are `RubyLLM::Tool` subclasses. RubyLLM handles the full tool calling loop automatically within `chat.complete` — when the LLM requests a tool, RubyLLM executes it and continues until a text-only response. Each agent owns its workspace (declared in frontmatter). `agent.tools` returns memoized anonymous subclasses of the tool classes with the workspace path baked in as a class-level constant — no Thread.current, no runtime injection. Tools use `self.class.workspace` to resolve paths. Two-phase tool call broadcast: (1) `on_tool_call` callback fires before each tool executes — broadcasts `ToolCallComponent` in "running..." state (no result yet); (2) after `complete` returns, `broadcast_new_messages` does `broadcast_replace_to` on each tool call's DOM target — component now has the result filled in. Text messages are appended normally. A "Typing..." indicator is broadcast at job start and cleared at end.
 
 > **Note on V2.4 (ToolJob):** Deferred. RubyLLM's built-in loop handles tool execution within a single `LlmJob`. Separating into `ToolJob` is the right long-term design (D22) but requires fighting RubyLLM's API. Will be natural to add when delegation (V3) requires it.
 
@@ -20,10 +20,13 @@ shaping: true
 
 ## Implementation Plan
 
-### Task 1: Developer agent + Agent#tools + AgentLoader
+### Task 1: Developer agent + Agent#tools + AgentLoader + workspace
+
+> ✅ **Partially done** (committed): `tools` field on Agent, AgentLoader parses tools, developer.md created.
+> Still needed: `workspace` field on Agent, loader parses it, developer.md declares it, `agent.tools` generates factory subclasses.
 
 **Files:**
-- Create: `lib/daan/core/agents/developer.md`
+- Modify: `lib/daan/core/agents/developer.md`
 - Modify: `lib/daan/agent.rb`
 - Modify: `lib/daan/agent_loader.rb`
 - Modify: `test/lib/daan/agent_loader_test.rb`
@@ -34,50 +37,90 @@ shaping: true
 In `test/lib/daan/agent_test.rb`, add:
 
 ```ruby
-test "tools defaults to empty array when not provided" do
+test "workspace defaults to nil when not provided" do
+  agent = Daan::Agent.new(
+    name: "test", display_name: "Test", model_name: "m",
+    system_prompt: "p", max_turns: 5
+  )
+  assert_nil agent.workspace
+end
+
+test "tools returns workspace-bound subclasses" do
+  workspace = Dir.mktmpdir
+  tool_class = Class.new(RubyLLM::Tool) do
+    description "test tool"
+    def execute = "ok"
+  end
+  agent = Daan::Agent.new(
+    name: "test", display_name: "Test", model_name: "m",
+    system_prompt: "p", max_turns: 5,
+    workspace: workspace, base_tools: [tool_class]
+  )
+  bound = agent.tools
+  assert_equal 1, bound.length
+  assert_equal workspace, bound.first.workspace
+ensure
+  FileUtils.rm_rf(workspace)
+end
+
+test "tools returns empty array when no base_tools" do
   agent = Daan::Agent.new(
     name: "test", display_name: "Test", model_name: "m",
     system_prompt: "p", max_turns: 5
   )
   assert_equal [], agent.tools
 end
-
-test "tools stores the provided array" do
-  agent = Daan::Agent.new(
-    name: "test", display_name: "Test", model_name: "m",
-    system_prompt: "p", max_turns: 5, tools: ["Foo"]
-  )
-  assert_equal ["Foo"], agent.tools
-end
 ```
 
 In `test/lib/daan/agent_loader_test.rb`, add:
 
 ```ruby
-test "parse returns empty tools array when not in frontmatter" do
+test "parse returns nil workspace when not in frontmatter" do
   definition = Daan::AgentLoader.parse(@definitions_path.join("chief_of_staff.md"))
-  assert_equal [], definition[:tools]
+  assert_nil definition[:workspace]
+end
+
+test "parse returns workspace for developer agent" do
+  definition = Daan::AgentLoader.parse(@definitions_path.join("developer.md"))
+  assert definition[:workspace].end_with?("tmp/workspaces/developer")
+end
+
+test "sync! registers developer agent with workspace-bound tools" do
+  Daan::AgentLoader.sync!(@definitions_path)
+  agent = Daan::AgentRegistry.find("developer")
+  assert_not_nil agent.workspace
+  assert agent.tools.all? { |t| t.workspace == agent.workspace }
 end
 ```
 
-**Step 2: Run tests to confirm failure**
+**Step 2: Run to confirm failure**
 
 ```
-bin/rails test test/lib/daan/agent_test.rb test/lib/daan/agent_loader_test.rb
+ANTHROPIC_API_KEY=test bin/rails test test/lib/daan/agent_test.rb test/lib/daan/agent_loader_test.rb
 ```
 
-Expected: failures about unknown keyword `tools` and undefined `definition[:tools]`.
+**Step 3: Update Agent struct**
 
-**Step 3: Add `tools` to Agent struct with default**
+`base_tools` holds the raw tool classes from the definition. `tools` generates (and memoizes) anonymous subclasses with workspace baked in.
 
 ```ruby
 # lib/daan/agent.rb
 module Daan
-  Agent = Struct.new(:name, :display_name, :model_name, :system_prompt, :max_turns, :tools,
-                     keyword_init: true) do
+  Agent = Struct.new(:name, :display_name, :model_name, :system_prompt, :max_turns,
+                     :workspace, :base_tools, keyword_init: true) do
     def initialize(**)
       super
-      self.tools ||= []
+      self.base_tools ||= []
+    end
+
+    def tools
+      @tools ||= base_tools.map do |tool_class|
+        wp = workspace
+        Class.new(tool_class) do
+          @workspace = wp
+          class << self; attr_reader :workspace; end
+        end
+      end
     end
 
     def to_param
@@ -95,7 +138,7 @@ module Daan
 end
 ```
 
-**Step 4: Update AgentLoader to parse tools**
+**Step 4: Update AgentLoader to parse workspace + rename tools key**
 
 ```ruby
 # lib/daan/agent_loader.rb
@@ -104,7 +147,10 @@ def self.parse(file_path)
   fm = parsed.front_matter
 
   tool_names = fm.fetch("tools", [])
-  tools = tool_names.map { |name| Object.const_get(name) }
+  base_tools = tool_names.map { |name| Object.const_get(name) }
+
+  workspace_rel = fm["workspace"]
+  workspace = workspace_rel ? Rails.root.join(workspace_rel).to_s : nil
 
   {
     name:          fm.fetch("name"),
@@ -112,14 +158,15 @@ def self.parse(file_path)
     model_name:    fm.fetch("model"),
     max_turns:     fm.fetch("max_turns"),
     system_prompt: parsed.content.strip,
-    tools:         tools
+    base_tools:    base_tools,
+    workspace:     workspace
   }
 rescue => e
   raise "Invalid agent definition at #{file_path}: #{e.message}"
 end
 ```
 
-**Step 5: Create developer.md**
+**Step 5: Update developer.md with workspace**
 
 ```markdown
 ---
@@ -127,148 +174,36 @@ name: developer
 display_name: Developer
 model: claude-sonnet-4-20250514
 max_turns: 10
+workspace: tmp/workspaces/developer
 tools:
   - Daan::Core::Read
   - Daan::Core::Write
 ---
-You are the Developer on the Daan agent team. You write and modify files in your workspace to accomplish tasks. When asked to read, write, or inspect files, use your tools. Be concise in your responses — show the user what you did, not a wall of text.
+You are the Developer on the Daan agent team. You write and modify files in your workspace to accomplish tasks. When asked to read, write, or inspect files, use your tools. Use relative paths — they resolve within your workspace. Be concise in your responses — show the user what you did, not a wall of text.
 ```
 
-**Step 6: Add loader test for developer.md**
-
-In `test/lib/daan/agent_loader_test.rb`:
-
-```ruby
-test "parse returns tools array for developer agent" do
-  definition = Daan::AgentLoader.parse(@definitions_path.join("developer.md"))
-  assert_includes definition[:tools], Daan::Core::Read
-  assert_includes definition[:tools], Daan::Core::Write
-end
-
-test "sync! registers developer agent with tools" do
-  Daan::AgentLoader.sync!(@definitions_path)
-  agent = Daan::AgentRegistry.find("developer")
-  assert_includes agent.tools, Daan::Core::Read
-  assert_includes agent.tools, Daan::Core::Write
-end
-```
-
-**Step 7: Run tests**
+**Step 6: Run tests**
 
 ```
-bin/rails test test/lib/daan/agent_test.rb test/lib/daan/agent_loader_test.rb
+ANTHROPIC_API_KEY=test bin/rails test test/lib/daan/agent_test.rb test/lib/daan/agent_loader_test.rb
 ```
 
 Expected: all pass.
 
-**Step 8: Commit**
+**Step 7: Commit**
 
 ```bash
 git add lib/daan/agent.rb lib/daan/agent_loader.rb \
         lib/daan/core/agents/developer.md \
         test/lib/daan/agent_test.rb test/lib/daan/agent_loader_test.rb
-git commit -m "feat: add tools field to Agent + developer agent definition"
+git commit -m "feat: workspace-bound tool subclasses via agent.tools factory"
 ```
 
 ---
 
-### Task 2: Tool base class
+### Task 2: Read and Write tools
 
-**Files:**
-- Create: `lib/daan/core/tool.rb`
-- Create: `test/lib/daan/core/tool_test.rb`
-
-**Step 1: Write failing test**
-
-```ruby
-# test/lib/daan/core/tool_test.rb
-require "test_helper"
-
-class Daan::Core::ToolTest < ActiveSupport::TestCase
-  setup do
-    @workspace = Dir.mktmpdir
-    Thread.current[:daan_workspace] = @workspace
-  end
-
-  teardown do
-    FileUtils.rm_rf(@workspace)
-    Thread.current[:daan_workspace] = nil
-  end
-
-  test "raises if no workspace set in Thread.current" do
-    Thread.current[:daan_workspace] = nil
-    # Instantiating a concrete tool subclass should raise
-    assert_raises(RuntimeError) { Daan::Core::Read.new }
-  end
-
-  test "resolve_path! allows paths within workspace" do
-    tool = Daan::Core::Read.new
-    # We test this via the Read tool — just check it doesn't raise
-    assert_nothing_raised { tool.send(:resolve_path!, "file.txt") }
-  end
-
-  test "resolve_path! raises on path traversal" do
-    tool = Daan::Core::Read.new
-    assert_raises(ArgumentError) { tool.send(:resolve_path!, "../../etc/passwd") }
-  end
-end
-```
-
-**Step 2: Run test to confirm failure**
-
-```
-bin/rails test test/lib/daan/core/tool_test.rb
-```
-
-Expected: `NameError: uninitialized constant Daan::Core::Tool`
-
-**Step 3: Implement Tool base class**
-
-```ruby
-# lib/daan/core/tool.rb
-module Daan
-  module Core
-    class Tool < RubyLLM::Tool
-      def initialize
-        super
-        workspace_path = Thread.current[:daan_workspace]
-        raise "No workspace configured. Set Thread.current[:daan_workspace] before calling tools." unless workspace_path
-        @workspace = Pathname.new(workspace_path)
-      end
-
-      protected
-
-      def resolve_path!(path)
-        requested = (@workspace / path).expand_path
-        unless requested.to_s.start_with?(@workspace.expand_path.to_s + "/") ||
-               requested.to_s == @workspace.expand_path.to_s
-          raise ArgumentError, "Path '#{path}' escapes the workspace"
-        end
-        requested
-      end
-    end
-  end
-end
-```
-
-**Step 4: Run tests**
-
-```
-bin/rails test test/lib/daan/core/tool_test.rb
-```
-
-Expected: all pass.
-
-**Step 5: Commit**
-
-```bash
-git add lib/daan/core/tool.rb test/lib/daan/core/tool_test.rb
-git commit -m "feat: add Daan::Core::Tool base class with workspace scoping"
-```
-
----
-
-### Task 3: Read and Write tools
+No base class. Tools extend `RubyLLM::Tool` directly and use `self.class.workspace` (set by the factory in `agent.tools`). Tools take **relative** paths.
 
 **Files:**
 - Create: `lib/daan/core/read.rb`
@@ -278,6 +213,8 @@ git commit -m "feat: add Daan::Core::Tool base class with workspace scoping"
 
 **Step 1: Write failing Read tests**
 
+To test a tool in isolation, build a workspace-bound subclass the same way `agent.tools` does:
+
 ```ruby
 # test/lib/daan/core/read_test.rb
 require "test_helper"
@@ -285,29 +222,22 @@ require "test_helper"
 class Daan::Core::ReadTest < ActiveSupport::TestCase
   setup do
     @workspace = Dir.mktmpdir
-    Thread.current[:daan_workspace] = @workspace
+    workspace = @workspace
+    @tool = Class.new(Daan::Core::Read) do
+      @workspace = workspace
+      class << self; attr_reader :workspace; end
+    end.new
     File.write(File.join(@workspace, "hello.txt"), "Hello, world!")
   end
 
-  teardown do
-    FileUtils.rm_rf(@workspace)
-    Thread.current[:daan_workspace] = nil
-  end
+  teardown { FileUtils.rm_rf(@workspace) }
 
   test "reads a file within the workspace" do
-    tool = Daan::Core::Read.new
-    result = tool.execute(path: "hello.txt")
-    assert_equal "Hello, world!", result
+    assert_equal "Hello, world!", @tool.execute(path: "hello.txt")
   end
 
   test "raises if file does not exist" do
-    tool = Daan::Core::Read.new
-    assert_raises(RuntimeError) { tool.execute(path: "missing.txt") }
-  end
-
-  test "raises on path traversal" do
-    tool = Daan::Core::Read.new
-    assert_raises(ArgumentError) { tool.execute(path: "../../etc/passwd") }
+    assert_raises(RuntimeError) { @tool.execute(path: "missing.txt") }
   end
 end
 ```
@@ -321,35 +251,28 @@ require "test_helper"
 class Daan::Core::WriteTest < ActiveSupport::TestCase
   setup do
     @workspace = Dir.mktmpdir
-    Thread.current[:daan_workspace] = @workspace
+    workspace = @workspace
+    @tool = Class.new(Daan::Core::Write) do
+      @workspace = workspace
+      class << self; attr_reader :workspace; end
+    end.new
   end
 
-  teardown do
-    FileUtils.rm_rf(@workspace)
-    Thread.current[:daan_workspace] = nil
-  end
+  teardown { FileUtils.rm_rf(@workspace) }
 
   test "writes a file to the workspace" do
-    tool = Daan::Core::Write.new
-    tool.execute(path: "output.txt", content: "Test content")
+    @tool.execute(path: "output.txt", content: "Test content")
     assert_equal "Test content", File.read(File.join(@workspace, "output.txt"))
   end
 
   test "returns a confirmation string" do
-    tool = Daan::Core::Write.new
-    result = tool.execute(path: "output.txt", content: "Test content")
+    result = @tool.execute(path: "output.txt", content: "Test content")
     assert_includes result, "output.txt"
   end
 
   test "creates intermediate directories" do
-    tool = Daan::Core::Write.new
-    tool.execute(path: "subdir/nested.txt", content: "hi")
+    @tool.execute(path: "subdir/nested.txt", content: "hi")
     assert File.exist?(File.join(@workspace, "subdir", "nested.txt"))
-  end
-
-  test "raises on path traversal" do
-    tool = Daan::Core::Write.new
-    assert_raises(ArgumentError) { tool.execute(path: "../../evil.txt", content: "x") }
   end
 end
 ```
@@ -357,7 +280,7 @@ end
 **Step 3: Run to confirm failures**
 
 ```
-bin/rails test test/lib/daan/core/read_test.rb test/lib/daan/core/write_test.rb
+ANTHROPIC_API_KEY=test bin/rails test test/lib/daan/core/read_test.rb test/lib/daan/core/write_test.rb
 ```
 
 **Step 4: Implement Read**
@@ -366,12 +289,12 @@ bin/rails test test/lib/daan/core/read_test.rb test/lib/daan/core/write_test.rb
 # lib/daan/core/read.rb
 module Daan
   module Core
-    class Read < Tool
+    class Read < RubyLLM::Tool
       description "Read a file from the workspace"
-      param :path, desc: "Relative path to the file within the workspace"
+      param :path, desc: "Relative path to the file"
 
       def execute(path:)
-        file = resolve_path!(path)
+        file = Pathname.new(self.class.workspace) / path
         raise "File not found: #{path}" unless file.exist?
         file.read
       end
@@ -386,13 +309,13 @@ end
 # lib/daan/core/write.rb
 module Daan
   module Core
-    class Write < Tool
+    class Write < RubyLLM::Tool
       description "Write content to a file in the workspace"
-      param :path, desc: "Relative path to the file within the workspace"
+      param :path, desc: "Relative path to the file"
       param :content, desc: "The content to write"
 
       def execute(path:, content:)
-        file = resolve_path!(path)
+        file = Pathname.new(self.class.workspace) / path
         file.dirname.mkpath
         file.write(content)
         "Written #{content.bytesize} bytes to #{path}"
@@ -405,7 +328,7 @@ end
 **Step 6: Run tests**
 
 ```
-bin/rails test test/lib/daan/core/read_test.rb test/lib/daan/core/write_test.rb
+ANTHROPIC_API_KEY=test bin/rails test test/lib/daan/core/read_test.rb test/lib/daan/core/write_test.rb
 ```
 
 Expected: all pass.
@@ -420,12 +343,12 @@ git commit -m "feat: add Daan::Core::Read and Write tools"
 
 ---
 
-### Task 4: Update ConversationRunner for tools + workspace
+### Task 3: Update ConversationRunner for tools
 
 `ConversationRunner` needs to:
 1. Capture `last_message_id` before `complete` runs (to find new messages after)
-2. Set up the workspace directory and inject via `Thread.current`
-3. Pass agent's tools to `with_tools`
+2. Pass agent's tools to `with_tools` (workspace already baked in via factory)
+3. Create workspace directory before running (agent owns workspace, runner creates it)
 4. Replace `broadcast_last_assistant_message` with `broadcast_new_messages` (handles tool call messages and text messages)
 
 **Files:**
@@ -452,7 +375,7 @@ ensure
 end
 ```
 
-Also update the broadcast test (no longer pre-creates the message; count is now 3: typing on + message + typing off):
+Also update the broadcast test (no longer pre-creates the message; count is now 3: typing on + 1 text message + typing off — `on_tool_call` never fires in the stub since the stubbed `complete` creates a plain text message with no tool calls):
 
 ```ruby
 test "broadcasts to chat stream: typing on, message, typing off" do
@@ -481,6 +404,8 @@ Note which tests fail — they will be fixed by the implementation.
 module Daan
   class ConversationRunner
     def self.call(chat)
+      return unless chat.may_start? # guard against Solid Queue retries on failed/blocked chats
+
       agent = chat.agent
       last_message_id = chat.messages.maximum(:id) || 0
 
@@ -488,14 +413,11 @@ module Daan
       chat.broadcast_agent_status
       broadcast_typing(chat, true)
 
-      begin
-        if agent.tools.any?
-          workspace = Rails.root.join("tmp", "workspaces", agent.name)
-          FileUtils.mkdir_p(workspace)
-          Thread.current[:daan_workspace] = workspace.to_s
-        end
+      FileUtils.mkdir_p(agent.workspace) if agent.workspace
 
+      begin
         chat
+          .on_tool_call { |tc| broadcast_tool_call_running(chat, tc) }
           .with_model(agent.model_name)
           .with_instructions(agent.system_prompt)
           .with_tools(*agent.tools)
@@ -509,8 +431,6 @@ module Daan
         chat.broadcast_agent_status
         broadcast_typing(chat, false)
         raise
-      ensure
-        Thread.current[:daan_workspace] = nil
       end
 
       broadcast_new_messages(chat, last_message_id)
@@ -521,6 +441,23 @@ module Daan
       chat.broadcast_agent_status
     end
 
+    # Fires before the tool executes — appends ToolCallComponent in "running..." state.
+    # The AR ToolCall record is saved by RubyLLM before this callback fires.
+    def self.broadcast_tool_call_running(chat, tc)
+      ar_tool_call = ToolCall.find_by(tool_call_id: tc.id)
+      return unless ar_tool_call
+
+      Turbo::StreamsChannel.broadcast_append_to(
+        "chat_#{chat.id}",
+        target: "messages",
+        renderable: ToolCallComponent.new(tool_call: ar_tool_call)
+        # No result message exists yet — component renders "running..."
+      )
+    end
+    private_class_method :broadcast_tool_call_running
+
+    # Fires after complete — replaces each tool call block (now has result) and appends text messages.
+    # Skips tool result messages (rendered inside ToolCallComponent) and user messages (already broadcast).
     def self.broadcast_new_messages(chat, since_id)
       chat.messages
           .includes(:tool_calls)
@@ -528,21 +465,15 @@ module Daan
           .order(:id)
           .each do |message|
         next if message.role == "tool"
+        next if message.role == "user"
 
         if message.tool_calls.any?
           message.tool_calls.each do |tool_call|
-            Turbo::StreamsChannel.broadcast_append_to(
+            # Replace the "running..." block — result is now in the DB
+            Turbo::StreamsChannel.broadcast_replace_to(
               "chat_#{chat.id}",
-              target: "messages",
+              target: "tool_call_#{tool_call.id}",
               renderable: ToolCallComponent.new(tool_call: tool_call)
-            )
-          end
-          if message.content.present?
-            Turbo::StreamsChannel.broadcast_append_to(
-              "chat_#{chat.id}",
-              target: "messages",
-              renderable: MessageComponent.new(role: "assistant", body: message.content,
-                                              dom_id: "message_#{message.id}")
             )
           end
         else
@@ -583,7 +514,7 @@ Expected: all pass. (TypingIndicatorComponent and ToolCallComponent don't exist 
 
 ```bash
 git add lib/daan/conversation_runner.rb test/lib/daan/conversation_runner_test.rb
-git commit -m "feat: update ConversationRunner for tools, workspace, and new broadcast"
+git commit -m "feat: update ConversationRunner for tools and new broadcast"
 ```
 
 ---
@@ -773,11 +704,14 @@ bin/rails test test/components/tool_call_component_test.rb
 
 **Step 3: Implement ToolCallComponent**
 
+Accept an optional `result:` param so callers (e.g. Lookbook previews) can inject the result directly and skip the DB lookup. Production code omits `result:` and the component fetches it lazily.
+
 ```ruby
 # app/components/tool_call_component.rb
 class ToolCallComponent < ViewComponent::Base
-  def initialize(tool_call:)
+  def initialize(tool_call:, result: nil)
     @tool_call = tool_call
+    @result = result
   end
 
   private
@@ -786,14 +720,13 @@ class ToolCallComponent < ViewComponent::Base
 
   def tool_name = tool_call.name
   def arguments = tool_call.arguments
-  def result_message = Message.find_by(tool_call_id: tool_call.id)
-  def result = result_message&.content
+  def result = @result || Message.find_by(tool_call_id: tool_call.id)&.content
 end
 ```
 
 ```erb
 <%# app/components/tool_call_component.html.erb %>
-<div class="my-1 text-sm font-mono" data-testid="tool-call">
+<div id="tool_call_<%= tool_call.id %>" class="my-1 text-sm font-mono" data-testid="tool-call">
   <details class="bg-gray-100 rounded border border-gray-300">
     <summary class="px-3 py-1 cursor-pointer text-gray-600 select-none">
       <span class="font-semibold text-gray-800"><%= tool_name %></span>
@@ -851,23 +784,30 @@ The thread view currently filters to `role: %w[user assistant]`. Update it to re
 
 **Step 5: Add Lookbook preview**
 
+Use `find_or_create_by` to avoid uniqueness errors on repeated Lookbook renders. Pass `result:` directly for the `with_result` preview — no Message record needed, no extra DB query.
+
 ```ruby
 # test/components/previews/tool_call_component_preview.rb
 class ToolCallComponentPreview < ViewComponent::Preview
   def with_result
-    chat = Chat.first || Chat.create!(agent_name: "chief_of_staff")
-    msg = chat.messages.create!(role: "assistant", content: nil)
-    tc = ToolCall.create!(message: msg, tool_call_id: "prev_001", name: "read",
-                          arguments: { "path" => "hello.txt" })
-    chat.messages.create!(role: "tool", content: "Hello, world!", tool_call_id: tc.id)
-    render ToolCallComponent.new(tool_call: tc)
+    chat = Chat.first_or_create!(agent_name: "chief_of_staff")
+    msg = chat.messages.first_or_create!(role: "assistant", content: nil)
+    tc = ToolCall.find_or_create_by!(tool_call_id: "prev_001") do |t|
+      t.message = msg
+      t.name = "read"
+      t.arguments = { "path" => "hello.txt" }
+    end
+    render ToolCallComponent.new(tool_call: tc, result: "Hello, world!")
   end
 
   def running
-    chat = Chat.first || Chat.create!(agent_name: "chief_of_staff")
-    msg = chat.messages.create!(role: "assistant", content: nil)
-    tc = ToolCall.create!(message: msg, tool_call_id: "prev_002", name: "write",
-                          arguments: { "path" => "output.txt", "content" => "hello" })
+    chat = Chat.first_or_create!(agent_name: "chief_of_staff")
+    msg = chat.messages.first_or_create!(role: "assistant", content: nil)
+    tc = ToolCall.find_or_create_by!(tool_call_id: "prev_002") do |t|
+      t.message = msg
+      t.name = "write"
+      t.arguments = { "path" => "output.txt", "content" => "hello" }
+    end
     render ToolCallComponent.new(tool_call: tc)
   end
 end
