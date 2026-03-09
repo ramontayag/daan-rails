@@ -22,3 +22,11 @@ Things you may want to cover:
 * Deployment instructions
 
 * ...
+
+# Setup
+
+Fill out the `.env.local` file:
+
+```
+cp .env{,.local}
+```

@@ -1,0 +1,17 @@
+# lib/daan/agent.rb
+module Daan
+  Agent = Struct.new(:name, :display_name, :model_name, :system_prompt, :max_turns,
+                     keyword_init: true) do
+    def to_param
+      name
+    end
+
+    def busy?
+      Chat.in_progress.exists?(agent_name: name)
+    end
+
+    def max_turns_reached?(turn_count)
+      turn_count >= max_turns
+    end
+  end
+end

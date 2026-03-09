@@ -1,0 +1,6 @@
+<div id="agent_<%= agent.name %>">
+  <%= link_to agent_chat_path(agent), class: item_classes, data: { testid: "agent-item" } do %>
+    <span class="w-2 h-2 rounded-full <%= dot_classes %>"></span>
+    <span><%= agent.display_name %></span>
+  <% end %>
+</div>

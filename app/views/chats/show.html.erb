@@ -1,0 +1,19 @@
+<div class="flex h-screen" data-testid="chat-layout">
+  <%= render "sidebar", agents: @agents, current_agent: @agent %>
+  <main class="flex-1 flex flex-col overflow-hidden">
+    <% if @chat %>
+      <div data-testid="thread-view" class="flex-1 overflow-y-auto p-4">
+        <%= turbo_stream_from "chat_#{@chat.id}" %>
+        <div id="messages">
+          <% @chat.messages.where(role: %w[user assistant]).order(:created_at).each do |message| %>
+            <%= render MessageComponent.new(role: message.role, body: message.content,
+                                           dom_id: "message_#{message.id}") %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+    <% if @agent %>
+      <%= render ComposeBarComponent.new(agent: @agent) %>
+    <% end %>
+  </main>
+</div>

@@ -1,14 +1,15 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  if Rails.env.development?
+    mount Lookbook::Engine, at: "/rails/lookbook"
+  end
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  root "chats#index"
+  get "chat", to: "chats#index", as: :chat
+
+  scope "chat" do
+    get  "agents/:agent_name",          to: "chats#show",           as: :agent_chat
+    post "agents/:agent_name/messages", to: "chats#create_message", as: :agent_messages
+  end
+
   get "up" => "rails/health#show", as: :rails_health_check
-
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
-
-  # Defines the root path route ("/")
-  # root "posts#index"
 end
