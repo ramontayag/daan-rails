@@ -24,7 +24,7 @@ module Daan
     private_class_method :start_conversation
 
     def self.prepare_workspace(agent)
-      FileUtils.mkdir_p(agent.workspace) if agent.workspace
+      agent.workspace&.root&.mkpath
     end
     private_class_method :prepare_workspace
 

@@ -17,11 +17,6 @@ module Daan
       full
     end
 
-    def mkdir_p
-      FileUtils.mkdir_p(@root)
-    end
-
     def to_s = @root.to_s
-    def to_str = @root.to_s
   end
 end
