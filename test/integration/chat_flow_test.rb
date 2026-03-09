@@ -31,4 +31,19 @@ class ChatFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "[data-testid='message']", minimum: 1
   end
+
+  test "system messages are not rendered in the thread view" do
+    agent = Daan::AgentRegistry.find("chief_of_staff")
+    chat = Chat.create!(agent_name: agent.name)
+    chat.messages.create!(role: "user", content: "Hello")
+    chat.messages.create!(role: "system", content: "You are the Chief of Staff...")
+    chat.messages.create!(role: "assistant", content: "Hi there!")
+
+    get agent_chat_path(agent)
+    assert_response :success
+    assert_select "[data-testid='message']", 2  # user + assistant only
+    assert_select "[data-role='user']", 1
+    assert_select "[data-role='assistant']", 1
+    assert_select "[data-role='system']", 0
+  end
 end
