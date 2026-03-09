@@ -1,9 +1,9 @@
 class ComposeBarComponent < ViewComponent::Base
-  def initialize(agent:)
-    @agent = agent
+  def initialize(action:)
+    @action = action
   end
 
   private
 
-  attr_reader :agent
+  attr_reader :action
 end

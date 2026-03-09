@@ -59,35 +59,19 @@ module Daan
                      .where("messages.id > ?", since_id)
                      .order(:id)
 
-      # Pre-load tool results keyed by tool_call_id to avoid N+1 in ToolCallComponent.
       results_by_tool_call_id = messages
         .select { |m| m.role == "tool" }
         .index_by(&:tool_call_id)
         .transform_values(&:content)
 
       messages.each do |message|
-        next if message.role == "tool"
-        next if message.role == "user"
+        next if message.role == "tool" || message.role == "user"
 
-        message.tool_calls.each do |tool_call|
-          Turbo::StreamsChannel.broadcast_append_to(
-            "chat_#{chat.id}",
-            target: "messages",
-            renderable: ToolCallComponent.new(
-              tool_call: tool_call,
-              result: results_by_tool_call_id[tool_call.id]
-            )
-          )
-        end
-
-        if message.tool_calls.none? || message.content.present?
-          Turbo::StreamsChannel.broadcast_append_to(
-            "chat_#{chat.id}",
-            target: "messages",
-            renderable: MessageComponent.new(role: message.role, body: message.content,
-                                            dom_id: "message_#{message.id}")
-          )
-        end
+        Turbo::StreamsChannel.broadcast_append_to(
+          "chat_#{chat.id}",
+          target: "messages",
+          renderable: ChatMessageComponent.new(message: message, results: results_by_tool_call_id)
+        )
       end
     end
     private_class_method :broadcast_new_messages

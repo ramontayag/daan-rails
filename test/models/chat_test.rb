@@ -41,8 +41,8 @@ class ChatTest < ActiveSupport::TestCase
   end
 
 
-  test "raises KeyError for unknown agent_name" do
+  test "raises AgentNotFoundError for unknown agent_name" do
     chat = Chat.new(agent_name: "ghost")
-    assert_raises(KeyError) { chat.agent }
+    assert_raises(Daan::AgentNotFoundError) { chat.agent }
   end
 end

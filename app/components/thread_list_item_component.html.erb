@@ -1,0 +1,12 @@
+<li data-testid="thread-list-item" class="border-b border-gray-100 hover:bg-gray-50">
+  <div class="px-4 py-3">
+    <p class="text-sm text-gray-900 truncate"><%= preview_text %></p>
+    <div class="flex items-center gap-3 mt-1">
+      <span class="text-xs text-gray-400"><%= timestamp %></span>
+      <%= link_to "#{reply_count} #{"reply".pluralize(reply_count)}",
+                   chat_thread_path(chat),
+                   class: "text-xs text-blue-600 hover:underline",
+                   data: { turbo_frame: "thread_panel" } %>
+    </div>
+  </div>
+</li>

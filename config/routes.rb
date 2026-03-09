@@ -6,9 +6,12 @@ Rails.application.routes.draw do
   root "chats#index"
   get "chat", to: "chats#index", as: :chat
 
-  scope "chat" do
-    get  "agents/:agent_name",          to: "chats#show",           as: :agent_chat
-    post "agents/:agent_name/messages", to: "chats#create_message", as: :agent_messages
+  scope "chat", as: "chat" do
+    resources :agents, only: [:show], param: :name, path: "agents", controller: "chats" do
+      resources :threads, only: [:show, :create], shallow: true do
+        resources :messages, only: [:create]
+      end
+    end
   end
 
   get "up" => "rails/health#show", as: :rails_health_check
