@@ -7,7 +7,7 @@ module Daan
       param :content, desc: "The content to write"
 
       def execute(path:, content:)
-        file = Pathname.new(self.class.workspace) / path
+        file = self.class.workspace.resolve(path)
         file.dirname.mkpath
         file.write(content)
         "Written #{content.bytesize} bytes to #{path}"

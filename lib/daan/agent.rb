@@ -9,10 +9,16 @@ module Daan
 
     def tools
       @tools ||= base_tools.map do |tool_class|
-        wp = workspace
+        ws = workspace
         Class.new(tool_class) do
-          @workspace = wp
-          class << self; attr_reader :workspace; end
+          # Capture ws outside the block; inside Class.new, self is the new class.
+          @workspace = ws
+          class << self
+            attr_reader :workspace
+            # Anonymous classes have nil name; delegate to parent so RubyLLM
+            # can derive the tool name for API calls.
+            def name = superclass.name
+          end
         end
       end
     end

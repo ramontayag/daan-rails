@@ -9,7 +9,7 @@ module Daan
       base_tools = tool_names.map { |name| Object.const_get(name) }
 
       workspace_rel = fm["workspace"]
-      workspace = workspace_rel ? Rails.root.join(workspace_rel).to_s : nil
+      workspace = workspace_rel ? Workspace.new(Rails.root.join(workspace_rel)) : nil
 
       {
         name:          fm.fetch("name"),

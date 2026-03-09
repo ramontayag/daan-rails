@@ -49,7 +49,7 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
 
   test "parse returns workspace for developer agent" do
     definition = Daan::AgentLoader.parse(@definitions_path.join("developer.md"))
-    assert definition[:workspace].end_with?("tmp/workspaces/developer")
+    assert definition[:workspace].to_s.end_with?("tmp/workspaces/developer")
   end
 
   test "sync! registers developer agent with workspace-bound tools" do

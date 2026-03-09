@@ -6,9 +6,7 @@ module Daan
       param :path, desc: "Relative path to the file"
 
       def execute(path:)
-        file = Pathname.new(self.class.workspace) / path
-        raise "File not found: #{path}" unless file.exist?
-        file.read
+        self.class.workspace.resolve(path).read
       end
     end
   end
