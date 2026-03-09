@@ -18,4 +18,23 @@ class LlmJobTest < ActiveSupport::TestCase
     assert_equal 1, @chat.turn_count
     assert @chat.messages.where(role: "assistant").exists?
   end
+
+  test "developer: writes a file using the Write tool" do
+    workspace = Rails.root.join("tmp", "workspaces", "developer")
+    FileUtils.mkdir_p(workspace)
+
+    chat = Chat.create!(agent_name: "developer")
+    chat.messages.create!(role: "user", content: 'Write "test content" to test.txt')
+
+    VCR.use_cassette("llm_job/developer_write_file") do
+      LlmJob.perform_now(chat)
+    end
+
+    chat.reload
+    assert chat.completed?
+    assert chat.messages.joins(:tool_calls).exists?
+    assert File.exist?(workspace.join("test.txt"))
+  ensure
+    FileUtils.rm_rf(workspace.join("test.txt"))
+  end
 end

@@ -31,9 +31,16 @@ shaping: true
 gem "ruby_llm"
 gem "tailwindcss-rails", "~> 4.0"
 gem "view_component"
+gem "front_matter_parser"
+gem "aasm"
 
 group :development do
   gem "lookbook"
+end
+
+group :test do
+  gem "vcr"
+  gem "webmock"
 end
 ```
 
@@ -70,7 +77,7 @@ Expected: Tables created successfully.
 
 ```bash
 git add -A
-git commit -m "build: add ruby_llm, tailwindcss-rails, view_component, lookbook gems"
+git commit -m "build: add ruby_llm, tailwindcss-rails, view_component, lookbook, front_matter_parser, aasm, vcr, webmock gems"
 ```
 
 ---
@@ -84,6 +91,7 @@ Plain Ruby value objects. No migrations, no AR.
 - Create: `lib/daan/agent_registry.rb`
 - Create: `test/lib/daan/agent_test.rb`
 - Create: `test/lib/daan/agent_registry_test.rb`
+- Modify: `test/test_helper.rb`
 
 **Step 1: Write the failing tests**
 
@@ -118,8 +126,7 @@ class Daan::AgentTest < ActiveSupport::TestCase
   end
 
   test "busy? is true when agent has an in-progress chat" do
-    Chat.create!(agent_name: "chief_of_staff", model_id: "claude-sonnet-4-20250514",
-                 task_status: "in_progress")
+    Chat.create!(agent_name: "chief_of_staff", model_id: "claude-sonnet-4-20250514").start!
     assert @agent.busy?
   end
 
@@ -138,12 +145,9 @@ require "test_helper"
 
 class Daan::AgentRegistryTest < ActiveSupport::TestCase
   setup do
-    Daan::AgentRegistry.clear
     @agent = Daan::Agent.new(name: "chief_of_staff", display_name: "CoS",
                              model_name: "m", system_prompt: "p", max_turns: 10)
   end
-
-  teardown { Daan::AgentRegistry.clear }
 
   test "registers and finds an agent by name" do
     Daan::AgentRegistry.register(@agent)
@@ -184,7 +188,7 @@ module Daan
     end
 
     def busy?
-      Chat.exists?(agent_name: name, task_status: "in_progress")
+      Chat.in_progress.exists?(agent_name: name)
     end
 
     def max_turns_reached?(turn_count)
@@ -221,12 +225,33 @@ module Daan
 end
 ```
 
-**Step 4: Run tests to verify they pass**
+**Step 4: Add global registry cleanup to test_helper**
+
+Every test gets a clean `AgentRegistry` automatically — no per-class `setup`/`teardown` needed.
+
+```ruby
+# test/test_helper.rb
+ENV["RAILS_ENV"] ||= "test"
+require_relative "../config/environment"
+require "rails/test_help"
+
+module ActiveSupport
+  class TestCase
+    parallelize(workers: :number_of_processors)
+    fixtures :all
+
+    setup    { Daan::AgentRegistry.clear }
+    teardown { Daan::AgentRegistry.clear }
+  end
+end
+```
+
+**Step 5: Run tests to verify they pass**
 
 Run: `bin/rails test test/lib/daan/`
 Expected: All 8 tests PASS.
 
-**Step 5: Commit**
+**Step 6: Commit**
 
 ```bash
 git add -A
@@ -253,29 +278,37 @@ require "test_helper"
 
 class ChatTest < ActiveSupport::TestCase
   setup do
-    Daan::AgentRegistry.clear
     @agent = Daan::Agent.new(name: "chief_of_staff", display_name: "CoS",
                              model_name: "claude-sonnet-4-20250514",
                              system_prompt: "You are CoS.", max_turns: 10)
     Daan::AgentRegistry.register(@agent)
   end
 
-  teardown { Daan::AgentRegistry.clear }
-
   test "agent returns the registered Daan::Agent" do
     chat = Chat.new(agent_name: "chief_of_staff")
     assert_equal @agent, chat.agent
   end
 
-  test "task_status defaults to pending" do
-    chat = Chat.new
-    assert_equal "pending", chat.task_status
+  test "defaults to pending state" do
+    assert Chat.new.pending?
   end
 
-  test "task_status must be a valid state" do
+  test "start! transitions pending to in_progress" do
     chat = chats(:hello_cos)
-    chat.task_status = "dancing"
-    assert_not chat.valid?
+    chat.start!
+    assert chat.in_progress?
+  end
+
+  test "complete! transitions in_progress to completed" do
+    chat = chats(:hello_cos)
+    chat.start!
+    chat.finish!
+    assert chat.completed?
+  end
+
+  test "invalid transition raises AASM::InvalidTransition" do
+    chat = chats(:hello_cos)
+    assert_raises(AASM::InvalidTransition) { chat.finish! }
   end
 
   test "turn_count defaults to 0" do
@@ -326,11 +359,35 @@ Run: `bin/rails db:migrate`
 ```ruby
 # app/models/chat.rb
 class Chat < ApplicationRecord
+  include AASM
+
   acts_as_chat
 
   validates :agent_name, presence: true
-  validates :task_status, presence: true,
-    inclusion: { in: %w[pending in_progress completed failed blocked] }
+
+  aasm column: :task_status do
+    state :pending, initial: true
+    state :in_progress
+    state :completed
+    state :failed
+    state :blocked
+
+    event :start do
+      transitions from: :pending, to: :in_progress
+    end
+
+    event :finish do
+      transitions from: :in_progress, to: :completed
+    end
+
+    event :block do
+      transitions from: :in_progress, to: :blocked
+    end
+
+    event :fail do
+      transitions from: %i[pending in_progress], to: :failed
+    end
+  end
 
   def agent
     Daan::AgentRegistry.find(agent_name)
@@ -341,6 +398,8 @@ class Chat < ApplicationRecord
   end
 end
 ```
+
+AASM provides: predicate methods (`chat.pending?`, `chat.in_progress?`, etc.), bang methods (`chat.start!`, `chat.finish!`, `chat.block!`, `chat.fail!`), and AR scopes (`Chat.pending`, `Chat.in_progress`, `Chat.completed`, etc.).
 
 **Step 6: Create fixtures**
 
@@ -358,13 +417,13 @@ Replace `model_id` with the column name from Task 1 Step 6.
 **Step 7: Run tests to verify they pass**
 
 Run: `bin/rails test test/models/chat_test.rb`
-Expected: All 6 tests PASS.
+Expected: All 8 tests PASS.
 
 **Step 8: Commit**
 
 ```bash
 git add -A
-git commit -m "feat: Chat with agent_name and task state"
+git commit -m "feat: Chat with agent_name and AASM task state machine"
 ```
 
 ---
@@ -405,11 +464,8 @@ require "test_helper"
 
 class Daan::AgentLoaderTest < ActiveSupport::TestCase
   setup do
-    Daan::AgentRegistry.clear
     @definitions_path = Rails.root.join("lib/daan/core/agents")
   end
-
-  teardown { Daan::AgentRegistry.clear }
 
   test "parse returns a hash with agent attributes" do
     definition = Daan::AgentLoader.parse(@definitions_path.join("chief_of_staff.md"))
@@ -451,22 +507,16 @@ require "yaml"
 
 module Daan
   class AgentLoader
-    FRONTMATTER_REGEX = /\A---\s*\n(.*?\n?)---\s*\n(.*)\z/m
-
     def self.parse(file_path)
-      content = File.read(file_path)
-      match = content.match(FRONTMATTER_REGEX)
-      raise "Invalid agent definition: #{file_path}" unless match
-
-      frontmatter = YAML.safe_load(match[1])
-      body = match[2].strip
+      parsed = FrontMatterParser::Parser.parse_file(file_path.to_s)
+      fm = parsed.front_matter
 
       {
-        name: frontmatter.fetch("name"),
-        display_name: frontmatter.fetch("display_name"),
-        model_name: frontmatter.fetch("model"),
-        max_turns: frontmatter.fetch("max_turns"),
-        system_prompt: body
+        name: fm.fetch("name"),
+        display_name: fm.fetch("display_name"),
+        model_name: fm.fetch("model"),
+        max_turns: fm.fetch("max_turns"),
+        system_prompt: parsed.content.strip
       }
     end
 
@@ -494,102 +544,218 @@ git commit -m "feat: agent definition loader — populates AgentRegistry from MD
 
 ---
 
-## Task 5: LlmJob — The Agentic Loop
+## Task 5: Daan::ConversationRunner — The Agentic Loop
 
-Load all messages as context, call RubyLLM, save the response, update task state.
+The service that drives one turn of conversation: set status, call `chat.complete` with streaming, broadcast chunks, update turn count and final status. `LlmJob` (Task 6) is a thin wrapper around this.
 
 **Files:**
-- Create: `test/jobs/llm_job_test.rb`
-- Create: `app/jobs/llm_job.rb`
+- Create: `test/lib/daan/conversation_runner_test.rb`
+- Create: `lib/daan/conversation_runner.rb`
 
-**Architecture note:** The controller saves the user message immediately (for instant Turbo display). When LlmJob runs, that message is already in `chat.messages`. We must NOT call `chat.ask(content)` — that would add the user message a second time. Instead, we build the full history from all saved messages and call RubyLLM's completion API without adding a new user message.
+**How `chat.complete` works:** `acts_as_chat` adds a `complete` method that loads all existing messages from the DB, calls the LLM with full context, creates the assistant `Message` record, and streams chunks via a block. We never call `chat.ask(content)` — that would add another user message on top of the one the controller already saved.
 
-**Verify during implementation:** After `rails generate ruby_llm:install`, read the generated `Chat` model to find the method `acts_as_chat` adds for "send these messages as context and get a completion." It may be `chat.complete(messages:)`, or you may need to call `RubyLLM.chat(messages: history).with_model(...).with_instructions(...)`. The stub target in the tests below is `chat` (stubbing `chat.complete`) — adjust the stub and implementation together if the API differs.
+Streaming means the assistant message exists in the DB immediately (RubyLLM creates it before the first chunk), and each chunk appends to the message's content div in the browser live. The "agent is typing..." signal for external apps (Slack, Campfire) is the `task_status: "in_progress"` broadcast from Task 10 — not a special DOM element.
 
 **Step 1: Write the failing tests**
 
 ```ruby
-# test/jobs/llm_job_test.rb
+# test/lib/daan/conversation_runner_test.rb
 require "test_helper"
 
-FakeResponse = Struct.new(:content)
+FakeChunk = Struct.new(:content)
 
-class LlmJobTest < ActiveSupport::TestCase
+class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   setup do
-    Daan::AgentRegistry.clear
     @agent = Daan::Agent.new(
       name: "test_agent", display_name: "Test Agent",
-      model_name: "claude-sonnet-4-20250514",
+      model_name: "claude-haiku-4-5-20251001",
       system_prompt: "You are a test agent.",
       max_turns: 3
     )
     Daan::AgentRegistry.register(@agent)
-    @chat = Chat.create!(agent_name: "test_agent", model_id: "claude-sonnet-4-20250514")
+    @chat = Chat.create!(agent_name: "test_agent", model_id: "claude-haiku-4-5-20251001")
     @chat.messages.create!(role: "user", content: "Hello agent")
   end
 
-  teardown { Daan::AgentRegistry.clear }
-
-  test "saves an assistant message" do
-    stub_llm(@chat, "Hello human!") { LlmJob.perform_now(@chat) }
+  test "saves an assistant message via complete" do
+    stub_llm(@chat, "Hello human!") { Daan::ConversationRunner.call(@chat) }
 
     assert_equal 2, @chat.messages.count
     assert_equal "assistant", @chat.messages.last.role
     assert_equal "Hello human!", @chat.messages.last.content
   end
 
-  test "passes full conversation history to LLM" do
-    @chat.messages.create!(role: "assistant", content: "Hi")
-    @chat.messages.create!(role: "user", content: "Follow-up")
-
-    captured = nil
-    @chat.stub(:complete, ->(messages:, **) { captured = messages; FakeResponse.new("ok") }) do
-      LlmJob.perform_now(@chat)
+  test "streams chunks to the assistant message" do
+    chunks_broadcast = []
+    @chat.stub(:complete, ->(&block) {
+      msg = @chat.messages.create!(role: "assistant", content: "Hello!")
+      msg.stub(:broadcast_append_chunk, ->(c) { chunks_broadcast << c }) do
+        block.call(FakeChunk.new("Hello!"))
+      end
+      msg
+    }) do
+      Daan::ConversationRunner.call(@chat)
     end
 
-    assert_equal 3, captured.length
-    assert_equal "Hello agent", captured.first[:content]
+    assert_equal ["Hello!"], chunks_broadcast
   end
 
   test "increments turn_count" do
-    stub_llm(@chat, "Hi") { LlmJob.perform_now(@chat) }
+    stub_llm(@chat, "Hi") { Daan::ConversationRunner.call(@chat) }
     assert_equal 1, @chat.reload.turn_count
   end
 
-  test "sets task_status to completed" do
-    stub_llm(@chat, "Done") { LlmJob.perform_now(@chat) }
-    assert_equal "completed", @chat.reload.task_status
+  test "completes the task" do
+    stub_llm(@chat, "Done") { Daan::ConversationRunner.call(@chat) }
+    assert @chat.reload.completed?
   end
 
-  test "sets task_status to blocked when max_turns reached" do
+  test "blocks the task when max_turns reached" do
     @chat.update!(turn_count: @agent.max_turns - 1)
-    stub_llm(@chat, "Last turn") { LlmJob.perform_now(@chat) }
-    assert_equal "blocked", @chat.reload.task_status
+    stub_llm(@chat, "Last turn") { Daan::ConversationRunner.call(@chat) }
+    assert @chat.reload.blocked?
   end
 
-  test "sets task_status to failed and reraises on exception" do
-    @chat.stub(:complete, ->(**) { raise "LLM down" }) do
-      assert_raises(RuntimeError) { LlmJob.perform_now(@chat) }
+  test "fails the task and reraises on exception" do
+    @chat.stub(:complete, ->(&block) { raise "LLM down" }) do
+      assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
     end
-    assert_equal "failed", @chat.reload.task_status
+    assert @chat.reload.failed?
   end
 
   private
 
+  # Simulates RubyLLM: creates the assistant message, yields one chunk, returns message.
   def stub_llm(chat, content)
-    chat.stub(:complete, ->(**) { FakeResponse.new(content) }) { yield }
+    chat.stub(:complete, ->(&block) {
+      msg = chat.messages.create!(role: "assistant", content: content)
+      block.call(FakeChunk.new(content)) if block
+      msg
+    }) { yield }
   end
 end
 ```
 
 Replace `model_id:` with the column name from Task 1 Step 6.
 
-**Step 2: Run test to verify it fails**
+**Step 2: Run tests to verify they fail**
+
+Run: `bin/rails test test/lib/daan/conversation_runner_test.rb`
+Expected: FAIL — `NameError: uninitialized constant Daan::ConversationRunner`
+
+**Step 3: Implement ConversationRunner**
+
+```ruby
+# lib/daan/conversation_runner.rb
+module Daan
+  class ConversationRunner
+    def self.call(chat)
+      agent = chat.agent
+      chat.start!
+      chat.broadcast_agent_status
+
+      # complete processes messages already in the DB, calls the LLM with full
+      # history, persists the assistant message, and yields streaming chunks.
+      assistant_message = nil
+      chat.complete do |chunk|
+        next unless chunk.content.present?
+        # RubyLLM creates the assistant Message before the first chunk — memoize it.
+        assistant_message ||= chat.messages.where(role: "assistant").last
+        assistant_message&.broadcast_append_chunk(chunk.content)
+      end
+
+      chat.increment!(:turn_count)
+
+      agent.max_turns_reached?(chat.turn_count) ? chat.block! : chat.finish!
+      chat.broadcast_agent_status
+    rescue
+      chat.fail!
+      chat.broadcast_agent_status
+      raise
+    end
+  end
+end
+```
+
+**Step 4: Run tests to verify they pass**
+
+Run: `bin/rails test test/lib/daan/conversation_runner_test.rb`
+Expected: All 6 tests PASS.
+
+**Step 5: Commit**
+
+```bash
+git add -A
+git commit -m "feat: Daan::ConversationRunner service"
+```
+
+---
+
+## Task 6: LlmJob — Thin Wrapper with VCR Integration Test
+
+`LlmJob` delegates entirely to `Daan::ConversationRunner`. One integration test records a real API call via VCR so the full stack is exercised once and replayed cheaply thereafter.
+
+**Files:**
+- Modify: `test/test_helper.rb`
+- Create: `test/jobs/llm_job_test.rb`
+- Create: `app/jobs/llm_job.rb`
+- Auto-created: `test/vcr_cassettes/llm_job/complete.yml` (on first run)
+
+**Step 1: Configure VCR in test_helper**
+
+Add to `test/test_helper.rb`:
+
+```ruby
+require "vcr"
+require "webmock/minitest"
+
+VCR.configure do |config|
+  config.cassette_library_dir = "test/vcr_cassettes"
+  config.hook_into :webmock
+  config.filter_sensitive_data("<ANTHROPIC_API_KEY>") { ENV["ANTHROPIC_API_KEY"] }
+  config.default_cassette_options = { record: :new_episodes }
+end
+```
+
+**Step 2: Write the failing integration test**
+
+```ruby
+# test/jobs/llm_job_test.rb
+require "test_helper"
+
+class LlmJobTest < ActiveSupport::TestCase
+  setup do
+    Daan::AgentRegistry.register(Daan::Agent.new(
+      name: "cos", display_name: "Chief of Staff",
+      model_name: "claude-haiku-4-5-20251001",
+      system_prompt: "You are a helpful assistant. Reply in one sentence.",
+      max_turns: 10
+    ))
+    @chat = Chat.create!(agent_name: "cos", model_id: "claude-haiku-4-5-20251001")
+    @chat.messages.create!(role: "user", content: "Say hello.")
+  end
+
+  test "processes the conversation and marks it completed" do
+    VCR.use_cassette("llm_job/complete") do
+      LlmJob.perform_now(@chat)
+    end
+
+    @chat.reload
+    assert_equal "completed", @chat.task_status
+    assert_equal 1, @chat.turn_count
+    assert @chat.messages.where(role: "assistant").exists?
+  end
+end
+```
+
+Replace `model_id:` with the column name from Task 1 Step 6.
+
+**Step 3: Run to verify it fails**
 
 Run: `bin/rails test test/jobs/llm_job_test.rb`
 Expected: FAIL — `NameError: uninitialized constant LlmJob`
 
-**Step 3: Implement LlmJob**
+**Step 4: Implement LlmJob**
 
 ```ruby
 # app/jobs/llm_job.rb
@@ -598,138 +764,25 @@ class LlmJob < ApplicationJob
   limits_concurrency to: 1, key: ->(chat) { "chat_#{chat.id}" }
 
   def perform(chat)
-    agent = chat.agent
-    chat.update!(task_status: "in_progress")
-
-    # Build full history from all saved messages. We do NOT call chat.ask() here
-    # because the user message was already saved by the controller.
-    messages = chat.messages.order(:created_at).map do |m|
-      { role: m.role, content: m.content }
-    end
-
-    # Verify the exact method signature from acts_as_chat after running the generator.
-    # If chat.complete doesn't exist, use:
-    #   RubyLLM.chat(messages: messages)
-    #     .with_model(agent.model_name)
-    #     .with_instructions(agent.system_prompt)
-    #     .complete (or equivalent)
-    response = chat.complete(
-      messages: messages,
-      model: agent.model_name,
-      instructions: agent.system_prompt
-    )
-
-    chat.messages.create!(role: "assistant", content: response.content)
-    chat.increment!(:turn_count)
-
-    if agent.max_turns_reached?(chat.turn_count)
-      chat.update!(task_status: "blocked")
-    else
-      chat.update!(task_status: "completed")
-    end
-  rescue => e
-    chat.update!(task_status: "failed")
-    raise
+    Daan::ConversationRunner.call(chat)
   end
 end
 ```
 
-**Step 4: Run tests to verify they pass**
+**Step 5: Run the integration test**
 
-Run: `bin/rails test test/jobs/llm_job_test.rb`
-Expected: All 6 tests PASS. Adjust the stub target and implementation together if the actual RubyLLM API differs — both must match.
+Run: `ANTHROPIC_API_KEY=your_key bin/rails test test/jobs/llm_job_test.rb`
 
-**Step 5: Commit**
+First run: makes a real API call and records `test/vcr_cassettes/llm_job/complete.yml`.
+Subsequent runs: replays the cassette — no API key needed, no network.
+
+Expected: 1 test PASS.
+
+**Step 6: Commit (include the cassette)**
 
 ```bash
 git add -A
-git commit -m "feat: LlmJob with full conversation history and turn counting"
-```
-
----
-
-## Task 6: Heartbeat — Auto-Enqueue LlmJob on New User Message
-
-Any new user message enqueues an LlmJob. Solid Queue's `limits_concurrency` deduplicates — if a job is already running for this chat, the new one queues behind it (D22/D29).
-
-**Files:**
-- Create: `test/models/message_test.rb`
-- Modify: `app/models/message.rb`
-
-**Step 1: Write the failing test**
-
-```ruby
-# test/models/message_test.rb
-require "test_helper"
-
-class MessageTest < ActiveSupport::TestCase
-  setup do
-    Daan::AgentRegistry.clear
-    Daan::AgentRegistry.register(Daan::Agent.new(
-      name: "test_agent", display_name: "TA",
-      model_name: "m", system_prompt: "p", max_turns: 10
-    ))
-    @chat = Chat.create!(agent_name: "test_agent", model_id: "m")
-  end
-
-  teardown { Daan::AgentRegistry.clear }
-
-  test "enqueues LlmJob when human sends a message" do
-    assert_enqueued_with(job: LlmJob) do
-      @chat.messages.create!(role: "user", content: "Hello")
-    end
-  end
-
-  test "does not enqueue LlmJob for assistant messages" do
-    assert_no_enqueued_jobs(only: LlmJob) do
-      @chat.messages.create!(role: "assistant", content: "Hi back")
-    end
-  end
-
-  test "enqueues LlmJob even when chat is in_progress — Solid Queue deduplicates" do
-    @chat.update!(task_status: "in_progress")
-    assert_enqueued_with(job: LlmJob) do
-      @chat.messages.create!(role: "user", content: "Follow-up while busy")
-    end
-  end
-end
-```
-
-**Step 2: Run test to verify it fails**
-
-Run: `bin/rails test test/models/message_test.rb`
-Expected: FAIL — no job enqueued.
-
-**Step 3: Add heartbeat to Message**
-
-```ruby
-# app/models/message.rb
-class Message < ApplicationRecord
-  acts_as_message
-
-  after_create_commit :trigger_heartbeat
-
-  private
-
-  def trigger_heartbeat
-    return unless role == "user"
-    # Always enqueue. Solid Queue's limits_concurrency (key: chat_ID) on LlmJob
-    # ensures at most one runs per chat at a time. D22/D29.
-    LlmJob.perform_later(chat)
-  end
-end
-```
-
-**Step 4: Run tests to verify they pass**
-
-Run: `bin/rails test test/models/message_test.rb`
-Expected: All 3 tests PASS.
-
-**Step 5: Commit**
-
-```bash
-git add -A
-git commit -m "feat: heartbeat — always enqueue LlmJob on user message"
+git commit -m "feat: LlmJob thin wrapper + VCR integration test"
 ```
 
 ---
@@ -751,15 +804,12 @@ require "test_helper"
 
 class ChatsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    Daan::AgentRegistry.clear
     @agent = Daan::Agent.new(
       name: "chief_of_staff", display_name: "Chief of Staff",
       model_name: "claude-sonnet-4-20250514", system_prompt: "You are CoS.", max_turns: 10
     )
     Daan::AgentRegistry.register(@agent)
   end
-
-  teardown { Daan::AgentRegistry.clear }
 
   test "GET /chat shows the chat interface with agents in sidebar" do
     get chat_path
@@ -844,6 +894,9 @@ class ChatsController < ApplicationController
     @chat = current_chat_for(@agent) ||
             Chat.create!(agent_name: @agent.name, model_id: @agent.model_name)
     @chat.messages.create!(role: "user", content: params[:message][:content])
+    # Always enqueue. Solid Queue's limits_concurrency (key: chat_ID) ensures
+    # at most one LlmJob runs per chat at a time. D22/D29.
+    LlmJob.perform_later(@chat)
     redirect_to agent_chat_path(@agent)
   end
 
@@ -953,21 +1006,44 @@ Extract UI into proper ViewComponents. Every visual state gets a named Lookbook 
 # test/components/message_component_test.rb
 require "test_helper"
 
-class MessageComponentTest < ViewComponent::TestCase
-  test "user message is right-aligned with blue background" do
+class MessageComponentTest < ActiveSupport::TestCase
+  include ViewComponent::TestHelpers
+
+  test "user message has correct data attributes and alignment" do
     render_inline(MessageComponent.new(role: "user", content: "Hello"))
-    assert_selector "[data-testid='message'][data-role='user']"
-    assert_selector ".text-right"
-    assert_selector ".bg-blue-500"
-    assert_text "Hello"
+    assert_includes rendered_content, 'data-testid="message"'
+    assert_includes rendered_content, 'data-role="user"'
+    assert_includes rendered_content, "text-right"
+    assert_includes rendered_content, "bg-blue-500"
+    assert_includes rendered_content, "Hello"
   end
 
-  test "assistant message is left-aligned with gray background" do
+  test "assistant message has correct data attributes and alignment" do
     render_inline(MessageComponent.new(role: "assistant", content: "Hi there"))
-    assert_selector "[data-testid='message'][data-role='assistant']"
-    assert_selector ".text-left"
-    assert_selector ".bg-gray-200"
-    assert_text "Hi there"
+    assert_includes rendered_content, 'data-role="assistant"'
+    assert_includes rendered_content, "text-left"
+    assert_includes rendered_content, "bg-gray-200"
+    assert_includes rendered_content, "Hi there"
+  end
+
+  test "renders a content div with stable ID when message record provided" do
+    # The content div is the Turbo Stream target for streaming chunks.
+    # Its ID must match what broadcast_append_chunk targets.
+    agent = Daan::Agent.new(name: "a", display_name: "A", model_name: "m",
+                            system_prompt: "p", max_turns: 10)
+    Daan::AgentRegistry.register(agent)
+    chat = Chat.create!(agent_name: "a", model_id: "m")
+    message = chat.messages.create!(role: "assistant", content: "Hi")
+
+    render_inline(MessageComponent.new(message: message))
+
+    assert_includes rendered_content, "content_message_#{message.id}"
+    assert_includes rendered_content, "Hi"
+  end
+
+  test "renders without a message record (previews, initial render)" do
+    render_inline(MessageComponent.new(role: "user", content: "Hello"))
+    assert_includes rendered_content, "Hello"
   end
 end
 ```
@@ -976,23 +1052,25 @@ end
 # test/components/agent_item_component_test.rb
 require "test_helper"
 
-class AgentItemComponentTest < ViewComponent::TestCase
-  def agent(status: "idle")
+class AgentItemComponentTest < ActiveSupport::TestCase
+  include ViewComponent::TestHelpers
+
+  def agent
     Daan::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
                     model_name: "m", system_prompt: "p", max_turns: 10)
   end
 
-  test "idle agent shows green dot" do
+  test "idle agent shows name and green dot" do
     render_inline(AgentItemComponent.new(agent: agent))
-    assert_selector "[data-testid='agent-item']"
-    assert_selector "#agent_chief_of_staff"
-    assert_text "Chief of Staff"
-    assert_selector ".bg-green-400"
+    assert_includes rendered_content, 'data-testid="agent-item"'
+    assert_includes rendered_content, 'id="agent_chief_of_staff"'
+    assert_includes rendered_content, "Chief of Staff"
+    assert_includes rendered_content, "bg-green-400"
   end
 
   test "active agent has highlighted background" do
     render_inline(AgentItemComponent.new(agent: agent, active: true))
-    assert_selector ".bg-gray-800"
+    assert_includes rendered_content, "bg-gray-800"
   end
 end
 ```
@@ -1010,35 +1088,45 @@ Expected: FAIL — `NameError: uninitialized constant MessageComponent`
 
 **Step 3: Implement MessageComponent**
 
+When a `message:` AR record is provided, the component renders with stable IDs so streaming chunks can be appended. `wrapper_id` targets the whole bubble (for Turbo replace); `content_id` targets the text inside (for chunk appending). Without a record (Lookbook previews, etc.) both IDs are nil.
+
 ```ruby
 # app/components/message_component.rb
 class MessageComponent < ViewComponent::Base
-  def initialize(role:, content:, dom_id: nil)
-    @role = role
-    @content = content
-    @dom_id = dom_id
+  def initialize(role: nil, content: nil, message: nil)
+    if message
+      @role    = message.role
+      @content = message.content
+      @wrapper_id = "message_#{message.id}"
+      @content_id = "content_message_#{message.id}"
+    else
+      @role    = role
+      @content = content
+    end
   end
 
   private
 
-  attr_reader :role, :content, :dom_id
+  attr_reader :role, :content, :wrapper_id, :content_id
 
   def alignment_classes = role == "user" ? "text-right" : "text-left"
-  def bubble_classes = role == "user" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-900"
+  def bubble_classes    = role == "user" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-900"
 end
 ```
 
 ```erb
 <%# app/components/message_component.html.erb %>
-<div id="<%= dom_id %>"
+<div id="<%= wrapper_id %>"
      data-testid="message"
      data-role="<%= role %>"
      class="mb-4 <%= alignment_classes %>">
   <span class="inline-block max-w-lg px-4 py-2 rounded-lg <%= bubble_classes %>">
-    <%= content %>
+    <div id="<%= content_id %>"><%= content %></div>
   </span>
 </div>
 ```
+
+The `content_id` (`content_message_123`) is the Turbo Stream target that `broadcast_append_chunk` appends to.
 
 **Step 4: Implement AgentItemComponent**
 
@@ -1228,13 +1316,13 @@ git commit -m "feat: ViewComponents with Lookbook previews for all UI states"
 
 ## Task 9: Turbo Stream Message Broadcasts
 
-Push new messages to the browser in real time.
+Push new messages to the browser in real time. Assistant messages render as an empty bubble immediately on creation; LlmJob then appends streaming chunks into the bubble via `broadcast_append_chunk`.
 
 **Files:**
 - Modify: `app/models/message.rb`
 - Create: `test/models/message_broadcast_test.rb`
 
-**Step 1: Write the failing test**
+**Step 1: Write the failing tests**
 
 ```ruby
 # test/models/message_broadcast_test.rb
@@ -1244,16 +1332,13 @@ class MessageBroadcastTest < ActiveSupport::TestCase
   include ActionCable::TestHelper
 
   setup do
-    Daan::AgentRegistry.clear
     Daan::AgentRegistry.register(Daan::Agent.new(
       name: "test_agent", display_name: "TA", model_name: "m", system_prompt: "p", max_turns: 10
     ))
     @chat = Chat.create!(agent_name: "test_agent", model_id: "m")
   end
 
-  teardown { Daan::AgentRegistry.clear }
-
-  test "broadcasts to chat stream when a message is created" do
+  test "broadcasts to chat stream when an assistant message is created" do
     assert_broadcasts("chat_#{@chat.id}", 1) do
       @chat.messages.create!(role: "assistant", content: "Hello")
     end
@@ -1264,15 +1349,22 @@ class MessageBroadcastTest < ActiveSupport::TestCase
       @chat.messages.create!(role: "user", content: "Hi")
     end
   end
+
+  test "broadcast_append_chunk appends to content div" do
+    message = @chat.messages.create!(role: "assistant", content: "")
+    assert_broadcasts("chat_#{@chat.id}", 1) do
+      message.broadcast_append_chunk("Hello")
+    end
+  end
 end
 ```
 
-**Step 2: Run test to verify it fails**
+**Step 2: Run tests to verify they fail**
 
 Run: `bin/rails test test/models/message_broadcast_test.rb`
-Expected: FAIL — 0 broadcasts.
+Expected: FAIL — 0 broadcasts, and `broadcast_append_chunk` not defined.
 
-**Step 3: Add broadcast to Message**
+**Step 3: Add broadcasts to Message**
 
 ```ruby
 # app/models/message.rb
@@ -1280,7 +1372,14 @@ class Message < ApplicationRecord
   acts_as_message
 
   after_create_commit :broadcast_message
-  after_create_commit :trigger_heartbeat
+
+  def broadcast_append_chunk(chunk_content)
+    broadcast_append_to(
+      "chat_#{chat_id}",
+      target: "content_message_#{id}",
+      html: chunk_content
+    )
+  end
 
   private
 
@@ -1288,38 +1387,32 @@ class Message < ApplicationRecord
     broadcast_append_to(
       "chat_#{chat_id}",
       target: "messages",
-      renderable: MessageComponent.new(
-        role: role,
-        content: content,
-        dom_id: "message_#{id}"
-      )
+      renderable: MessageComponent.new(message: self)
     )
   end
 
-  def trigger_heartbeat
-    return unless role == "user"
-    LlmJob.perform_later(chat)
-  end
 end
 ```
+
+`broadcast_message` passes `message: self` so `MessageComponent` renders the `content_message_#{id}` div that chunk appends target.
 
 **Step 4: Run tests to verify they pass**
 
 Run: `bin/rails test test/models/message_broadcast_test.rb`
-Expected: All 2 tests PASS.
+Expected: All 3 tests PASS.
 
 **Step 5: Commit**
 
 ```bash
 git add -A
-git commit -m "feat: Turbo Stream message broadcasts via MessageComponent"
+git commit -m "feat: Turbo Stream message broadcasts with streaming chunk support"
 ```
 
 ---
 
 ## Task 10: Agent Status Updates via Chat
 
-When a chat's `task_status` changes, the agent's sidebar item updates in real time. Status is derived from task_status — no status column needed anywhere.
+`Chat` exposes a `broadcast_agent_status` method. `ConversationRunner` calls it explicitly after each state transition — no AR callback involved.
 
 **Files:**
 - Create: `test/models/chat_broadcast_test.rb`
@@ -1335,7 +1428,6 @@ class ChatBroadcastTest < ActiveSupport::TestCase
   include ActionCable::TestHelper
 
   setup do
-    Daan::AgentRegistry.clear
     Daan::AgentRegistry.register(Daan::Agent.new(
       name: "chief_of_staff", display_name: "CoS",
       model_name: "m", system_prompt: "p", max_turns: 10
@@ -1343,24 +1435,9 @@ class ChatBroadcastTest < ActiveSupport::TestCase
     @chat = Chat.create!(agent_name: "chief_of_staff", model_id: "m")
   end
 
-  teardown { Daan::AgentRegistry.clear }
-
-  test "broadcasts AgentItemComponent to agents stream when task_status changes" do
+  test "broadcast_agent_status sends AgentItemComponent to the agents stream" do
     assert_broadcasts("agents", 1) do
-      @chat.update!(task_status: "in_progress")
-    end
-  end
-
-  test "broadcasts again when task completes" do
-    @chat.update!(task_status: "in_progress")
-    assert_broadcasts("agents", 1) do
-      @chat.update!(task_status: "completed")
-    end
-  end
-
-  test "does not broadcast when unrelated field changes" do
-    assert_broadcasts("agents", 0) do
-      @chat.update!(turn_count: 1)
+      @chat.broadcast_agent_status
     end
   end
 end
@@ -1369,20 +1446,42 @@ end
 **Step 2: Run test to verify it fails**
 
 Run: `bin/rails test test/models/chat_broadcast_test.rb`
-Expected: FAIL — 0 broadcasts.
+Expected: FAIL — `NoMethodError: undefined method 'broadcast_agent_status'`
 
-**Step 3: Add broadcast to Chat**
+**Step 3: Add broadcast method to Chat**
 
 ```ruby
 # app/models/chat.rb
 class Chat < ApplicationRecord
+  include AASM
+
   acts_as_chat
 
   validates :agent_name, presence: true
-  validates :task_status, presence: true,
-    inclusion: { in: %w[pending in_progress completed failed blocked] }
 
-  after_update_commit :broadcast_agent_status, if: :saved_change_to_task_status?
+  aasm column: :task_status do
+    state :pending, initial: true
+    state :in_progress
+    state :completed
+    state :failed
+    state :blocked
+
+    event :start do
+      transitions from: :pending, to: :in_progress
+    end
+
+    event :finish do
+      transitions from: :in_progress, to: :completed
+    end
+
+    event :block do
+      transitions from: :in_progress, to: :blocked
+    end
+
+    event :fail do
+      transitions from: %i[pending in_progress], to: :failed
+    end
+  end
 
   def agent
     Daan::AgentRegistry.find(agent_name)
@@ -1391,8 +1490,6 @@ class Chat < ApplicationRecord
   def max_turns_reached?
     agent.max_turns_reached?(turn_count)
   end
-
-  private
 
   def broadcast_agent_status
     broadcast_replace_to(
@@ -1407,7 +1504,7 @@ end
 **Step 4: Run tests to verify they pass**
 
 Run: `bin/rails test test/models/chat_broadcast_test.rb`
-Expected: All 3 tests PASS.
+Expected: 1 test PASS.
 
 **Step 5: Run the full test suite**
 
@@ -1418,7 +1515,7 @@ Expected: ALL tests PASS.
 
 ```bash
 git add -A
-git commit -m "feat: live agent status in sidebar via Chat task_status broadcasts"
+git commit -m "feat: Chat#broadcast_agent_status public method for callers"
 ```
 
 ---
@@ -1438,11 +1535,8 @@ require "test_helper"
 
 class ChatFlowTest < ActionDispatch::IntegrationTest
   setup do
-    Daan::AgentRegistry.clear
     Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
   end
-
-  teardown { Daan::AgentRegistry.clear }
 
   test "sidebar shows loaded agents" do
     get chat_path
@@ -1570,18 +1664,18 @@ git commit -m "chore: V1 complete — human chats with Chief of Staff"
 |------|------|-------|
 | 1 | Add gems + install Tailwind, RubyLLM, Lookbook | — |
 | 2 | `Daan::Agent` + `Daan::AgentRegistry` (plain Ruby, no DB) | 8 |
-| 3 | Chat with `agent_name:string` + task state | 6 |
+| 3 | Chat with `agent_name:string` + AASM task state machine | 8 |
 | 4 | Agent definition loader (MD files → AgentRegistry) | 3 |
-| 5 | LlmJob with full conversation history | 6 |
-| 6 | Heartbeat — always enqueue on user message | 3 |
-| 7 | Routes, controller, minimal views | 5 |
+| 5 | `Daan::ConversationRunner` service (unit tests, stubbed LLM) | 6 |
+| 6 | `LlmJob` thin wrapper (1 VCR integration test, real API) | 1 |
+| 7 | Routes, controller, minimal views — controller enqueues LlmJob | 5 |
 | 8 | ViewComponents + Lookbook previews | 4+ |
-| 9 | Turbo Stream message broadcasts | 2 |
-| 10 | Agent status updates via Chat task_status | 3 |
+| 9 | Turbo Stream message broadcasts + streaming chunks | 3 |
+| 10 | `Chat#broadcast_agent_status` public method; called by ConversationRunner | 1 |
 | 11 | Initializer + integration smoke test | 2 |
 | 12 | Manual smoke test + Lookbook verification | — |
 
-**Total: 12 tasks, ~42 tests, 11 commits**
+**Total: 12 tasks, ~41 tests, 11 commits**
 
 **Lookbook:** `http://localhost:3000/rails/lookbook` — browse all component states without touching the database.
 

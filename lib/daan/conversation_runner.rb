@@ -1,43 +1,104 @@
+# lib/daan/conversation_runner.rb
 module Daan
   class ConversationRunner
     def self.call(chat)
       agent = chat.agent
+
+      start_conversation(chat)
+      prepare_workspace(agent)
+      configure_llm(chat, agent)
+
+      last_message_id = chat.messages.maximum(:id) || 0
+      run_llm(chat)
+
+      broadcast_new_messages(chat, last_message_id)
+      broadcast_typing(chat, false)
+      finish_conversation(chat, agent)
+    end
+
+    def self.start_conversation(chat)
       chat.start!
       chat.broadcast_agent_status
+      broadcast_typing(chat, true)
+    end
+    private_class_method :start_conversation
 
-      begin
-        chat
-          .with_model(agent.model_name)
-          .with_instructions(agent.system_prompt)
-          .complete
-      rescue => e
-        begin
-          chat.fail!
-        rescue AASM::InvalidTransition
-          # already in a terminal state
-        end
-        chat.broadcast_agent_status
-        raise
-      end
+    def self.prepare_workspace(agent)
+      agent.workspace&.root&.mkpath
+    end
+    private_class_method :prepare_workspace
 
-      broadcast_last_assistant_message(chat)
+    def self.configure_llm(chat, agent)
+      chat
+        .with_model(agent.model_name)
+        .with_instructions(agent.system_prompt)
+        .with_tools(*agent.tools)
+    end
+    private_class_method :configure_llm
 
+    def self.run_llm(chat)
+      chat.complete
+    rescue => e
+      chat.fail!
+      chat.broadcast_agent_status
+      broadcast_typing(chat, false)
+      raise
+    end
+    private_class_method :run_llm
+
+    def self.finish_conversation(chat, agent)
       chat.increment!(:turn_count)
       agent.max_turns_reached?(chat.turn_count) ? chat.block! : chat.finish!
       chat.broadcast_agent_status
     end
+    private_class_method :finish_conversation
 
-    def self.broadcast_last_assistant_message(chat)
-      message = chat.messages.where(role: "assistant").order(:created_at).last
-      return unless message
+    def self.broadcast_new_messages(chat, since_id)
+      messages = chat.messages
+                     .includes(:tool_calls)
+                     .where("messages.id > ?", since_id)
+                     .order(:id)
 
-      message.broadcast_append_to(
+      # Pre-load tool results keyed by tool_call_id to avoid N+1 in ToolCallComponent.
+      results_by_tool_call_id = messages
+        .select { |m| m.role == "tool" }
+        .index_by(&:tool_call_id)
+        .transform_values(&:content)
+
+      messages.each do |message|
+        next if message.role == "tool"
+        next if message.role == "user"
+
+        message.tool_calls.each do |tool_call|
+          Turbo::StreamsChannel.broadcast_append_to(
+            "chat_#{chat.id}",
+            target: "messages",
+            renderable: ToolCallComponent.new(
+              tool_call: tool_call,
+              result: results_by_tool_call_id[tool_call.id]
+            )
+          )
+        end
+
+        if message.tool_calls.none? || message.content.present?
+          Turbo::StreamsChannel.broadcast_append_to(
+            "chat_#{chat.id}",
+            target: "messages",
+            renderable: MessageComponent.new(role: message.role, body: message.content,
+                                            dom_id: "message_#{message.id}")
+          )
+        end
+      end
+    end
+    private_class_method :broadcast_new_messages
+
+    def self.broadcast_typing(chat, typing)
+      Turbo::StreamsChannel.broadcast_replace_to(
         "chat_#{chat.id}",
-        target: "messages",
-        renderable: MessageComponent.new(role: "assistant", body: message.content,
-                                         dom_id: "message_#{message.id}")
+        target: "typing_indicator",
+        renderable: TypingIndicatorComponent.new(typing: typing)
       )
     end
-    private_class_method :broadcast_last_assistant_message
+    private_class_method :broadcast_typing
   end
 end

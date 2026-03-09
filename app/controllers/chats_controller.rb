@@ -14,7 +14,9 @@ class ChatsController < ApplicationController
   end
 
   def create_message
-    @chat = current_active_chat_for(@agent) || Chat.create!(agent_name: @agent.name)
+    @chat = Chat.where(agent_name: @agent.name).order(created_at: :desc).first ||
+            Chat.create!(agent_name: @agent.name)
+    @chat.continue! if @chat.may_continue?
     Daan::CreateMessage.call(@chat, role: "user", content: message_params[:content])
     LlmJob.perform_later(@chat)
     redirect_to agent_chat_path(@agent)
@@ -28,12 +30,6 @@ class ChatsController < ApplicationController
 
   def set_agent
     @agent = Daan::AgentRegistry.find(params[:agent_name])
-  end
-
-  def current_active_chat_for(agent)
-    Chat.where(agent_name: agent.name, task_status: %w[pending in_progress])
-        .order(created_at: :desc)
-        .first
   end
 
   def message_params

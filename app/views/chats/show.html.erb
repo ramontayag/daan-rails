@@ -5,11 +5,23 @@
       <div data-testid="thread-view" class="flex-1 overflow-y-auto p-4">
         <%= turbo_stream_from "chat_#{@chat.id}" %>
         <div id="messages">
-          <% @chat.messages.where(role: %w[user assistant]).order(:created_at).each do |message| %>
-            <%= render MessageComponent.new(role: message.role, body: message.content,
-                                           dom_id: "message_#{message.id}") %>
+          <% @chat.messages.includes(:tool_calls).order(:created_at).each do |message| %>
+            <% next if message.role == "tool" || message.role == "system" %>
+            <% if message.tool_calls.any? %>
+              <% message.tool_calls.each do |tool_call| %>
+                <%= render ToolCallComponent.new(tool_call: tool_call) %>
+              <% end %>
+              <% if message.content.present? %>
+                <%= render MessageComponent.new(role: "assistant", body: message.content,
+                                               dom_id: "message_#{message.id}") %>
+              <% end %>
+            <% else %>
+              <%= render MessageComponent.new(role: message.role, body: message.content,
+                                             dom_id: "message_#{message.id}") %>
+            <% end %>
           <% end %>
         </div>
+        <div id="typing_indicator"></div>
       </div>
     <% end %>
     <% if @agent %>

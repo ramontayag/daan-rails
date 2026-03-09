@@ -39,10 +39,9 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert @chat.reload.failed?
   end
 
-  test "broadcasts assistant message to chat stream after complete" do
-    @chat.messages.create!(role: "assistant", content: "Hello human")
+  test "broadcasts to chat stream: typing on, message, typing off" do
     with_stub_complete do
-      assert_broadcasts("chat_#{@chat.id}", 1) do
+      assert_broadcasts("chat_#{@chat.id}", 3) do
         Daan::ConversationRunner.call(@chat)
       end
     end
@@ -55,6 +54,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     @chat.define_singleton_method(:complete) do |*|
       called = true
       raise raise_error if raise_error
+      messages.create!(role: "assistant", content: "Hello human")
     end
     block.call
     assert called, "expected complete to be called" unless raise_error

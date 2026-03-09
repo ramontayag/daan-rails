@@ -27,14 +27,14 @@ class Chat < ApplicationRecord
     event :fail do
       transitions from: %i[pending in_progress], to: :failed
     end
+
+    event :continue do
+      transitions from: %i[completed blocked failed], to: :pending
+    end
   end
 
   def agent
     Daan::AgentRegistry.find(agent_name)
-  end
-
-  def max_turns_reached?
-    agent.max_turns_reached?(turn_count)
   end
 
   # Called explicitly by ConversationRunner after each AASM transition — not a callback.
