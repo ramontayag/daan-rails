@@ -23,13 +23,31 @@ class ChatFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :redirect
     chat = Chat.where(agent_name: "chief_of_staff").last
-    assert_equal 1, chat.messages.count
-    assert_equal "user", chat.messages.first.role
-    assert_equal "Hello CoS!", chat.messages.first.content
+    assert_equal 1, chat.messages.where(role: "user").count
+    assert_equal "Hello CoS!", chat.messages.where(role: "user").first.content
 
     follow_redirect!
     assert_response :success
     assert_select "[data-testid='message']", minimum: 1
+  end
+
+  test "full flow with LLM response: assistant message saved and chat completed" do
+    agent = Daan::AgentRegistry.find("chief_of_staff")
+
+    VCR.use_cassette("llm_job/chief_of_staff_hello") do
+      perform_enqueued_jobs do
+        post agent_messages_path(agent), params: { message: { content: "Say exactly: hello" } }
+      end
+    end
+
+    chat = Chat.where(agent_name: "chief_of_staff").last
+    assert chat.completed?
+    assert chat.messages.where(role: "assistant").exists?
+
+    follow_redirect!
+    assert_response :success
+    assert_select "[data-role='user']", 1
+    assert_select "[data-role='assistant']", 1
   end
 
   test "system messages are not rendered in the thread view" do
