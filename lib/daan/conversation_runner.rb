@@ -37,9 +37,7 @@ module Daan
     private_class_method :configure_llm
 
     def self.run_llm(chat)
-      chat
-        .on_tool_call { |tc| broadcast_tool_call_running(chat, tc) }
-        .complete
+      chat.complete
     rescue => e
       chat.fail!
       chat.broadcast_agent_status
@@ -54,18 +52,6 @@ module Daan
       chat.broadcast_agent_status
     end
     private_class_method :finish_conversation
-
-    def self.broadcast_tool_call_running(chat, tc)
-      ar_tool_call = ToolCall.find_by(tool_call_id: tc.id)
-      return unless ar_tool_call
-
-      Turbo::StreamsChannel.broadcast_append_to(
-        "chat_#{chat.id}",
-        target: "messages",
-        renderable: ToolCallComponent.new(tool_call: ar_tool_call)
-      )
-    end
-    private_class_method :broadcast_tool_call_running
 
     def self.broadcast_new_messages(chat, since_id)
       messages = chat.messages
@@ -85,9 +71,9 @@ module Daan
 
         if message.tool_calls.any?
           message.tool_calls.each do |tool_call|
-            Turbo::StreamsChannel.broadcast_replace_to(
+            Turbo::StreamsChannel.broadcast_append_to(
               "chat_#{chat.id}",
-              target: "tool_call_#{tool_call.id}",
+              target: "messages",
               renderable: ToolCallComponent.new(
                 tool_call: tool_call,
                 result: results_by_tool_call_id[tool_call.id]
