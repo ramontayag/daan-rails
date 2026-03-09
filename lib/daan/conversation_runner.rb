@@ -2,8 +2,6 @@
 module Daan
   class ConversationRunner
     def self.call(chat)
-      return unless chat.may_start?
-
       agent = chat.agent
 
       start_conversation(chat)
