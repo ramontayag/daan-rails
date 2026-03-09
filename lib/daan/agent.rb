@@ -18,6 +18,13 @@ module Daan
             # Anonymous classes have nil name; delegate to parent so RubyLLM
             # can derive the tool name for API calls.
             def name = superclass.name
+            # RubyLLM stores tool metadata in class-level ivars (@description,
+            # @parameters, etc.). These aren't inherited — each subclass gets
+            # its own empty ivar. Explicitly delegate back to the parent class.
+            def description(text = nil) = text ? super : superclass.description
+            def parameters = superclass.parameters
+            def params_schema_definition = superclass.params_schema_definition
+            def provider_params = superclass.provider_params
           end
         end
       end

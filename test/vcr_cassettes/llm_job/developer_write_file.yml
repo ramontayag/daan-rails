@@ -1,0 +1,189 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.anthropic.com/v1/messages
+    body:
+      encoding: UTF-8
+      string: '{"model":"claude-sonnet-4-20250514","messages":[{"role":"user","content":[{"type":"text","text":"Write
+        \"test content\" to test.txt"}]}],"stream":false,"max_tokens":64000,"tools":[{"name":"daan--core--read","description":"Read
+        a file from the workspace","input_schema":{"type":"object","properties":{"path":{"type":"string","description":"Relative
+        path to the file"}},"required":["path"],"additionalProperties":false,"strict":true}},{"name":"daan--core--write","description":"Write
+        content to a file in the workspace","input_schema":{"type":"object","properties":{"path":{"type":"string","description":"Relative
+        path to the file"},"content":{"type":"string","description":"The content to
+        write"}},"required":["path","content"],"additionalProperties":false,"strict":true}}],"system":[{"type":"text","text":"You
+        are the Developer on the Daan agent team. You write and modify files in your
+        workspace to accomplish tasks. When asked to read, write, or inspect files,
+        use your tools. Use relative paths — they resolve within your workspace. Be
+        concise in your responses — show the user what you did, not a wall of text."}]}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      X-Api-Key:
+      - "<ANTHROPIC_API_KEY>"
+      Anthropic-Version:
+      - '2023-06-01'
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Mon, 09 Mar 2026 16:26:35 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Anthropic-Ratelimit-Input-Tokens-Limit:
+      - '2000000'
+      Anthropic-Ratelimit-Input-Tokens-Remaining:
+      - '2000000'
+      Anthropic-Ratelimit-Input-Tokens-Reset:
+      - '2026-03-09T16:26:35Z'
+      Anthropic-Ratelimit-Output-Tokens-Limit:
+      - '400000'
+      Anthropic-Ratelimit-Output-Tokens-Remaining:
+      - '400000'
+      Anthropic-Ratelimit-Output-Tokens-Reset:
+      - '2026-03-09T16:26:35Z'
+      Anthropic-Ratelimit-Requests-Limit:
+      - '4000'
+      Anthropic-Ratelimit-Requests-Remaining:
+      - '3999'
+      Anthropic-Ratelimit-Requests-Reset:
+      - '2026-03-09T16:26:33Z'
+      Anthropic-Ratelimit-Tokens-Limit:
+      - '2400000'
+      Anthropic-Ratelimit-Tokens-Remaining:
+      - '2400000'
+      Anthropic-Ratelimit-Tokens-Reset:
+      - '2026-03-09T16:26:35Z'
+      Request-Id:
+      - req_011CYspUvtDwQsxteCxpTW1J
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Anthropic-Organization-Id:
+      - 77dfb819-a005-46a1-9627-212f8995b514
+      Server:
+      - cloudflare
+      X-Envoy-Upstream-Service-Time:
+      - '1956'
+      Vary:
+      - Accept-Encoding
+      X-Robots-Tag:
+      - none
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Cf-Cache-Status:
+      - DYNAMIC
+      Cf-Ray:
+      - 9d9b71293aa50361-MAD
+    body:
+      encoding: ASCII-8BIT
+      string: '{"model":"claude-sonnet-4-20250514","id":"msg_01Lz1PMZZn7kA6gNNXvs5ZPt","type":"message","role":"assistant","content":[{"type":"text","text":"I''ll
+        write \"test content\" to test.txt for you."},{"type":"tool_use","id":"toolu_01R1ChernWA45hyaTqgswaVK","name":"daan--core--write","input":{"path":"test.txt","content":"test
+        content"},"caller":{"type":"direct"}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":583,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":91,"service_tier":"standard","inference_geo":"not_available"}}'
+  recorded_at: Mon, 09 Mar 2026 16:26:35 GMT
+- request:
+    method: post
+    uri: https://api.anthropic.com/v1/messages
+    body:
+      encoding: UTF-8
+      string: '{"model":"claude-sonnet-4-20250514","messages":[{"role":"user","content":[{"type":"text","text":"Write
+        \"test content\" to test.txt"}]},{"role":"assistant","content":[{"type":"text","text":"I''ll
+        write \"test content\" to test.txt for you."},{"type":"tool_use","id":"toolu_01R1ChernWA45hyaTqgswaVK","name":"daan--core--write","input":{"path":"test.txt","content":"test
+        content"}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_01R1ChernWA45hyaTqgswaVK","content":[{"type":"text","text":"Written
+        12 bytes to test.txt"}]}]}],"stream":false,"max_tokens":64000,"tools":[{"name":"daan--core--read","description":"Read
+        a file from the workspace","input_schema":{"type":"object","properties":{"path":{"type":"string","description":"Relative
+        path to the file"}},"required":["path"],"additionalProperties":false,"strict":true}},{"name":"daan--core--write","description":"Write
+        content to a file in the workspace","input_schema":{"type":"object","properties":{"path":{"type":"string","description":"Relative
+        path to the file"},"content":{"type":"string","description":"The content to
+        write"}},"required":["path","content"],"additionalProperties":false,"strict":true}}],"system":[{"type":"text","text":"You
+        are the Developer on the Daan agent team. You write and modify files in your
+        workspace to accomplish tasks. When asked to read, write, or inspect files,
+        use your tools. Use relative paths — they resolve within your workspace. Be
+        concise in your responses — show the user what you did, not a wall of text."}]}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      X-Api-Key:
+      - "<ANTHROPIC_API_KEY>"
+      Anthropic-Version:
+      - '2023-06-01'
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Mon, 09 Mar 2026 16:26:37 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Anthropic-Ratelimit-Input-Tokens-Limit:
+      - '2000000'
+      Anthropic-Ratelimit-Input-Tokens-Remaining:
+      - '2000000'
+      Anthropic-Ratelimit-Input-Tokens-Reset:
+      - '2026-03-09T16:26:37Z'
+      Anthropic-Ratelimit-Output-Tokens-Limit:
+      - '400000'
+      Anthropic-Ratelimit-Output-Tokens-Remaining:
+      - '400000'
+      Anthropic-Ratelimit-Output-Tokens-Reset:
+      - '2026-03-09T16:26:37Z'
+      Anthropic-Ratelimit-Requests-Limit:
+      - '4000'
+      Anthropic-Ratelimit-Requests-Remaining:
+      - '3999'
+      Anthropic-Ratelimit-Requests-Reset:
+      - '2026-03-09T16:26:36Z'
+      Anthropic-Ratelimit-Tokens-Limit:
+      - '2400000'
+      Anthropic-Ratelimit-Tokens-Remaining:
+      - '2400000'
+      Anthropic-Ratelimit-Tokens-Reset:
+      - '2026-03-09T16:26:37Z'
+      Request-Id:
+      - req_011CYspV6SwV6ePXAN5d5iw2
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Anthropic-Organization-Id:
+      - 77dfb819-a005-46a1-9627-212f8995b514
+      Server:
+      - cloudflare
+      X-Envoy-Upstream-Service-Time:
+      - '1311'
+      Vary:
+      - Accept-Encoding
+      X-Robots-Tag:
+      - none
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Cf-Cache-Status:
+      - DYNAMIC
+      Cf-Ray:
+      - 9d9b71373dac0775-MAD
+    body:
+      encoding: ASCII-8BIT
+      string: '{"model":"claude-sonnet-4-20250514","id":"msg_013TYi8SWS6WEKa7KT8Rt4iv","type":"message","role":"assistant","content":[{"type":"text","text":"Done!
+        I''ve written \"test content\" to test.txt."}],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":695,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":17,"service_tier":"standard","inference_geo":"not_available"}}'
+  recorded_at: Mon, 09 Mar 2026 16:26:37 GMT
+recorded_with: VCR 6.4.0
