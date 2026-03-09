@@ -38,6 +38,25 @@ live in that service, not in the model.
 Example: `Daan::CreateMessage` is the only place `Message` records are
 created. It handles creation and the Turbo Stream broadcast together.
 
+## Optional injection for ViewComponents (Lookbook pattern)
+
+When a component needs an associated record (e.g. a tool result message), accept
+it as an optional keyword param and fall back to a DB lookup only when not provided:
+
+```ruby
+def initialize(tool_call:, result: nil)
+  @tool_call = tool_call
+  @result = result
+end
+
+def result = @result || Message.find_by(tool_call_id: tool_call.id)&.content
+```
+
+Lookbook previews pass the value directly (`result: "Hello, world!"`) so no extra
+DB query fires during rendering. Production callers omit the param and get the lazy
+lookup. Use `find_or_create_by!` (not `create!`) in previews to avoid uniqueness
+errors on repeated renders.
+
 ## Jobs are thin wrappers around services
 
 Jobs call a service and nothing else. The service holds all logic.

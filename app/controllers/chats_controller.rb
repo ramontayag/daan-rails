@@ -1,46 +1,20 @@
 class ChatsController < ApplicationController
-  before_action :set_agents
-  before_action :set_agent, only: %i[show create_message]
+  include SidebarAgents
 
-  rescue_from KeyError, with: :agent_not_found
+  before_action :set_agents
+  before_action :set_agent, only: :show
 
   def index
-    @agent = @agents.first
-    render :show if @agent
+    # Root chat view — no agent selected yet
   end
 
   def show
-    @chat = Chat.where(agent_name: @agent.name).order(created_at: :desc).first
-  end
-
-  def create_message
-    @chat = current_active_chat_for(@agent) || Chat.create!(agent_name: @agent.name)
-    Daan::CreateMessage.call(@chat, role: "user", content: message_params[:content])
-    LlmJob.perform_later(@chat)
-    redirect_to agent_chat_path(@agent)
+    @chats = Chat.where(agent_name: @agent.name).order(created_at: :desc).includes(:messages)
   end
 
   private
 
-  def set_agents
-    @agents = Daan::AgentRegistry.all
-  end
-
   def set_agent
-    @agent = Daan::AgentRegistry.find(params[:agent_name])
-  end
-
-  def current_active_chat_for(agent)
-    Chat.where(agent_name: agent.name, task_status: %w[pending in_progress])
-        .order(created_at: :desc)
-        .first
-  end
-
-  def message_params
-    params.require(:message).permit(:content)
-  end
-
-  def agent_not_found
-    head :not_found
+    @agent = Daan::AgentRegistry.find(params[:name])
   end
 end

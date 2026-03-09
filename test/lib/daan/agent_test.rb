@@ -36,4 +36,55 @@ class Daan::AgentTest < ActiveSupport::TestCase
     assert @agent.max_turns_reached?(10)
     assert_not @agent.max_turns_reached?(9)
   end
+
+  test "workspace defaults to nil when not provided" do
+    agent = Daan::Agent.new(
+      name: "test", display_name: "Test", model_name: "m",
+      system_prompt: "p", max_turns: 5
+    )
+    assert_nil agent.workspace
+  end
+
+  test "tools returns empty array when no base_tools" do
+    agent = Daan::Agent.new(
+      name: "test", display_name: "Test", model_name: "m",
+      system_prompt: "p", max_turns: 5
+    )
+    assert_equal [], agent.tools
+  end
+
+  test "tools returns workspace-bound instances" do
+    workspace = Dir.mktmpdir
+    tool_class = Class.new(RubyLLM::Tool) do
+      description "test"
+      def initialize(workspace: nil) = @workspace = workspace
+      def execute = "ok"
+    end
+    agent = Daan::Agent.new(
+      name: "test", display_name: "Test", model_name: "m",
+      system_prompt: "p", max_turns: 5,
+      workspace: workspace, base_tools: [tool_class]
+    )
+    bound = agent.tools
+    assert_equal 1, bound.length
+    assert bound.first.is_a?(tool_class)
+  ensure
+    FileUtils.rm_rf(workspace)
+  end
+
+  test "tools is memoized" do
+    workspace = Dir.mktmpdir
+    tool_class = Class.new(RubyLLM::Tool) do
+      description "test"
+      def initialize(workspace: nil) = @workspace = workspace
+    end
+    agent = Daan::Agent.new(
+      name: "test", display_name: "Test", model_name: "m",
+      system_prompt: "p", max_turns: 5,
+      workspace: workspace, base_tools: [tool_class]
+    )
+    assert_same agent.tools, agent.tools
+  ensure
+    FileUtils.rm_rf(workspace)
+  end
 end

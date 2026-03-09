@@ -1,0 +1,15 @@
+<div id="tool_call_<%= tool_call.id %>" class="my-1 text-sm font-mono" data-testid="tool-call">
+  <details class="bg-gray-100 rounded border border-gray-300">
+    <summary class="px-3 py-1 cursor-pointer text-gray-600 select-none">
+      <span class="font-semibold text-gray-800"><%= tool_name %></span>
+      <span class="text-gray-500">(<%= arguments.map { |k, v| "#{k}: #{v.inspect}" }.join(", ") %>)</span>
+    </summary>
+    <div class="px-3 py-2 border-t border-gray-300 text-gray-700 whitespace-pre-wrap">
+      <% if result %>
+        <%= h(result) %>
+      <% else %>
+        <span class="text-gray-400 italic">running...</span>
+      <% end %>
+    </div>
+  </details>
+</div>

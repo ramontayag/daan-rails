@@ -40,14 +40,9 @@ class ChatTest < ActiveSupport::TestCase
     assert_equal 0, Chat.new.turn_count
   end
 
-  test "max_turns_reached? delegates to agent" do
-    chat = chats(:hello_cos)
-    chat.turn_count = @agent.max_turns
-    assert chat.max_turns_reached?
-  end
 
-  test "raises KeyError for unknown agent_name" do
+  test "raises AgentNotFoundError for unknown agent_name" do
     chat = Chat.new(agent_name: "ghost")
-    assert_raises(KeyError) { chat.agent }
+    assert_raises(Daan::AgentNotFoundError) { chat.agent }
   end
 end

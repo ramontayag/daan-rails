@@ -22,81 +22,45 @@ Vertical slices of Shape A (Event-Driven Agent Team). Each slice ends in demo-ab
 
 ---
 
+## V2: Agent Uses Tools
+
+See [docs/plans/V2-plan.md](plans/V2-plan.md) for full slice detail (parts, affordances, wiring, demo script).
+
+---
+
 ## V1: Human Chats With One Agent
 
-The thinnest possible end-to-end slice. A human sends a message to the Chief of Staff and gets an LLM response in a Slack-like chat UI. No tools, no delegation, no memory — just conversation.
+See [docs/plans/V1-slice.md](plans/V1-slice.md) for full slice detail (parts, affordances, wiring, demo script).
 
-### What We Build
+---
 
-| Part | Mechanism | From |
-|------|-----------|------|
-| **V1.1** | **Data model (subset)** — `Daan::Agent` plain Ruby struct (name, display_name, model_name, system_prompt, max_turns), in-memory via `Daan::AgentRegistry`. No agents table. Chat/Thread (agent_name:string, task_status, turn_count — thread = task per D19), Message (chat, role [user/assistant], content, metadata JSON). | A1 |
-| **V1.2** | **Agent loader (single agent)** — Read `lib/daan/core/agents/chief_of_staff.md`, parse YAML frontmatter. Register a `Daan::Agent` into `Daan::AgentRegistry` at boot. No deployment overrides yet. | A2 |
-| **V1.3** | **LLM Job (text-only loop)** — Heartbeat rule: new message in idle thread enqueues LLM Job via Solid Queue. LLM Job loads thread messages, calls RubyLLM with agent's model and system prompt, saves response as Message with token metadata. Text-only response marks task completed. Turn counter increments per LLM Job, enforces max_turns (task goes to blocked state). Per-thread concurrency via Solid Queue concurrency_key. | A3 |
-| **V1.4** | **Chat UI (minimal)** — Sidebar: list of agents (just CoS) with name and status. Main area: message thread for the selected DM. Input box at bottom to compose and send. Messages right-aligned for human, left-aligned for agent. Turbo Streams over WebSocket for live message delivery. Full page reload renders normal HTML. ViewComponents for message bubble, sidebar agent item, compose bar. Lookbook previews for all component states. Tailwind CSS. | A7 |
+## V2 Code Review Findings
 
-### Affordances
+Findings from post-implementation review (kieran-rails-reviewer, security-sentinel, code-simplicity-reviewer).
 
-**UI Affordances**
+### 🔴 P1 — Critical
 
-| # | Place | Affordance | Type | Wires Out |
-|---|-------|-----------|------|-----------|
-| U1 | Sidebar | Agent list item (CoS) | Display | Shows name, status dot (idle/busy) |
-| U2 | Sidebar | Unread indicator | Display | Bold name + count when unread messages exist |
-| U3 | Thread view | Message bubble | Display | Shows sender, content, timestamp; right-aligned for human, left for agent |
-| U4 | Thread view | "Agent is thinking..." indicator | Display | Shown while LLM Job is in flight |
-| U5 | Compose bar | Text input | Field | — |
-| U6 | Compose bar | Send button | Action | Creates Message (human), creates Task (pending), triggers heartbeat |
+| # | Finding | File |
+|---|---------|------|
+| 1 | **`Object.const_get` on YAML strings** — no allowlist; anyone who can write an agent `.md` file can resolve any constant in the Ruby object space | `agent_loader.rb:9` |
+| 2 | **Symlink bypass in `Workspace#resolve`** — `expand_path` is lexical; LLM can Write a symlink inside workspace and Read follows it outside the boundary. Fix: `File.realpath`. Also add null-byte guard. | `workspace.rb:12-17` |
+| 3 | **N+1 query in `ToolCallComponent#result`** — one `Message.find_by` per tool call; pre-load result messages in `broadcast_new_messages` and pass `result:` explicitly | `tool_call_component.rb:14` |
+| 4 | **Silent `return unless chat.may_start?`** — violates CLAUDE.md "let it crash"; raise or let AASM raise | `conversation_runner.rb:5` |
+| 5 | **Silent `rescue AASM::InvalidTransition` in `run_llm`** — unreachable state, swallows errors, violates "let it crash" | `conversation_runner.rb:32-35` |
 
-**Non-UI Affordances**
+### 🟡 P2 — Important
 
-| # | Affordance | Type | Wires Out |
-|---|-----------|------|-----------|
-| N1 | Agent loader | Service | Reads definition files, registers `Daan::Agent` into `Daan::AgentRegistry` |
-| N2 | Heartbeat | Callback | On user Message create: always enqueue LlmJob. Solid Queue concurrency_key deduplicates. |
-| N3 | LlmJob | Job | Load all messages as context, call RubyLLM with full history, save response Message, increment turn_count. If max_turns hit → task blocked. |
-| N4 | Thread concurrency lock | Solid Queue concurrency_key | One LLM Job per chat at a time |
-| N5 | Chat task state | Column on Chat | pending → in_progress → completed/failed/blocked |
-| N6 | Agent status broadcast | after_update_commit on Chat | When task_status changes → broadcast AgentItemComponent to sidebar stream |
-| N7 | Message broadcast | after_create_commit on Message | Broadcasts MessageComponent to thread's Turbo Stream channel |
+| # | Finding | File |
+|---|---------|------|
+| 6 | **XSS** — tool results and message bodies rendered without explicit `h()`; `ruby_llm` could mark content `html_safe` bypassing auto-escape | `tool_call_component.html.erb:9`, `message_component.html.erb:6` |
+| 7 | **Broadcast race** — `broadcast_append` (running...) then `broadcast_replace` (result); if client hasn't applied the append when replace arrives, Turbo silently drops the completed tool call | `conversation_runner.rb:64-91` |
+| 8 | **Assistant text alongside tool calls dropped** in `broadcast_new_messages` but shown in view — inconsistency | `conversation_runner.rb:85-100` |
+| 9 | **`TypingIndicatorComponent` owns `id="typing_indicator"`** — fragile coupling between component and view | |
+| 10 | **Dead code:** `Workspace#mkdir_p` (never called), `Chat#max_turns_reached?` (runner bypasses it), `Workspace#to_str` (never triggered implicitly) | Multiple |
 
-### Wiring
+### 🔵 P3 — Nice to Have
 
-```
-Human types message (U5) → Send (U6)
-  → Controller creates Message(role: user) in Chat
-  → N7 broadcasts → U3 renders user bubble
-  → N2 heartbeat fires → enqueues N3 (LlmJob)
-
-N3 (LlmJob) runs:
-  → chat.task_status = "in_progress"
-  → N6 broadcasts AgentItemComponent → U1 shows yellow dot
-  → Loads all chat.messages as context
-  → Calls RubyLLM (full history + system prompt)
-  → Saves response as Message(role: assistant)
-  → N7 broadcasts → U3 renders agent bubble
-  → Increments turn_count
-  → chat.task_status = "completed" (or "blocked" if max_turns hit)
-  → N6 broadcasts AgentItemComponent → U1 shows green dot
-```
-
-### What We Defer
-
-- Tools and tool jobs (V2)
-- Delegation, sub-tasks, ReportBack (V3)
-- Perspective switching (V4)
-- Memory and embeddings (V5)
-- Git/self-modification (V6)
-- Context compaction (V7)
-- Multiple agents (V3 loads all three)
-- Observability toggle (V4)
-- Deployment config overrides for agent loader (V3)
-
-### Demo Script
-
-1. Boot the app. Sidebar shows "Chief of Staff" with green idle dot.
-2. Click on CoS. Empty thread view with compose bar.
-3. Type "Hello, what can you help me with?" and send.
-4. Message appears right-aligned. "Thinking..." indicator shows.
-5. CoS responds with a message about its capabilities. Left-aligned bubble.
-6. Status returns to idle.
+| # | Finding |
+|---|---------|
+| 11 | CSP initializer entirely commented out — no second layer of XSS defense |
+| 12 | `result:` param on `ToolCallComponent` — no caller passes it; fixing #3 resolves this automatically (keep the param, start passing it) |

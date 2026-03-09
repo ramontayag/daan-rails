@@ -17,13 +17,13 @@ class Daan::AgentRegistryTest < ActiveSupport::TestCase
     assert_includes Daan::AgentRegistry.all, @agent
   end
 
-  test "find raises KeyError for unknown agent" do
-    assert_raises(KeyError) { Daan::AgentRegistry.find("nobody") }
+  test "find raises AgentNotFoundError for unknown agent" do
+    assert_raises(Daan::AgentNotFoundError) { Daan::AgentRegistry.find("nobody") }
   end
 
   test "clear removes all agents" do
     Daan::AgentRegistry.register(@agent)
     Daan::AgentRegistry.clear
-    assert_raises(KeyError) { Daan::AgentRegistry.find("chief_of_staff") }
+    assert_raises(Daan::AgentNotFoundError) { Daan::AgentRegistry.find("chief_of_staff") }
   end
 end

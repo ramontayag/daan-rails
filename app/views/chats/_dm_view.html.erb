@@ -1,0 +1,26 @@
+<div class="flex flex-1 overflow-hidden">
+  <%# Thread list — hidden on mobile when a thread is open %>
+  <div class="<%= open_chat ? 'hidden md:flex' : 'flex' %> flex-col w-full md:w-96 border-r border-gray-200"
+       data-testid="thread-list-column">
+    <div class="flex-1 overflow-y-auto">
+      <% if chats.any? %>
+        <ul>
+          <% chats.each do |chat| %>
+            <%= render ThreadListItemComponent.new(chat: chat) %>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-gray-400 text-sm p-4">No conversations yet.</p>
+      <% end %>
+    </div>
+    <%= render ComposeBarComponent.new(action: chat_agent_threads_path(agent)) %>
+  </div>
+
+  <%# Thread panel %>
+  <%= turbo_frame_tag "thread_panel",
+        class: "#{open_chat ? 'flex' : 'hidden md:flex'} flex-col flex-1 border-l border-gray-200" do %>
+    <% if open_chat %>
+      <%= render "threads/thread_panel", agent: agent, chat: open_chat %>
+    <% end %>
+  <% end %>
+</div>

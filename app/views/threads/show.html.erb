@@ -1,4 +1,4 @@
 <div class="flex h-screen" data-testid="chat-layout">
   <%= render "chats/sidebar", agents: @agents, current_agent: @agent %>
-  <%= render "chats/dm_view", agent: @agent, chats: @chats, open_chat: nil %>
+  <%= render "chats/dm_view", agent: @agent, chats: @chats, open_chat: @chat %>
 </div>
