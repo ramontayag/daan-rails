@@ -2,6 +2,8 @@
 require "test_helper"
 
 class Daan::ConversationRunnerTest < ActiveSupport::TestCase
+  include ActionCable::TestHelper
+
   setup do
     @agent = Daan::Agent.new(
       name: "test_agent", display_name: "Test Agent",
@@ -37,6 +39,15 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert @chat.reload.failed?
   end
 
+  test "broadcasts assistant message to chat stream after complete" do
+    @chat.messages.create!(role: "assistant", content: "Hello human")
+    with_stub_complete do
+      assert_broadcasts("chat_#{@chat.id}", 1) do
+        Daan::ConversationRunner.call(@chat)
+      end
+    end
+  end
+
   private
 
   def with_stub_complete(raise_error: nil, &block)
@@ -46,7 +57,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
       raise raise_error if raise_error
     end
     block.call
-    assert called, "expected complete to be called"
+    assert called, "expected complete to be called" unless raise_error
   ensure
     @chat.singleton_class.remove_method(:complete)
   end

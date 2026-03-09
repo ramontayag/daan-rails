@@ -20,9 +20,24 @@ module Daan
         raise
       end
 
+      broadcast_last_assistant_message(chat)
+
       chat.increment!(:turn_count)
       agent.max_turns_reached?(chat.turn_count) ? chat.block! : chat.finish!
       chat.broadcast_agent_status
     end
+
+    def self.broadcast_last_assistant_message(chat)
+      message = chat.messages.where(role: "assistant").order(:created_at).last
+      return unless message
+
+      message.broadcast_append_to(
+        "chat_#{chat.id}",
+        target: "messages",
+        renderable: MessageComponent.new(role: "assistant", body: message.content,
+                                         dom_id: "message_#{message.id}")
+      )
+    end
+    private_class_method :broadcast_last_assistant_message
   end
 end
