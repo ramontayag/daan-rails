@@ -28,6 +28,24 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
   test "sync! re-running overwrites previous registration" do
     Daan::AgentLoader.sync!(@definitions_path)
     Daan::AgentLoader.sync!(@definitions_path)
-    assert_equal 1, Daan::AgentRegistry.all.length
+    assert_equal 2, Daan::AgentRegistry.all.length
+  end
+
+  test "parse returns empty tools array when not in frontmatter" do
+    definition = Daan::AgentLoader.parse(@definitions_path.join("chief_of_staff.md"))
+    assert_equal [], definition[:tools]
+  end
+
+  test "parse returns tools array for developer agent" do
+    definition = Daan::AgentLoader.parse(@definitions_path.join("developer.md"))
+    assert_includes definition[:tools], Daan::Core::Read
+    assert_includes definition[:tools], Daan::Core::Write
+  end
+
+  test "sync! registers developer agent with tools" do
+    Daan::AgentLoader.sync!(@definitions_path)
+    agent = Daan::AgentRegistry.find("developer")
+    assert_includes agent.tools, Daan::Core::Read
+    assert_includes agent.tools, Daan::Core::Write
   end
 end

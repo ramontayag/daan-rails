@@ -36,4 +36,20 @@ class Daan::AgentTest < ActiveSupport::TestCase
     assert @agent.max_turns_reached?(10)
     assert_not @agent.max_turns_reached?(9)
   end
+
+  test "tools defaults to empty array when not provided" do
+    agent = Daan::Agent.new(
+      name: "test", display_name: "Test", model_name: "m",
+      system_prompt: "p", max_turns: 5
+    )
+    assert_equal [], agent.tools
+  end
+
+  test "tools stores the provided array" do
+    agent = Daan::Agent.new(
+      name: "test", display_name: "Test", model_name: "m",
+      system_prompt: "p", max_turns: 5, tools: ["Foo"]
+    )
+    assert_equal ["Foo"], agent.tools
+  end
 end

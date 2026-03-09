@@ -1,7 +1,12 @@
 # lib/daan/agent.rb
 module Daan
-  Agent = Struct.new(:name, :display_name, :model_name, :system_prompt, :max_turns,
+  Agent = Struct.new(:name, :display_name, :model_name, :system_prompt, :max_turns, :tools,
                      keyword_init: true) do
+    def initialize(**)
+      super
+      self.tools ||= []
+    end
+
     def to_param
       name
     end
