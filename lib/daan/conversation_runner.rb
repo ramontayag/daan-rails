@@ -6,45 +6,61 @@ module Daan
 
       agent = chat.agent
 
+      start_conversation(chat)
+      prepare_workspace(agent)
+      configure_llm(chat, agent)
+
+      last_message_id = chat.messages.maximum(:id) || 0
+      run_llm(chat)
+
+      broadcast_new_messages(chat, last_message_id)
+      broadcast_typing(chat, false)
+      finish_conversation(chat, agent)
+    end
+
+    def self.start_conversation(chat)
       chat.start!
       chat.broadcast_agent_status
       broadcast_typing(chat, true)
+    end
+    private_class_method :start_conversation
 
+    def self.prepare_workspace(agent)
       FileUtils.mkdir_p(agent.workspace) if agent.workspace
+    end
+    private_class_method :prepare_workspace
 
-      # Capture after with_model/with_instructions (which persist system messages to DB)
-      # so broadcast_new_messages only picks up messages produced by complete.
+    def self.configure_llm(chat, agent)
       chat
         .with_model(agent.model_name)
         .with_instructions(agent.system_prompt)
         .with_tools(*agent.tools)
+    end
+    private_class_method :configure_llm
 
-      last_message_id = chat.messages.maximum(:id) || 0
-
+    def self.run_llm(chat)
+      chat
+        .on_tool_call { |tc| broadcast_tool_call_running(chat, tc) }
+        .complete
+    rescue => e
       begin
-        chat
-          .on_tool_call { |tc| broadcast_tool_call_running(chat, tc) }
-          .complete
-      rescue => e
-        begin
-          chat.fail!
-        rescue AASM::InvalidTransition
-          # already in a terminal state
-        end
-        chat.broadcast_agent_status
-        broadcast_typing(chat, false)
-        raise
+        chat.fail!
+      rescue AASM::InvalidTransition
+        # already in a terminal state
       end
-
-      broadcast_new_messages(chat, last_message_id)
+      chat.broadcast_agent_status
       broadcast_typing(chat, false)
+      raise
+    end
+    private_class_method :run_llm
 
+    def self.finish_conversation(chat, agent)
       chat.increment!(:turn_count)
       agent.max_turns_reached?(chat.turn_count) ? chat.block! : chat.finish!
       chat.broadcast_agent_status
     end
+    private_class_method :finish_conversation
 
-    # Fires before a tool executes — appends ToolCallComponent in "running..." state.
     def self.broadcast_tool_call_running(chat, tc)
       ar_tool_call = ToolCall.find_by(tool_call_id: tc.id)
       return unless ar_tool_call
@@ -57,7 +73,6 @@ module Daan
     end
     private_class_method :broadcast_tool_call_running
 
-    # Fires after complete — replaces tool call blocks (now with result) and appends text messages.
     def self.broadcast_new_messages(chat, since_id)
       chat.messages
           .includes(:tool_calls)
