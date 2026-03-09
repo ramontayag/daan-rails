@@ -27,6 +27,21 @@ class Daan::WorkspaceTest < ActiveSupport::TestCase
     assert_equal Pathname.new(@dir) / "subdir/nested.txt", result
   end
 
+  test "resolve raises on null byte in path" do
+    assert_raises(ArgumentError) { @workspace.resolve("foo\0bar.txt") }
+  end
+
+  test "resolve raises on symlink escaping workspace" do
+    outside = Tempfile.new("outside")
+    symlink  = File.join(@dir, "evil.txt")
+    File.symlink(outside.path, symlink)
+    assert_raises(ArgumentError) { @workspace.resolve("evil.txt") }
+  ensure
+    File.unlink(symlink) rescue nil
+    outside.close
+    outside.unlink
+  end
+
   test "to_s returns the root path string" do
     assert_equal @dir, @workspace.to_s
   end

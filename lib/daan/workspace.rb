@@ -8,13 +8,28 @@ module Daan
     end
 
     # Resolves a relative path within this workspace.
-    # Raises ArgumentError if the resolved path escapes the workspace root.
+    # Raises ArgumentError if the path escapes the workspace root,
+    # including via symlinks or null bytes.
     def resolve(relative_path)
-      full = (@root / relative_path).expand_path
-      unless full.to_s.start_with?("#{@root}/") || full == @root
+      raise ArgumentError, "Path contains null byte" if relative_path.to_s.include?("\0")
+
+      absolute = @root / relative_path
+
+      # Walk up to the deepest existing ancestor and realpath it, then
+      # re-append the non-existent suffix. Catches symlink escapes for
+      # both existing files and not-yet-created paths (e.g. Write tool).
+      suffix = []
+      candidate = absolute
+      until candidate.exist?
+        suffix.unshift(candidate.basename.to_s)
+        candidate = candidate.dirname
+      end
+      real = Pathname.new(File.realpath(candidate)).join(*suffix)
+
+      unless real.to_s.start_with?("#{@root}/") || real == @root
         raise ArgumentError, "Path '#{relative_path}' escapes workspace"
       end
-      full
+      real
     end
 
     def to_s = @root.to_s
