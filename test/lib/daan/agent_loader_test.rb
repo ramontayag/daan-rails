@@ -58,4 +58,9 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     assert_not_nil agent.workspace
     assert agent.tools.all? { |t| t.is_a?(RubyLLM::Tool) }
   end
+
+  test "parse returns empty delegates_to when not in frontmatter" do
+    definition = Daan::AgentLoader.parse(@definitions_path.join("developer.md"))
+    assert_equal [], definition[:delegates_to]
+  end
 end
