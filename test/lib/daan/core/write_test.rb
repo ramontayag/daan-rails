@@ -5,11 +5,7 @@ class Daan::Core::WriteTest < ActiveSupport::TestCase
   setup do
     dir = Dir.mktmpdir
     @workspace = Daan::Workspace.new(dir)
-    ws = @workspace
-    @tool = Class.new(Daan::Core::Write) do
-      @workspace = ws
-      class << self; attr_reader :workspace; end
-    end.new
+    @tool = Daan::Core::Write.new(workspace: @workspace)
   end
 
   teardown { FileUtils.rm_rf(@workspace.root) }

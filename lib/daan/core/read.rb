@@ -5,8 +5,12 @@ module Daan
       description "Read a file from the workspace"
       param :path, desc: "Relative path to the file"
 
+      def initialize(workspace: nil)
+        @workspace = workspace
+      end
+
       def execute(path:)
-        self.class.workspace.resolve(path).read
+        @workspace.resolve(path).read
       end
     end
   end

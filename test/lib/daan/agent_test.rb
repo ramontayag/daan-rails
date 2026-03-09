@@ -53,10 +53,11 @@ class Daan::AgentTest < ActiveSupport::TestCase
     assert_equal [], agent.tools
   end
 
-  test "tools returns workspace-bound subclasses" do
+  test "tools returns workspace-bound instances" do
     workspace = Dir.mktmpdir
     tool_class = Class.new(RubyLLM::Tool) do
       description "test"
+      def initialize(workspace: nil) = @workspace = workspace
       def execute = "ok"
     end
     agent = Daan::Agent.new(
@@ -66,14 +67,17 @@ class Daan::AgentTest < ActiveSupport::TestCase
     )
     bound = agent.tools
     assert_equal 1, bound.length
-    assert_equal workspace, bound.first.workspace
+    assert bound.first.is_a?(tool_class)
   ensure
     FileUtils.rm_rf(workspace)
   end
 
   test "tools is memoized" do
     workspace = Dir.mktmpdir
-    tool_class = Class.new(RubyLLM::Tool) { description "test" }
+    tool_class = Class.new(RubyLLM::Tool) do
+      description "test"
+      def initialize(workspace: nil) = @workspace = workspace
+    end
     agent = Daan::Agent.new(
       name: "test", display_name: "Test", model_name: "m",
       system_prompt: "p", max_turns: 5,

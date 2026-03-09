@@ -5,11 +5,7 @@ class Daan::Core::ReadTest < ActiveSupport::TestCase
   setup do
     dir = Dir.mktmpdir
     @workspace = Daan::Workspace.new(dir)
-    ws = @workspace
-    @tool = Class.new(Daan::Core::Read) do
-      @workspace = ws
-      class << self; attr_reader :workspace; end
-    end.new
+    @tool = Daan::Core::Read.new(workspace: @workspace)
     File.write(File.join(dir, "hello.txt"), "Hello, world!")
   end
 

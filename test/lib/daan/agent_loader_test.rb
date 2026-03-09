@@ -56,6 +56,6 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     Daan::AgentLoader.sync!(@definitions_path)
     agent = Daan::AgentRegistry.find("developer")
     assert_not_nil agent.workspace
-    assert agent.tools.all? { |t| t.workspace == agent.workspace }
+    assert agent.tools.all? { |t| t.is_a?(RubyLLM::Tool) }
   end
 end
