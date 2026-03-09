@@ -41,11 +41,7 @@ module Daan
         .on_tool_call { |tc| broadcast_tool_call_running(chat, tc) }
         .complete
     rescue => e
-      begin
-        chat.fail!
-      rescue AASM::InvalidTransition
-        # already in a terminal state
-      end
+      chat.fail!
       chat.broadcast_agent_status
       broadcast_typing(chat, false)
       raise
