@@ -2,6 +2,7 @@ require "test_helper"
 
 class Daan::CreateMessageTest < ActiveSupport::TestCase
   include ActionCable::TestHelper
+  include ActiveJob::TestHelper
 
   setup do
     Daan::AgentRegistry.register(Daan::Agent.new(
@@ -29,5 +30,17 @@ class Daan::CreateMessageTest < ActiveSupport::TestCase
     message = Daan::CreateMessage.call(@chat, role: "user", content: "Hello")
     assert_instance_of Message, message
     assert_equal "Hello", message.content
+  end
+
+  test "enqueues LlmJob for user messages" do
+    assert_enqueued_with(job: LlmJob) do
+      Daan::CreateMessage.call(@chat, role: "user", content: "Hello")
+    end
+  end
+
+  test "does not enqueue LlmJob for assistant messages" do
+    assert_no_enqueued_jobs(only: LlmJob) do
+      Daan::CreateMessage.call(@chat, role: "assistant", content: "Hi")
+    end
   end
 end

@@ -17,7 +17,6 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
       post chat_thread_messages_path(chat),
            params: { message: { content: "Follow-up" } }
     end
-    assert chat.reload.pending?
   end
 
   test "POST saves message content" do

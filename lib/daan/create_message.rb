@@ -7,6 +7,7 @@ module Daan
         target: "messages",
         renderable: MessageComponent.new(role: role, body: content, dom_id: "message_#{message.id}")
       )
+      LlmJob.perform_later(chat) if role == "user"
       message
     end
   end

@@ -8,8 +8,8 @@ module Daan
       self.delegates_to ||= []
     end
 
-    def tools
-      @tools ||= base_tools.map { |t| t.new(workspace: workspace) }
+    def tools(chat: nil)
+      base_tools.map { |t| t.new(workspace: workspace, chat: chat) }
     end
 
     def to_param

@@ -57,7 +57,7 @@ class Daan::AgentTest < ActiveSupport::TestCase
     workspace = Dir.mktmpdir
     tool_class = Class.new(RubyLLM::Tool) do
       description "test"
-      def initialize(workspace: nil) = @workspace = workspace
+      def initialize(workspace: nil, chat: nil) = @workspace = workspace
       def execute = "ok"
     end
     agent = Daan::Agent.new(
