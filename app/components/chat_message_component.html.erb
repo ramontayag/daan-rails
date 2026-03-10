@@ -1,6 +1,8 @@
 <% if message.tool_calls.any? %>
-  <% message.tool_calls.each do |tool_call| %>
-    <%= render ToolCallComponent.new(tool_call: tool_call, result: results[tool_call.id]) %>
+  <% unless hide_tools %>
+    <% message.tool_calls.each do |tool_call| %>
+      <%= render ToolCallComponent.new(tool_call: tool_call, result: results[tool_call.id]) %>
+    <% end %>
   <% end %>
   <% if message.content.present? %>
     <%= render MessageComponent.new(role: "assistant", body: message.content,
