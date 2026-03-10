@@ -62,4 +62,20 @@ class ChatTest < ActiveSupport::TestCase
     child  = Chat.create!(agent_name: "chief_of_staff", parent_chat: parent)
     assert_equal parent, child.parent_chat
   end
+
+  test "conversation_partner_names_for returns agents who delegated to this agent" do
+    parent = Chat.create!(agent_name: "chief_of_staff")
+    Chat.create!(agent_name: "engineering_manager", parent_chat: parent)
+    assert_includes Chat.conversation_partner_names_for("engineering_manager"), "chief_of_staff"
+  end
+
+  test "conversation_partner_names_for returns agents this agent delegated to" do
+    parent = Chat.create!(agent_name: "engineering_manager")
+    Chat.create!(agent_name: "developer", parent_chat: parent)
+    assert_includes Chat.conversation_partner_names_for("engineering_manager"), "developer"
+  end
+
+  test "conversation_partner_names_for returns empty array when no chats" do
+    assert_equal [], Chat.conversation_partner_names_for("developer")
+  end
 end

@@ -26,4 +26,27 @@ class ChatsControllerTest < ActionDispatch::IntegrationTest
     get chat_agent_path("nobody")
     assert_response :not_found
   end
+
+  test "GET /chat/agents/:name with perspective param responds successfully" do
+    get chat_agent_path("chief_of_staff"), params: { perspective: "engineering_manager" }
+    assert_response :success
+  end
+
+  test "GET /chat/agents/:name with unknown perspective returns 404" do
+    get chat_agent_path("chief_of_staff"), params: { perspective: "ghost" }
+    assert_response :not_found
+  end
+
+  test "agent links carry perspective param in response" do
+    parent = Chat.create!(agent_name: "chief_of_staff")
+    Chat.create!(agent_name: "engineering_manager", parent_chat: parent)
+    get chat_agent_path("chief_of_staff"), params: { perspective: "engineering_manager" }
+    assert_select "a[href*='perspective=engineering_manager']"
+  end
+
+  test "non-me perspective shows human plus all agents except the perspective agent" do
+    get chat_agent_path("engineering_manager"), params: { perspective: "engineering_manager" }
+    assert_response :success
+    assert_select "[data-testid='agent-item']", count: 3
+  end
 end

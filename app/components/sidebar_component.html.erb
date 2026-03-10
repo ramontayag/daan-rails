@@ -1,0 +1,20 @@
+<aside data-testid="sidebar" class="w-64 bg-gray-900 text-white flex flex-col">
+  <div class="p-4 font-bold text-lg border-b border-gray-700">Daan</div>
+  <%= render PerspectivePickerComponent.new(current_perspective: current_perspective) %>
+  <%= helpers.turbo_stream_from "agents" %>
+  <nav class="flex-1 p-2">
+    <% if in_agent_perspective? %>
+      <div id="agent_human">
+        <%= link_to helpers.chat_agent_path(current_perspective),
+                    class: "flex items-center gap-2 p-2 rounded hover:bg-gray-800",
+                    data: { testid: "agent-item" } do %>
+          <span class="w-2 h-2 rounded-full bg-green-400"></span>
+          <span>Me (Human)</span>
+        <% end %>
+      </div>
+    <% end %>
+    <% agents.each do |agent| %>
+      <%= render AgentItemComponent.new(agent: agent, active: agent == current_agent) %>
+    <% end %>
+  </nav>
+</aside>
