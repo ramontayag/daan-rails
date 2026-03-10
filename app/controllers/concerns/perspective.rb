@@ -18,7 +18,7 @@ module Perspective
     end
   end
 
-  def perspective_name = @perspective_name
+  def perspective_name = @perspective_name || "me"
 
   def default_url_options
     perspective_name == "me" ? {} : { perspective: perspective_name }
