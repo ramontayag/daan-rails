@@ -44,12 +44,9 @@ class ChatsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href*='perspective=engineering_manager']"
   end
 
-  test "non-me perspective filters sidebar to conversation partners only" do
-    parent = Chat.create!(agent_name: "chief_of_staff")
-    Chat.create!(agent_name: "engineering_manager", parent_chat: parent)
-
+  test "non-me perspective shows human plus all agents except the perspective agent" do
     get chat_agent_path("engineering_manager"), params: { perspective: "engineering_manager" }
     assert_response :success
-    assert_select "[data-testid='agent-item']", count: 1
+    assert_select "[data-testid='agent-item']", count: 3
   end
 end

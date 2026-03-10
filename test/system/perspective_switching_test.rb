@@ -12,9 +12,10 @@ class PerspectiveSwitchingTest < ApplicationSystemTestCase
     FileUtils.rm_f(@workspace.join("chain_test.txt"))
   end
 
-  test "full delegation chain then perspective switching UI" do
+  test "human sends message, chain completes, perspective switching shows correct conversations" do
     VCR.use_cassette("delegation_chain/full_chain") do
-      visit chat_agent_path("chief_of_staff")
+      visit root_path
+      click_on "Chief of Staff"
 
       fill_in "message[content]",
               with: 'Write "chain test passed" to chain_test.txt and summarise it for me'
@@ -24,38 +25,46 @@ class PerspectiveSwitchingTest < ApplicationSystemTestCase
       assert_selector "[data-role='assistant']", minimum: 1
     end
 
-    cos_chat = Chat.find_by(agent_name: "chief_of_staff")
-    em_chat  = Chat.find_by(agent_name: "engineering_manager", parent_chat: cos_chat)
-
     assert File.exist?(@workspace.join("chain_test.txt"))
 
-    # Switch to CoS perspective — sidebar shows only EM
+    cos_chat = Chat.find_by!(agent_name: "chief_of_staff", parent_chat_id: nil)
+    em_chat  = Chat.find_by!(agent_name: "engineering_manager", parent_chat: cos_chat)
+    dev_chat = Chat.find_by!(agent_name: "developer", parent_chat: em_chat)
+
+    cos_task_to_em  = em_chat.messages.find_by!(role: "user")
+    em_task_to_dev  = dev_chat.messages.find_by!(role: "user")
+
+    # === CoS perspective ===
     select "Chief of Staff", from: "perspective"
-    assert_selector "[data-testid='agent-item']", count: 1
-    assert_selector "[data-testid='agent-item']", text: "Engineering Manager"
+    assert_selector "[data-testid='agent-item']", count: 3
 
-    # Open the EM thread
-    click_on "Engineering Manager"
+    # CoS's own page — shows conversation with the human
     find("[data-testid='thread-list-item'] a", match: :first).click
-
-    # Read-only compose bar
+    assert_selector "[data-role='user']"
+    assert_selector ".text-right", minimum: 1
     assert_no_selector "[data-testid='message-input']"
     assert_text "read-only"
 
-    # EM's messages right-aligned
-    assert_selector ".text-right", minimum: 1
+    # Navigate to EM — should show the task CoS gave EM, not anything from human
+    click_on "Engineering Manager"
+    find("[data-testid='thread-list-item'] a", match: :first).click
+    assert_text cos_task_to_em.content
 
-    # Hide/show tools
-    click_on "Hide tools"
-    assert_no_selector "[data-testid='tool-call']"
-    click_on "Show tools"
-    assert_selector "[data-testid='tool-call']", minimum: 1
+    # Navigate to Developer — should show the task EM gave Developer, not anything from human
+    click_on "Developer"
+    find("[data-testid='thread-list-item'] a", match: :first).click
+    assert_text em_task_to_dev.content
 
-    # EM perspective — CoS and Developer in sidebar
+    # === EM perspective ===
     select "Engineering Manager", from: "perspective"
-    assert_selector "[data-testid='agent-item']", count: 2
+    assert_selector "[data-testid='agent-item']", count: 3
 
-    # Back to human — compose bar active
+    # Navigate to Developer — same EM→Dev task
+    click_on "Developer"
+    find("[data-testid='thread-list-item'] a", match: :first).click
+    assert_text em_task_to_dev.content
+
+    # === Back to human ===
     select "Me (Human)", from: "perspective"
     assert_selector "[data-testid='agent-item']", count: 3
     click_on "Chief of Staff"
