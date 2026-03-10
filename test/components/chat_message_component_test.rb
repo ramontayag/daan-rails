@@ -52,4 +52,11 @@ class ChatMessageComponentTest < ActiveSupport::TestCase
     render_inline(ChatMessageComponent.new(message: message, results: results))
     assert_includes rendered_content, "file written"
   end
+
+  test "flips alignment when viewer_is_agent is true" do
+    message = @chat.messages.create!(role: "assistant", content: "Done.")
+    render_inline(ChatMessageComponent.new(message: message, viewer_is_agent: true))
+    assert_includes rendered_content, "text-right"
+    assert_includes rendered_content, "bg-blue-500"
+  end
 end

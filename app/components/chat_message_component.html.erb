@@ -4,9 +4,11 @@
   <% end %>
   <% if message.content.present? %>
     <%= render MessageComponent.new(role: "assistant", body: message.content,
-                                   dom_id: "message_#{message.id}") %>
+                                   dom_id: "message_#{message.id}",
+                                   viewer_is_agent: viewer_is_agent) %>
   <% end %>
 <% else %>
   <%= render MessageComponent.new(role: message.role, body: message.content,
-                                 dom_id: "message_#{message.id}") %>
+                                 dom_id: "message_#{message.id}",
+                                 viewer_is_agent: viewer_is_agent) %>
 <% end %>

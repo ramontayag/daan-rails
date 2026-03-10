@@ -7,12 +7,14 @@
     <div id="messages">
       <% chat_messages = chat.messages.where(visible: true).includes(:tool_calls).order(:created_at) %>
       <% tool_results = chat_messages.select { |m| m.role == "tool" }.index_by(&:tool_call_id).transform_values(&:content) %>
+      <% agent_perspective = perspective_name != "me" %>
       <% chat_messages.each do |message| %>
-        <%= render ChatMessageComponent.new(message: message, results: tool_results) %>
+        <%= render ChatMessageComponent.new(message: message, results: tool_results,
+                                            viewer_is_agent: agent_perspective) %>
       <% end %>
     </div>
     <div id="typing_indicator"></div>
   </div>
   <%= render ComposeBarComponent.new(action: chat_thread_messages_path(chat),
-                                     readonly: perspective_name != "me") %>
+                                     readonly: agent_perspective) %>
 </div>

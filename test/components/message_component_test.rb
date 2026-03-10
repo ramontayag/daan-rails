@@ -46,4 +46,17 @@ class MessageComponentTest < ActiveSupport::TestCase
     render_inline(MessageComponent.new(role: "user", body: "Hi"))
     assert_includes rendered_content, "prose-invert"
   end
+
+  test "assistant message is right-aligned when viewer_is_agent" do
+    render_inline(MessageComponent.new(role: "assistant", body: "Done.", viewer_is_agent: true))
+    assert_includes rendered_content, "text-right"
+    assert_includes rendered_content, "bg-blue-500"
+    assert_includes rendered_content, "prose-invert"
+  end
+
+  test "user message is left-aligned when viewer_is_agent" do
+    render_inline(MessageComponent.new(role: "user", body: "Do the task.", viewer_is_agent: true))
+    assert_includes rendered_content, "text-left"
+    assert_includes rendered_content, "bg-gray-200"
+  end
 end
