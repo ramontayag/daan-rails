@@ -1,6 +1,8 @@
 class ChatsController < ApplicationController
   include SidebarAgents
+  include Perspective
 
+  before_action :set_perspective
   before_action :set_agents
   before_action :set_agent, only: :show
 

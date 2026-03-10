@@ -35,4 +35,11 @@ class ThreadsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "user", Message.last.role
     assert_equal "Hello CoS", Message.last.content
   end
+
+  test "GET /threads/:id with perspective param is successful" do
+    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    chat = Chat.create!(agent_name: "chief_of_staff")
+    get chat_thread_path(chat), params: { perspective: "engineering_manager" }
+    assert_response :success
+  end
 end

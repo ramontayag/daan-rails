@@ -1,13 +1,16 @@
 class ThreadsController < ApplicationController
   include SidebarAgents
+  include Perspective
 
+  before_action :set_perspective, only: :show
   before_action :set_agents, only: :show
   before_action :set_agent_from_params, only: :create
   before_action :set_chat, only: :show
 
   def show
-    @agent = Daan::AgentRegistry.find(@chat.agent_name)
-    @chats = Chat.where(agent_name: @agent.name).order(created_at: :desc).includes(:messages)
+    @agent      = Daan::AgentRegistry.find(@chat.agent_name)
+    @chats      = Chat.where(agent_name: @agent.name).order(created_at: :desc).includes(:messages)
+    @hide_tools = params[:show_tools] == "0"
   end
 
   def create
