@@ -1,5 +1,6 @@
 <aside data-testid="sidebar" class="w-64 bg-gray-900 text-white flex flex-col">
   <div class="p-4 font-bold text-lg border-b border-gray-700">Daan</div>
+  <%= render "chats/perspective_picker" %>
   <%= turbo_stream_from "agents" %>
   <nav class="flex-1 p-2">
     <% agents.each do |agent| %>
