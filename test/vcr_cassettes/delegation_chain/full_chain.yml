@@ -1583,4 +1583,103 @@ http_interactions:
       string: !binary |-
         eyJtb2RlbCI6ImNsYXVkZS1zb25uZXQtNC0yMDI1MDUxNCIsImlkIjoibXNnXzAxTmhWVHFiS3NLZ1VFeGZjMnhwUFgyRiIsInR5cGUiOiJtZXNzYWdlIiwicm9sZSI6ImFzc2lzdGFudCIsImNvbnRlbnQiOlt7InR5cGUiOiJ0ZXh0IiwidGV4dCI6IlBlcmZlY3QhIFRoZSB0YXNrIGhhcyBiZWVuIGNvbXBsZXRlZCBzdWNjZXNzZnVsbHkuIEhlcmUncyB0aGUgc3VtbWFyeTpcblxuKipGaWxlIE9wZXJhdGlvbiBTdW1tYXJ5OioqXG4tIOKchSAqKkZpbGUgQ3JlYXRlZDoqKiBgY2hhaW5fdGVzdC50eHRgXG4tIOKchSAqKkNvbnRlbnQgV3JpdHRlbjoqKiBcImNoYWluIHRlc3QgcGFzc2VkXCIgKGV4YWN0bHkgYXMgcmVxdWVzdGVkKVxuLSDinIUgKipGaWxlIFNpemU6KiogMTcgYnl0ZXNcbi0g4pyFICoqVmVyaWZpY2F0aW9uOioqIENvbnRlbnQgY29uZmlybWVkIHRvIG1hdGNoIHRoZSByZXF1ZXN0ZWQgdGV4dCBleGFjdGx5XG5cblRoZSBFbmdpbmVlcmluZyBNYW5hZ2VyIGhhcyBjb25maXJtZWQgdGhhdCBvdXIgZGV2ZWxvcGVyIHN1Y2Nlc3NmdWxseSB3cm90ZSB0aGUgdGV4dCB0byB0aGUgZmlsZSBhbmQgdmVyaWZpZWQgdGhlIG9wZXJhdGlvbiB3YXMgY29tcGxldGVkIGNvcnJlY3RseS4gVGhlIGNoYWluIHRlc3QgZmlsZSBpcyBub3cgcmVhZHkgd2l0aCB5b3VyIHNwZWNpZmllZCBjb250ZW50LiJ9XSwic3RvcF9yZWFzb24iOiJlbmRfdHVybiIsInN0b3Bfc2VxdWVuY2UiOm51bGwsInVzYWdlIjp7ImlucHV0X3Rva2VucyI6MTU4OCwiY2FjaGVfY3JlYXRpb25faW5wdXRfdG9rZW5zIjowLCJjYWNoZV9yZWFkX2lucHV0X3Rva2VucyI6MCwiY2FjaGVfY3JlYXRpb24iOnsiZXBoZW1lcmFsXzVtX2lucHV0X3Rva2VucyI6MCwiZXBoZW1lcmFsXzFoX2lucHV0X3Rva2VucyI6MH0sIm91dHB1dF90b2tlbnMiOjEyOCwic2VydmljZV90aWVyIjoic3RhbmRhcmQiLCJpbmZlcmVuY2VfZ2VvIjoibm90X2F2YWlsYWJsZSJ9fQ==
   recorded_at: Tue, 10 Mar 2026 19:14:51 GMT
+- request:
+    method: post
+    uri: https://api.anthropic.com/v1/messages
+    body:
+      encoding: UTF-8
+      string: '{"model":"claude-sonnet-4-20250514","messages":[{"role":"user","content":[{"type":"text","text":"Write
+        \"chain test passed\" to chain_test.txt and summarise it for me"}]},{"role":"assistant","content":[{"type":"text","text":"I''ll
+        delegate this technical task to our Engineering Manager to handle the file
+        writing and provide you with a summary."},{"type":"tool_use","id":"toolu_01JndM6GbSBfXpYmLNDkSHSF","name":"daan--core--delegate_task","input":{"agent_name":"engineering_manager","task":"Write
+        \"chain test passed\" to chain_test.txt and provide a summary of the operation"}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_01JndM6GbSBfXpYmLNDkSHSF","content":[{"type":"text","text":"Delegated
+        to Engineering Manager (Thread #57519493). Awaiting their report."}]}]}],"stream":false,"max_tokens":64000,"tools":[{"name":"daan--core--delegate_task","description":"Delegate
+        a task to a sub-agent","input_schema":{"type":"object","properties":{"agent_name":{"type":"string","description":"The
+        agent to delegate to (e.g. ''engineering_manager'', ''developer'')"},"task":{"type":"string","description":"The
+        task description to assign"}},"required":["agent_name","task"],"additionalProperties":false,"strict":true}}],"system":[{"type":"text","text":"You
+        are the Chief of Staff for the Daan agent team. You are the human''s primary
+        contact. You receive requests, delegate technical work to the Engineering
+        Manager, and report results back to the human.\n\nWhen you receive a task
+        that requires technical work:\n1. Use DelegateTask with agent_name \"engineering_manager\"
+        to assign the work.\n2. Let the human know you''ve delegated and will update
+        them when results are in.\n3. When the Engineering Manager''s report arrives
+        in this thread, synthesize it and respond to the human clearly and concisely.
+        That response is your final message in this cycle."}]}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      X-Api-Key:
+      - "<ANTHROPIC_API_KEY>"
+      Anthropic-Version:
+      - '2023-06-01'
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Tue, 10 Mar 2026 19:43:59 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Anthropic-Ratelimit-Input-Tokens-Limit:
+      - '2000000'
+      Anthropic-Ratelimit-Input-Tokens-Remaining:
+      - '2000000'
+      Anthropic-Ratelimit-Input-Tokens-Reset:
+      - '2026-03-10T19:43:57Z'
+      Anthropic-Ratelimit-Output-Tokens-Limit:
+      - '400000'
+      Anthropic-Ratelimit-Output-Tokens-Remaining:
+      - '400000'
+      Anthropic-Ratelimit-Output-Tokens-Reset:
+      - '2026-03-10T19:43:59Z'
+      Anthropic-Ratelimit-Requests-Limit:
+      - '4000'
+      Anthropic-Ratelimit-Requests-Remaining:
+      - '3999'
+      Anthropic-Ratelimit-Requests-Reset:
+      - '2026-03-10T19:43:56Z'
+      Anthropic-Ratelimit-Tokens-Limit:
+      - '2400000'
+      Anthropic-Ratelimit-Tokens-Remaining:
+      - '2400000'
+      Anthropic-Ratelimit-Tokens-Reset:
+      - '2026-03-10T19:43:57Z'
+      Request-Id:
+      - req_011CYuyLqLRyDh8i8SBZRryC
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Anthropic-Organization-Id:
+      - 77dfb819-a005-46a1-9627-212f8995b514
+      Server:
+      - cloudflare
+      X-Envoy-Upstream-Service-Time:
+      - '2482'
+      Vary:
+      - Accept-Encoding
+      Cf-Cache-Status:
+      - DYNAMIC
+      X-Robots-Tag:
+      - none
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Cf-Ray:
+      - 9da4cfab384f4305-MAD
+    body:
+      encoding: ASCII-8BIT
+      string: '{"model":"claude-sonnet-4-20250514","id":"msg_014UwUUdJ6Srgxvz56h1FMSt","type":"message","role":"assistant","content":[{"type":"text","text":"I''ve
+        delegated this task to our Engineering Manager. They will write \"chain test
+        passed\" to the chain_test.txt file and provide a summary of the operation.
+        I''ll update you once their report comes in."}],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":748,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":48,"service_tier":"standard","inference_geo":"not_available"}}'
+  recorded_at: Tue, 10 Mar 2026 19:43:59 GMT
 recorded_with: VCR 6.4.0

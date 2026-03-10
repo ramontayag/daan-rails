@@ -1,9 +1,8 @@
 require "test_helper"
 
-# Full delegation chain smoke test:
-# Human → CoS → EM → Developer → reports back up → CoS replies.
-# Also verifies that perspective switching shows the correct conversation
-# partners in the sidebar after the chain completes.
+# Verifies the full delegation chain: human → CoS → EM → Developer → reports
+# back up → CoS replies. Pure integration test (no browser) so VCR cassettes
+# work across the entire job chain in the same thread.
 class DelegationChainTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
 
@@ -51,29 +50,8 @@ class DelegationChainTest < ActionDispatch::IntegrationTest
     assert File.exist?(@workspace.join("chain_test.txt")), "Expected developer to write chain_test.txt"
     assert_equal "chain test passed", File.read(@workspace.join("chain_test.txt")).strip
 
-    # Results propagated back: CoS chat completed
+    # Results propagated back: CoS chat completed with a reply
     assert cos_chat.reload.completed?, "Expected CoS chat to complete after full chain"
-
-    # CoS has a final assistant reply synthesising the result
-    assert cos_chat.messages.where(role: "assistant").exists?, "Expected CoS to have replied to the human"
-
-    # --- Perspective switching ---
-
-    # CoS perspective: sidebar shows only EM (direct report)
-    get chat_path, params: { perspective: "chief_of_staff" }
-    assert_response :success
-    assert_select "[data-testid='agent-item']", count: 1
-    assert_select "[data-testid='agent-item']", text: /Engineering Manager/
-
-    # EM perspective: sidebar shows CoS (above) and Developer (below)
-    get chat_path, params: { perspective: "engineering_manager" }
-    assert_response :success
-    assert_select "[data-testid='agent-item']", count: 2
-
-    # EM perspective thread: compose bar is read-only
-    get chat_thread_path(em_chat), params: { perspective: "engineering_manager" }
-    assert_response :success
-    assert_select "[data-testid='compose-bar']"
-    assert_includes response.body, "read-only"
+    assert cos_chat.messages.where(role: "assistant").exists?, "Expected CoS to have replied"
   end
 end

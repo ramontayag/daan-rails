@@ -17,8 +17,9 @@ module Daan
     end
 
     def self.start_conversation(chat)
-      chat.continue! unless chat.pending?
-      chat.start!
+      chat.reload
+      chat.continue! if chat.may_continue?
+      chat.start!    if chat.may_start?
       chat.broadcast_agent_status
       broadcast_typing(chat, true)
     end
@@ -48,8 +49,13 @@ module Daan
     private_class_method :run_llm
 
     def self.finish_conversation(chat, agent)
+      chat.reload
       chat.increment!(:turn_count)
-      agent.max_turns_reached?(chat.turn_count) ? chat.block! : chat.finish!
+      if agent.max_turns_reached?(chat.turn_count)
+        chat.block!   if chat.may_block?
+      else
+        chat.finish!  if chat.may_finish?
+      end
       chat.broadcast_agent_status
     end
     private_class_method :finish_conversation
