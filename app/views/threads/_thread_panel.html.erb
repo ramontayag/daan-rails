@@ -13,5 +13,6 @@
     </div>
     <div id="typing_indicator"></div>
   </div>
-  <%= render ComposeBarComponent.new(action: chat_thread_messages_path(chat)) %>
+  <%= render ComposeBarComponent.new(action: chat_thread_messages_path(chat),
+                                     readonly: perspective_name != "me") %>
 </div>

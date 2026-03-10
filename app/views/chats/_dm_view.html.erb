@@ -13,7 +13,8 @@
         <p class="text-gray-400 text-sm p-4">No conversations yet.</p>
       <% end %>
     </div>
-    <%= render ComposeBarComponent.new(action: chat_agent_threads_path(agent)) %>
+    <%= render ComposeBarComponent.new(action: chat_agent_threads_path(agent),
+                                       readonly: perspective_name != "me") %>
   </div>
 
   <%# Thread panel %>

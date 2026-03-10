@@ -1,9 +1,10 @@
 class ComposeBarComponent < ViewComponent::Base
-  def initialize(action:)
-    @action = action
+  def initialize(action:, readonly: false)
+    @action   = action
+    @readonly = readonly
   end
 
   private
 
-  attr_reader :action
+  attr_reader :action, :readonly
 end
