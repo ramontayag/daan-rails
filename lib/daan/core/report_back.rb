@@ -15,7 +15,8 @@ module Daan
 
         current_agent = Daan::AgentRegistry.find(@chat.agent_name)
         Daan::CreateMessage.call(parent_chat, role: "user",
-                                 content: "#{current_agent.display_name}: #{message}")
+                                 content: "#{current_agent.display_name}: #{message}",
+                                 visible: false)
 
         parent_agent = Daan::AgentRegistry.find(parent_chat.agent_name)
         "Report sent to #{parent_agent.display_name}."

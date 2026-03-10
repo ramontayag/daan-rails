@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_09_215556) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_10_152318) do
   create_table "chats", force: :cascade do |t|
     t.string "agent_name", null: false
     t.datetime "created_at", null: false
@@ -40,6 +40,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_09_215556) do
     t.integer "thinking_tokens"
     t.integer "tool_call_id"
     t.datetime "updated_at", null: false
+    t.boolean "visible", default: true, null: false
     t.index ["chat_id"], name: "index_messages_on_chat_id"
     t.index ["model_id"], name: "index_messages_on_model_id"
     t.index ["role"], name: "index_messages_on_role"
