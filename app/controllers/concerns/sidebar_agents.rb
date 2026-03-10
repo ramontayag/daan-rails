@@ -8,7 +8,13 @@ module SidebarAgents
   private
 
   def set_agents
-    @agents = Daan::AgentRegistry.all
+    all = Daan::AgentRegistry.all
+    @agents = if @perspective_agent
+      partner_names = Chat.conversation_partner_names_for(@perspective_agent.name)
+      all.select { |a| partner_names.include?(a.name) }
+    else
+      all
+    end
   end
 
   def agent_not_found
