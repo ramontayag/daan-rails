@@ -5,7 +5,7 @@
   <div class="flex-1 overflow-y-auto p-4">
     <%= turbo_stream_from "chat_#{chat.id}" %>
     <div id="messages">
-      <% chat_messages = chat.messages.includes(:tool_calls).order(:created_at) %>
+      <% chat_messages = chat.messages.where(visible: true).includes(:tool_calls).order(:created_at) %>
       <% tool_results = chat_messages.select { |m| m.role == "tool" }.index_by(&:tool_call_id).transform_values(&:content) %>
       <% chat_messages.each do |message| %>
         <%= render ChatMessageComponent.new(message: message, results: tool_results) %>

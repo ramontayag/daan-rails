@@ -3,6 +3,10 @@ class Chat < ApplicationRecord
 
   acts_as_chat messages_foreign_key: :chat_id
 
+  belongs_to :parent_chat, class_name: "Chat", optional: true
+  has_many :sub_chats, class_name: "Chat", foreign_key: :parent_chat_id,
+                       dependent: :nullify, inverse_of: :parent_chat
+
   validates :agent_name, presence: true
 
   aasm column: :task_status do

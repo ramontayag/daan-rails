@@ -32,6 +32,26 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert @chat.reload.blocked?
   end
 
+  test "re-triggers a completed chat by calling continue! before start!" do
+    @chat.start!
+    @chat.finish!
+    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    assert @chat.reload.completed?
+  end
+
+  test "re-triggers a blocked chat by calling continue! before start!" do
+    @chat.start!
+    @chat.block!
+    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    assert @chat.reload.completed?
+  end
+
+  test "re-triggers a failed chat by calling continue! before start!" do
+    @chat.fail!
+    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    assert @chat.reload.completed?
+  end
+
   test "transitions to failed and reraises on exception" do
     with_stub_complete(raise_error: RuntimeError.new("LLM down")) do
       assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }

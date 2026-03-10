@@ -17,6 +17,7 @@ module Daan
     end
 
     def self.start_conversation(chat)
+      chat.continue! unless chat.pending?
       chat.start!
       chat.broadcast_agent_status
       broadcast_typing(chat, true)
@@ -32,7 +33,7 @@ module Daan
       chat
         .with_model(agent.model_name)
         .with_instructions(agent.system_prompt)
-        .with_tools(*agent.tools)
+        .with_tools(*agent.tools(chat: chat))
     end
     private_class_method :configure_llm
 

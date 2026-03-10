@@ -162,8 +162,10 @@ Any new message in a thread where no LLM Job is in flight enqueues an LLM Job fo
 ### D31: Concurrent Tool Fan-In (Keep It Simple)
 No counter or barrier for concurrent Tool Jobs. Every Tool Job completion posts a result message, which triggers an LLM Job (per D29). The per-thread lock means only one LLM Job runs at a time. The first LLM Job sees one tool result; if more arrive during processing, they queue up as messages for the next turn. The agent acts on info as it arrives and adjusts — same as humans. No tracking of pending tool counts.
 
-### D32: Retry After max_turns
-Delegator sends a new message in the existing thread with guidance. This resets the turn counter for a new agentic loop. Same thread, same context — no information lost. The agent picks up from where it left off with fresh direction.
+### D32: Continuing an Existing Sub-Thread
+When a delegator wants to send guidance back down to a sub-agent (whether after max_turns, after a blocked report, or after getting clarification from the human), it sends a new message in the **existing** sub-thread — not a new one. Same thread, same context — no information lost. The sub-agent picks up from where it left off with fresh direction.
+
+**V3 limitation:** `DelegateTask` always creates a new sub-chat. If guidance needs to flow back down the chain (e.g., Dev is stuck → EM asks human → human answers → EM tells Dev to continue), the delegating agent must include enough context in a fresh DelegateTask to compensate. Lossy but functional. A "continue existing sub-chat" mechanism (idempotent DelegateTask or a separate ContinueTask tool) is deferred to a later slice.
 
 ### D33: Task States Clarified
 - `pending` — created, waiting to be picked up

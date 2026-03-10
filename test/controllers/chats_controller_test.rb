@@ -11,7 +11,7 @@ class ChatsControllerTest < ActionDispatch::IntegrationTest
     get chat_path
     assert_response :success
     assert_select "[data-testid='sidebar']"
-    assert_select "[data-testid='agent-item']", count: 2
+    assert_select "[data-testid='agent-item']", count: 3
   end
 
   test "GET /chat/agents/:agent_name shows thread list" do

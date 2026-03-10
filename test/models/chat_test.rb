@@ -45,4 +45,21 @@ class ChatTest < ActiveSupport::TestCase
     chat = Chat.new(agent_name: "ghost")
     assert_raises(Daan::AgentNotFoundError) { chat.agent }
   end
+
+  test "parent_chat is optional" do
+    chat = Chat.create!(agent_name: "chief_of_staff")
+    assert_nil chat.parent_chat
+  end
+
+  test "sub_chats association returns child chats" do
+    parent = Chat.create!(agent_name: "chief_of_staff")
+    child  = Chat.create!(agent_name: "chief_of_staff", parent_chat: parent)
+    assert_includes parent.sub_chats, child
+  end
+
+  test "parent_chat association returns parent" do
+    parent = Chat.create!(agent_name: "chief_of_staff")
+    child  = Chat.create!(agent_name: "chief_of_staff", parent_chat: parent)
+    assert_equal parent, child.parent_chat
+  end
 end
