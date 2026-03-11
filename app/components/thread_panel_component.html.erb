@@ -13,8 +13,9 @@
     <div id="messages">
       <% chat_messages.each do |message| %>
         <%= render ChatMessageComponent.new(message: message, results: tool_results,
-                                            viewer_is_agent: viewer_is_agent,
-                                            hide_tools: hide_tools) %>
+                                            hide_tools: hide_tools,
+                                            agent_display_name: agent_display_name,
+                                            user_display_name: user_display_name) %>
       <% end %>
     </div>
     <div id="typing_indicator"></div>

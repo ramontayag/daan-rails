@@ -1,15 +1,23 @@
-<div id="tool_call_<%= tool_call.id %>" class="my-1 text-sm font-mono" data-testid="tool-call">
-  <details class="bg-gray-100 rounded border border-gray-300">
-    <summary class="px-3 py-1 cursor-pointer text-gray-600 select-none">
-      <span class="font-semibold text-gray-800"><%= tool_name %></span>
-      <span class="text-gray-500">(<%= arguments.map { |k, v| "#{k}: #{v.inspect}" }.join(", ") %>)</span>
-    </summary>
-    <div class="px-3 py-2 border-t border-gray-300 text-gray-700 whitespace-pre-wrap">
-      <% if result %>
-        <%= h(result) %>
-      <% else %>
-        <span class="text-gray-400 italic">running...</span>
-      <% end %>
-    </div>
-  </details>
+<div id="tool_call_<%= tool_call.id %>" class="mb-4 flex gap-3" data-testid="tool-call">
+  <div class="w-9 h-9 flex-shrink-0 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-gray-600 select-none">
+    <%= initials %>
+  </div>
+  <div class="flex-1 min-w-0">
+    <% if agent_display_name %>
+      <div class="text-sm font-bold text-gray-900 mb-0.5"><%= agent_display_name %></div>
+    <% end %>
+    <details class="text-sm font-mono bg-gray-100 rounded border border-gray-300">
+      <summary class="px-3 py-1 cursor-pointer text-gray-600 select-none">
+        <span class="font-semibold text-gray-800"><%= tool_name %></span>
+        <span class="text-gray-500">(<%= arguments.map { |k, v| "#{k}: #{v.inspect}" }.join(", ") %>)</span>
+      </summary>
+      <div class="px-3 py-2 border-t border-gray-300 text-gray-700 whitespace-pre-wrap">
+        <% if result %>
+          <%= h(result) %>
+        <% else %>
+          <span class="text-gray-400 italic">running...</span>
+        <% end %>
+      </div>
+    </details>
+  </div>
 </div>

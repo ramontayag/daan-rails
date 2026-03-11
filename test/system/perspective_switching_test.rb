@@ -41,7 +41,6 @@ class PerspectiveSwitchingTest < ApplicationSystemTestCase
     # CoS's own page — shows conversation with the human
     find("[data-testid='thread-list-item'] a", match: :first).click
     assert_selector "[data-role='user']"
-    assert_selector ".text-right", minimum: 1
     assert_no_selector "[data-testid='message-input']"
     assert_text "read-only"
 

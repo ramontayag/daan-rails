@@ -53,13 +53,6 @@ class ChatMessageComponentTest < ActiveSupport::TestCase
     assert_includes rendered_content, "file written"
   end
 
-  test "flips alignment when viewer_is_agent is true" do
-    message = @chat.messages.create!(role: "assistant", content: "Done.")
-    render_inline(ChatMessageComponent.new(message: message, viewer_is_agent: true))
-    assert_includes rendered_content, "text-right"
-    assert_includes rendered_content, "bg-blue-500"
-  end
-
   test "hides tool calls when hide_tools is true and message has no text content" do
     message = @chat.messages.create!(role: "assistant", content: nil)
     ToolCall.create!(message: message, tool_call_id: "tc_hide_01", name: "read", arguments: {})

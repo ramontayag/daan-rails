@@ -9,12 +9,16 @@ class ThreadPanelComponent < ViewComponent::Base
 
   attr_reader :chat, :hide_tools
 
-  def viewer_is_agent
-    @perspective_name == chat.agent_name
-  end
-
   def readonly
     @perspective_name != "me"
+  end
+
+  def agent_display_name
+    chat.agent.display_name
+  end
+
+  def user_display_name
+    chat.parent_chat ? chat.parent_chat.agent.display_name : "User"
   end
 
   def chat_messages
