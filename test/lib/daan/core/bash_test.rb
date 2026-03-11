@@ -76,4 +76,32 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
     @tool.singleton_class.prepend(Daan::Core::SafeExecute)
     assert_match(/escape/, @tool.execute(commands: [["echo", "hi"]], path: "../escape"))
   end
+
+  test "includes stderr in successful command output" do
+    # git init writes "Initialized..." to stdout and hints to stderr
+    # both should appear in the result so LLMs see the full picture
+    result = @tool.execute(commands: [["git", "init"]])
+    assert_includes result, "Initialized"
+    assert_includes result, "hint:"
+  end
+
+  test "returns error string when command exceeds timeout" do
+    tool = Daan::Core::Bash.new(workspace: @workspace, allowed_commands: %w[sleep])
+    tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    result = tool.execute(commands: [["sleep", "10"]], timeout: 0.1)
+    assert_match(/timed out/, result)
+    assert_match(/sleep 10/, result)
+  end
+
+  test "timeout applies per command" do
+    tool = Daan::Core::Bash.new(workspace: @workspace, allowed_commands: %w[echo sleep])
+    tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    result = tool.execute(commands: [["echo", "fast"], ["sleep", "10"]], timeout: 0.1)
+    assert_match(/timed out/, result)
+  end
+
+  test "default timeout is used when not specified" do
+    result = @tool.execute(commands: [["echo", "hi"]])
+    assert_includes result, "hi"
+  end
 end

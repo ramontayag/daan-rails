@@ -19,6 +19,10 @@ module Daan
           "path" => {
             type: "string",
             description: "Working directory relative to workspace (optional, defaults to workspace root)"
+          },
+          "timeout" => {
+            type: "number",
+            description: "Seconds to wait per command before killing it (default: 30). Increase for slow network operations like git push/pull/clone."
           }
         },
         required: [ "commands" ],
@@ -31,7 +35,9 @@ module Daan
         @allowed_commands = allowed_commands
       end
 
-      def execute(commands:, path: nil)
+      DEFAULT_TIMEOUT = 30
+
+      def execute(commands:, path: nil, timeout: DEFAULT_TIMEOUT)
         commands = JSON.parse(commands) if commands.is_a?(String)
         return "" if commands.empty?
 
@@ -43,16 +49,41 @@ module Daan
             raise "command '#{binary}' is not allowed. Permitted: #{@allowed_commands.join(', ')}"
           end
 
-          stdout, stderr, status = Open3.capture3(*cmd, chdir: dir.to_s)
-          unless status.success?
-            output = [ stdout, stderr ].reject(&:empty?).join("\n")
-            raise "#{cmd.join(' ')} failed (exit #{status.exitstatus}): #{output}"
-          end
-
-          "$ #{cmd.join(' ')}\n#{stdout}"
+          run_command(cmd, dir: dir, timeout: timeout)
         end
 
         outputs.join("\n")
+      end
+
+      private
+
+      def run_command(cmd, dir:, timeout:)
+        env = { "GIT_TERMINAL_PROMPT" => "0" }
+        stdout_str = +""; stderr_str = +""
+
+        Open3.popen3(env, *cmd, chdir: dir.to_s) do |stdin, stdout, stderr, wait_thr|
+          stdin.close
+          out_thread = Thread.new { stdout_str = stdout.read }
+          err_thread = Thread.new { stderr_str = stderr.read }
+
+          unless wait_thr.join(timeout)
+            Process.kill("KILL", wait_thr.pid) rescue nil
+            wait_thr.join
+            out_thread.join; err_thread.join
+            raise "#{cmd.join(' ')} timed out after #{timeout}s"
+          end
+
+          out_thread.join; err_thread.join
+          status = wait_thr.value
+
+          unless status.success?
+            output = [ stdout_str, stderr_str ].reject(&:empty?).join("\n")
+            raise "#{cmd.join(' ')} failed (exit #{status.exitstatus}): #{output}"
+          end
+        end
+
+        combined = [ stdout_str, stderr_str ].reject(&:empty?).join("\n")
+        "$ #{cmd.join(' ')}\n#{combined}"
       end
     end
   end
