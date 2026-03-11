@@ -13,8 +13,7 @@ module Daan
         properties: {
           "commands" => {
             type: "array",
-            description: "Commands to run, each as [binary, arg1, arg2, ...]. " \
-                         "Example: [[\"git\", \"add\", \"-A\"], [\"git\", \"commit\", \"-m\", \"msg\"]]",
+            description: %Q(Commands to run, each as [binary, arg1, arg2, ...]. Example: [["git", "add", "-A"], ["git", "commit", "-m", "msg"]]),
             items: { type: "array", items: { type: "string" } }
           },
           "path" => {
