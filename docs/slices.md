@@ -22,6 +22,12 @@ Vertical slices of Shape A (Event-Driven Agent Team). Each slice ends in demo-ab
 
 ---
 
+## V5: Memory
+
+See [docs/plans/V5-plan.md](plans/V5-plan.md) for full slice detail (parts, tasks, demo script).
+
+---
+
 ## V4: Perspective Switching
 
 See [docs/plans/V4-plan.md](plans/V4-plan.md) for full slice detail (parts, tasks, demo script).
