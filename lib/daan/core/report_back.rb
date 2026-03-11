@@ -5,7 +5,7 @@ module Daan
       description "Report your results back to the delegating agent"
       param :message, desc: "Your findings or results to report"
 
-      def initialize(workspace: nil, chat: nil, storage: nil)
+      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil)
         @chat = chat
       end
 

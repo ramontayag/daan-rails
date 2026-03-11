@@ -9,7 +9,11 @@ module Daan
     end
 
     def tools(chat: nil)
-      base_tools.map { |t| t.new(workspace: workspace, chat: chat, storage: Daan::Memory.storage) }
+      all_kwargs = { workspace: workspace, chat: chat, storage: Daan::Memory.storage, agent_name: name }
+      base_tools.map do |t|
+        accepted = t.instance_method(:initialize).parameters.map(&:last)
+        t.new(**all_kwargs.slice(*accepted))
+      end
     end
 
     def to_param

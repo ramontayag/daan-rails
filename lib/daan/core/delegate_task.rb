@@ -6,7 +6,7 @@ module Daan
       param :agent_name, desc: "The agent to delegate to (e.g. 'engineering_manager', 'developer')"
       param :task,       desc: "The task description to assign"
 
-      def initialize(workspace: nil, chat: nil, storage: nil)
+      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil)
         @chat = chat
       end
 
