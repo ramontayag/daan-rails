@@ -1,5 +1,15 @@
 # Development Workflow
 
+## Running tests
+
+Always run:
+
+```
+bin/rails test && bin/rails test:system
+```
+
+Never use `bin/rails test` alone — it skips system tests.
+
 ## Task execution rhythm
 
 After completing each task:
