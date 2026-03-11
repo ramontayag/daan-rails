@@ -7,9 +7,25 @@ module Daan
                   "strings: the binary plus its arguments. Commands run sequentially in the " \
                   "specified directory. Only binaries listed in allowed_commands may be used. " \
                   "If any command fails, an error is raised and no output is returned."
-      param :commands, desc: "Commands to run, each as [binary, arg1, arg2, ...]. " \
-                             "Example: [[\"git\", \"add\", \"-A\"], [\"git\", \"commit\", \"-m\", \"msg\"]]"
-      param :path,     desc: "Working directory relative to workspace (optional, defaults to workspace root)"
+
+      params({
+        type: "object",
+        properties: {
+          "commands" => {
+            type: "array",
+            description: "Commands to run, each as [binary, arg1, arg2, ...]. " \
+                         "Example: [[\"git\", \"add\", \"-A\"], [\"git\", \"commit\", \"-m\", \"msg\"]]",
+            items: { type: "array", items: { type: "string" } }
+          },
+          "path" => {
+            type: "string",
+            description: "Working directory relative to workspace (optional, defaults to workspace root)"
+          }
+        },
+        required: [ "commands" ],
+        additionalProperties: false,
+        strict: true
+      })
 
       def initialize(workspace: nil, chat: nil, allowed_commands: [], **)
         @workspace        = workspace
@@ -17,6 +33,7 @@ module Daan
       end
 
       def execute(commands:, path: nil)
+        commands = JSON.parse(commands) if commands.is_a?(String)
         return "" if commands.empty?
 
         dir = path ? @workspace.resolve(path) : @workspace.root
