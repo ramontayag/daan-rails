@@ -11,8 +11,6 @@ module Daan
 
       def execute(path:)
         @workspace.resolve(path).read
-      rescue => e
-        "Error: #{e.message}"
       end
     end
   end

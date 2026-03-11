@@ -15,7 +15,9 @@ module Daan
                      agent_name: name, allowed_commands: allowed_commands }
       base_tools.map do |t|
         accepted = t.instance_method(:initialize).parameters.map(&:last)
-        t.new(**all_kwargs.slice(*accepted))
+        t.new(**all_kwargs.slice(*accepted)).tap do |instance|
+          instance.singleton_class.prepend(Core::SafeExecute)
+        end
       end
     end
 

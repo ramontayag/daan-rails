@@ -16,17 +16,17 @@ class Daan::Core::ReadTest < ActiveSupport::TestCase
   end
 
   test "returns error string on path traversal" do
-    result = @tool.execute(path: "../../etc/passwd")
-    assert_match(/Error/, result)
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    assert_match(/Error/, @tool.execute(path: "../../etc/passwd"))
   end
 
   test "returns error string if file does not exist" do
-    result = @tool.execute(path: "missing.txt")
-    assert_match(/Error/, result)
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    assert_match(/Error/, @tool.execute(path: "missing.txt"))
   end
 
   test "returns error string when path is a directory" do
-    result = @tool.execute(path: ".")
-    assert_match(/Error/, result)
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    assert_match(/Error/, @tool.execute(path: "."))
   end
 end

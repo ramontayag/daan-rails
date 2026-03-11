@@ -40,21 +40,19 @@ module Daan
         outputs = commands.map do |cmd|
           binary = cmd.first
           unless @allowed_commands.include?(binary)
-            return "Error: command '#{binary}' is not allowed. Permitted: #{@allowed_commands.join(', ')}"
+            raise "command '#{binary}' is not allowed. Permitted: #{@allowed_commands.join(', ')}"
           end
 
           stdout, stderr, status = Open3.capture3(*cmd, chdir: dir.to_s)
           unless status.success?
             output = [ stdout, stderr ].reject(&:empty?).join("\n")
-            return "Error: #{cmd.join(' ')} failed (exit #{status.exitstatus}): #{output}"
+            raise "#{cmd.join(' ')} failed (exit #{status.exitstatus}): #{output}"
           end
 
           "$ #{cmd.join(' ')}\n#{stdout}"
         end
 
         outputs.join("\n")
-      rescue ArgumentError => e
-        "Error: #{e.message}"
       end
     end
   end

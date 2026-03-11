@@ -26,7 +26,7 @@ class Daan::Core::WriteTest < ActiveSupport::TestCase
   end
 
   test "returns error string on path traversal" do
-    result = @tool.execute(path: "../../etc/passwd", content: "bad")
-    assert_match(/Error/, result)
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    assert_match(/Error/, @tool.execute(path: "../../etc/passwd", content: "bad"))
   end
 end

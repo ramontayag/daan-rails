@@ -30,23 +30,25 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
   end
 
   test "returns error string on disallowed binary" do
-    result = @tool.execute(commands: [["rm", "-rf", "."]])
-    assert_match(/not allowed/, result)
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    assert_match(/not allowed/, @tool.execute(commands: [["rm", "-rf", "."]]))
   end
 
   test "returns error string on empty allowed_commands list" do
     tool = Daan::Core::Bash.new(workspace: @workspace, allowed_commands: [])
-    result = tool.execute(commands: [["echo", "hi"]])
-    assert_match(/not allowed/, result)
+    tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    assert_match(/not allowed/, tool.execute(commands: [["echo", "hi"]]))
   end
 
   test "returns error string when a command fails" do
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
     result = @tool.execute(commands: [["git", "status"]])
     assert_match(/git status/, result)
     assert_match(/failed/, result)
   end
 
   test "returns error string on second command failure" do
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
     result = @tool.execute(commands: [["echo", "step one"], ["git", "status"]])
     assert_match(/git status/, result)
     assert_match(/failed/, result)
@@ -71,7 +73,7 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
   end
 
   test "returns error string when path escapes workspace" do
-    result = @tool.execute(commands: [["echo", "hi"]], path: "../escape")
-    assert_match(/escape/, result)
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    assert_match(/escape/, @tool.execute(commands: [["echo", "hi"]], path: "../escape"))
   end
 end

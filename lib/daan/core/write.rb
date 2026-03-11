@@ -15,8 +15,6 @@ module Daan
         file.dirname.mkpath
         file.write(content)
         "Written #{content.bytesize} bytes to #{path}"
-      rescue => e
-        "Error: #{e.message}"
       end
     end
   end
