@@ -55,6 +55,25 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
     file.unlink
   end
 
+  test "tools without allowed_commands in initializer are instantiated without error" do
+    received_kwargs = nil
+    narrow_tool = Class.new do
+      define_method(:initialize) do |workspace: nil, chat: nil|
+        received_kwargs = { workspace: workspace, chat: chat }
+      end
+    end
+
+    agent = Daan::Agent.new(
+      name: "test", display_name: "Test",
+      model_name: "claude-sonnet-4-20250514",
+      system_prompt: "You help.", max_turns: 5,
+      base_tools: [narrow_tool],
+      allowed_commands: %w[git gh]
+    )
+    agent.tools(chat: nil)
+    assert_equal({ workspace: nil, chat: nil }, received_kwargs)
+  end
+
   test "agent tools receives allowed_commands at instantiation" do
     received = nil
     fake_tool = Class.new do
