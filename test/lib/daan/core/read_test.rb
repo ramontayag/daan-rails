@@ -15,11 +15,18 @@ class Daan::Core::ReadTest < ActiveSupport::TestCase
     assert_equal "Hello, world!", @tool.execute(path: "hello.txt")
   end
 
-  test "raises on path traversal" do
-    assert_raises(ArgumentError) { @tool.execute(path: "../../etc/passwd") }
+  test "returns error string on path traversal" do
+    result = @tool.execute(path: "../../etc/passwd")
+    assert_match(/Error/, result)
   end
 
-  test "raises if file does not exist" do
-    assert_raises(Errno::ENOENT) { @tool.execute(path: "missing.txt") }
+  test "returns error string if file does not exist" do
+    result = @tool.execute(path: "missing.txt")
+    assert_match(/Error/, result)
+  end
+
+  test "returns error string when path is a directory" do
+    result = @tool.execute(path: ".")
+    assert_match(/Error/, result)
   end
 end

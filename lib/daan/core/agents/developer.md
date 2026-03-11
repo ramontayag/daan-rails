@@ -8,6 +8,7 @@ delegates_to: []
 allowed_commands:
   - git
   - gh
+  - ls
 tools:
   - Daan::Core::Read
   - Daan::Core::Write
