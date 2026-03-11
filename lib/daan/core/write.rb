@@ -6,7 +6,7 @@ module Daan
       param :path, desc: "Relative path to the file"
       param :content, desc: "The content to write"
 
-      def initialize(workspace: nil, chat: nil)
+      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil)
         @workspace = workspace
       end
 

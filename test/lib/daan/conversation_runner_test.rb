@@ -3,6 +3,7 @@ require "test_helper"
 
 class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   include ActionCable::TestHelper
+  include ActiveJob::TestHelper
 
   setup do
     @agent = Daan::Agent.new(
@@ -59,15 +60,82 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert @chat.reload.failed?
   end
 
-  test "broadcasts to chat stream: typing on, message, typing off" do
+  test "broadcasts typing on and off, and enqueues BroadcastMessagesJob" do
     with_stub_complete do
-      assert_broadcasts("chat_#{@chat.id}", 3) do
-        Daan::ConversationRunner.call(@chat)
+      assert_broadcasts("chat_#{@chat.id}", 2) do
+        assert_enqueued_with(job: BroadcastMessagesJob) do
+          Daan::ConversationRunner.call(@chat)
+        end
       end
     end
   end
 
-  private
+  test "injects relevant memories into system prompt when memories exist" do
+    fake_results = [
+      { file_path: "fact/rails/db.md", title: "Rails uses SQLite", score: 0.9,
+        metadata: { "type" => "fact", "confidence" => "high" } }
+    ]
+
+    captured_prompt = nil
+    @chat.define_singleton_method(:with_instructions) do |prompt|
+      captured_prompt = prompt
+      self
+    end
+
+    with_stub_memories(fake_results) do
+      with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    end
+
+    assert_includes captured_prompt, "Rails uses SQLite"
+    assert_includes captured_prompt, "## Relevant memories"
+    assert_includes captured_prompt, "fact/rails/db.md"
+  ensure
+    if @chat.singleton_class.method_defined?(:with_instructions, false)
+      @chat.singleton_class.remove_method(:with_instructions)
+    end
+  end
+
+  test "does not alter system prompt when no memories exist" do
+    captured_prompt = nil
+    @chat.define_singleton_method(:with_instructions) do |prompt|
+      captured_prompt = prompt
+      self
+    end
+
+    with_stub_memories([]) do
+      with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    end
+
+    assert_equal "You are a test agent.", captured_prompt
+  ensure
+    if @chat.singleton_class.method_defined?(:with_instructions, false)
+      @chat.singleton_class.remove_method(:with_instructions)
+    end
+  end
+
+  test "memory retrieval failure does not crash the runner" do
+    storage_stub = Object.new
+    storage_stub.define_singleton_method(:semantic_index) { raise "embed error" }
+    msc = Daan::Memory.singleton_class
+    msc.alias_method(:__orig_storage__, :storage)
+    msc.define_method(:storage) { storage_stub }
+    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    assert @chat.reload.completed?
+  ensure
+    msc.alias_method(:storage, :__orig_storage__)
+    msc.remove_method(:__orig_storage__)
+  end
+
+  # Temporarily override retrieve_memories using alias/restore on the singleton class.
+  def with_stub_memories(results, &block)
+    sc = Daan::ConversationRunner.singleton_class
+    sc.alias_method(:__orig_retrieve_memories__, :retrieve_memories)
+    sc.define_method(:retrieve_memories) { |_chat| results }
+    block.call
+  ensure
+    sc.alias_method(:retrieve_memories, :__orig_retrieve_memories__)
+    sc.remove_method(:__orig_retrieve_memories__)
+  end
 
   def with_stub_complete(raise_error: nil, &block)
     called = false

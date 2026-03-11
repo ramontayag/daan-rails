@@ -64,6 +64,16 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     assert_equal [], definition[:delegates_to]
   end
 
+  test "workspace agents get workspace path injected into system prompt" do
+    definition = Daan::AgentLoader.parse(@definitions_path.join("developer.md"))
+    assert_includes definition[:system_prompt], "tmp/workspaces/developer"
+  end
+
+  test "non-workspace agents do not get workspace path injected" do
+    definition = Daan::AgentLoader.parse(@definitions_path.join("chief_of_staff.md"))
+    refute_includes definition[:system_prompt], "tmp/workspaces"
+  end
+
   test "loads engineering_manager with delegates_to developer" do
     Daan::AgentLoader.sync!(@definitions_path)
     agent = Daan::AgentRegistry.find("engineering_manager")
