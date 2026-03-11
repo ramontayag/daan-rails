@@ -31,12 +31,36 @@ module Daan
     private_class_method :prepare_workspace
 
     def self.configure_llm(chat, agent)
+      system_prompt = agent.system_prompt
+      memories = retrieve_memories(chat)
+
+      if memories.any?
+        memory_lines = memories.map { |m|
+          "[#{m[:metadata]["confidence"] || "?"}] [#{m[:metadata]["type"]}] #{m[:title]}"
+        }.join("\n")
+        system_prompt = "#{system_prompt}\n\n## Relevant memories\n#{memory_lines}"
+      end
+
       chat
         .with_model(agent.model_name)
-        .with_instructions(agent.system_prompt)
+        .with_instructions(system_prompt)
         .with_tools(*agent.tools(chat: chat))
     end
     private_class_method :configure_llm
+
+    def self.retrieve_memories(chat)
+      query = chat.messages.where(role: "user").last&.content
+      return [] if query.blank?
+
+      index = Daan::Memory.storage.semantic_index
+      return [] unless Daan::Memory.storage.size > 0
+
+      index.search(query: query, top_k: 5)
+    rescue => e
+      Rails.logger.warn("Memory retrieval failed: #{e.message}")
+      []
+    end
+    private_class_method :retrieve_memories
 
     def self.run_llm(chat)
       chat.complete
