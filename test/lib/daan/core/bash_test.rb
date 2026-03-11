@@ -29,33 +29,27 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
     assert_equal "", @tool.execute(commands: [])
   end
 
-  test "raises on disallowed binary" do
-    error = assert_raises(RuntimeError) do
-      @tool.execute(commands: [["rm", "-rf", "."]])
-    end
-    assert_match(/not allowed/, error.message)
+  test "returns error string on disallowed binary" do
+    result = @tool.execute(commands: [["rm", "-rf", "."]])
+    assert_match(/not allowed/, result)
   end
 
-  test "raises on empty allowed_commands list" do
+  test "returns error string on empty allowed_commands list" do
     tool = Daan::Core::Bash.new(workspace: @workspace, allowed_commands: [])
-    error = assert_raises(RuntimeError) do
-      tool.execute(commands: [["echo", "hi"]])
-    end
-    assert_match(/not allowed/, error.message)
+    result = tool.execute(commands: [["echo", "hi"]])
+    assert_match(/not allowed/, result)
   end
 
-  test "raises when a command fails" do
-    # workspace_dir is not a git repo — git status exits non-zero
-    assert_raises(RuntimeError) do
-      @tool.execute(commands: [["git", "status"]])
-    end
+  test "returns error string when a command fails" do
+    result = @tool.execute(commands: [["git", "status"]])
+    assert_match(/git status/, result)
+    assert_match(/failed/, result)
   end
 
-  test "raises on second command failure and returns no partial output" do
-    error = assert_raises(RuntimeError) do
-      @tool.execute(commands: [["echo", "step one"], ["git", "status"]])
-    end
-    assert_match(/git status/, error.message)
+  test "returns error string on second command failure" do
+    result = @tool.execute(commands: [["echo", "step one"], ["git", "status"]])
+    assert_match(/git status/, result)
+    assert_match(/failed/, result)
   end
 
   test "runs commands in workspace root by default" do
@@ -76,9 +70,8 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
     assert_includes result, "hello"
   end
 
-  test "raises when path escapes workspace" do
-    assert_raises(ArgumentError) do
-      @tool.execute(commands: [["echo", "hi"]], path: "../escape")
-    end
+  test "returns error string when path escapes workspace" do
+    result = @tool.execute(commands: [["echo", "hi"]], path: "../escape")
+    assert_match(/escape/, result)
   end
 end
