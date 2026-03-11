@@ -3,7 +3,7 @@
   <div class="flex flex-1 overflow-hidden">
     <%= render ThreadListComponent.new(agent: @agent, chats: @chats, open_chat: @chat, readonly: perspective_name != "me") %>
     <%= turbo_frame_tag "thread_panel", class: "flex flex-col flex-1 border-l border-gray-200" do %>
-      <%= render "threads/thread_panel", agent: @agent, chat: @chat %>
+      <%= render ThreadPanelComponent.new(chat: @chat, perspective_name: perspective_name, hide_tools: @hide_tools) %>
     <% end %>
   </div>
 </div>

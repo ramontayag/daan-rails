@@ -1,0 +1,23 @@
+<div data-testid="thread-panel" class="flex flex-col h-full">
+  <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200">
+    <div class="md:hidden">
+      <%= link_to "← Back", chat_agent_path(chat.agent), class: "text-sm text-blue-600" %>
+    </div>
+    <%= link_to hide_tools ? "Show tools" : "Hide tools",
+                chat_thread_path(chat, show_tools: hide_tools ? "1" : "0"),
+                class: "text-xs text-gray-500 hover:text-gray-700 ml-auto",
+                data: { turbo_frame: "thread_panel" } %>
+  </div>
+  <div class="flex-1 overflow-y-auto p-4">
+    <%= helpers.turbo_stream_from "chat_#{chat.id}" %>
+    <div id="messages">
+      <% chat_messages.each do |message| %>
+        <%= render ChatMessageComponent.new(message: message, results: tool_results,
+                                            viewer_is_agent: viewer_is_agent,
+                                            hide_tools: hide_tools) %>
+      <% end %>
+    </div>
+    <div id="typing_indicator"></div>
+  </div>
+  <%= render ComposeBarComponent.new(action: chat_thread_messages_path(chat), readonly: readonly) %>
+</div>
