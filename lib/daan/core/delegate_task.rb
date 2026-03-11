@@ -19,7 +19,7 @@ module Daan
 
         target_agent = Daan::AgentRegistry.find(agent_name)
 
-        sub_chat = Chat.create!(agent_name: agent_name, parent_chat: @chat)
+        sub_chat = @chat.sub_chats.find_or_create_by!(agent_name: agent_name)
         Daan::CreateMessage.call(sub_chat, role: "user", content: task)
 
         "Delegated to #{target_agent.display_name} (Thread ##{sub_chat.id}). Awaiting their report."
