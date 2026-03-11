@@ -36,7 +36,7 @@ module Daan
 
       if memories.any?
         memory_lines = memories.map { |m|
-          "[#{m[:metadata]["confidence"] || "?"}] [#{m[:metadata]["type"]}] #{m[:title]}"
+          "[#{m[:metadata]["confidence"] || "?"}] [#{m[:metadata]["type"]}] #{m[:title]} (#{m[:file_path]})"
         }.join("\n")
         system_prompt = "#{system_prompt}\n\n## Relevant memories\n#{memory_lines}"
       end

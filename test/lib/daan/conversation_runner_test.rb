@@ -85,6 +85,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
 
     assert_includes captured_prompt, "Rails uses SQLite"
     assert_includes captured_prompt, "## Relevant memories"
+    assert_includes captured_prompt, "fact/rails/db.md"
   ensure
     if @chat.singleton_class.method_defined?(:with_instructions, false)
       @chat.singleton_class.remove_method(:with_instructions)
