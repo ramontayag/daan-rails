@@ -9,6 +9,7 @@ class ThreadsController < ApplicationController
     @agent = Daan::AgentRegistry.find(@chat.agent_name)
     @chats = if perspective_name != "me" && @agent.name != perspective_name
       Chat.where(agent_name: @agent.name, parent_chat_id: perspective_tree_ids)
+          .or(Chat.where(agent_name: @agent.name, id: perspective_ancestor_ids))
     else
       Chat.where(agent_name: @agent.name, parent_chat_id: nil)
     end.order(created_at: :desc).includes(:messages)
