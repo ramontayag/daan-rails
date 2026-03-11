@@ -4,15 +4,15 @@ module Daan
     class EditAgent < RubyLLM::Tool
       description "Edit an existing agent configuration safely"
       param :agent_name, desc: "Name of the agent to edit"
-      param :display_name, desc: "New display name (optional)"
-      param :description, desc: "New role/description (optional)"
-      param :tools, desc: "New tools array (optional - replaces existing tools)"
-      param :delegates_to, desc: "New delegates_to array (optional - replaces existing delegates)"
-      param :workspace, desc: "New workspace path (optional)"
-      param :model, desc: "New AI model (optional)"
-      param :max_turns, desc: "New max turns (optional)"
+      param :display_name, desc: "New display name (optional)", required: false
+      param :description, desc: "New role/description (optional)", required: false
+      param :tools, desc: "New tools array (optional - replaces existing tools)", required: false
+      param :delegates_to, desc: "New delegates_to array (optional - replaces existing delegates)", required: false
+      param :workspace, desc: "New workspace path (optional)", required: false
+      param :model, desc: "New AI model (optional)", required: false
+      param :max_turns, desc: "New max turns (optional)", required: false
 
-      def initialize(workspace: nil, chat: nil)
+      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil)
         @workspace = workspace
       end
 
@@ -21,6 +21,7 @@ module Daan
 
         # Check if agent exists
         unless agent_file_path.exist?
+          Rails.logger.error("EditAgent: Agent '#{agent_name}' does not exist")
           return "Error: Agent '#{agent_name}' does not exist at #{agent_file_path}"
         end
 
@@ -30,6 +31,7 @@ module Daan
           existing_fm = parsed.front_matter
           existing_content = parsed.content
         rescue => e
+          Rails.logger.error("EditAgent: Failed to parse existing agent file '#{agent_name}' - #{e.message}")
           return "Error parsing existing agent file: #{e.message}"
         end
 
@@ -48,6 +50,7 @@ module Daan
             begin
               Object.const_get(tool_name)
             rescue NameError
+              Rails.logger.error("EditAgent: Tool class '#{tool_name}' does not exist")
               return "Error: Tool class '#{tool_name}' does not exist"
             end
           end
@@ -61,6 +64,7 @@ module Daan
           delegates_to.each do |delegate_name|
             delegate_file = Rails.root.join("lib/daan/core/agents/#{delegate_name}.md")
             unless delegate_file.exist?
+              Rails.logger.error("EditAgent: Delegate agent '#{delegate_name}' does not exist")
               return "Error: Delegate agent '#{delegate_name}' does not exist"
             end
           end
@@ -104,6 +108,7 @@ module Daan
         changes << "model" if model
         changes << "max_turns" if max_turns
 
+        Rails.logger.info("EditAgent: Successfully updated agent '#{agent_name}' (changed: #{changes.join(', ')})")
         "Successfully updated agent '#{agent_name}' (changed: #{changes.join(', ')})"
       end
     end

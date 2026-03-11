@@ -12,13 +12,14 @@ module Daan
       param :model, desc: "AI model to use (optional, defaults to claude-sonnet-4-20250514)", required: false
       param :max_turns, desc: "Maximum conversation turns (optional, defaults to 10)", required: false
 
-      def initialize(workspace: nil, chat: nil)
+      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil)
         @chat = chat
       end
 
       def execute(agent_name:, display_name:, description:, tools: nil, delegates_to: nil, workspace: nil, model: nil, max_turns: nil)
         # Validate agent_name format
         unless agent_name.match?(/\A[a-z][a-z0-9_]*\z/)
+          Rails.logger.error("CreateAgent: Invalid agent name format '#{agent_name}'")
           return "Error: agent_name must start with a lowercase letter and contain only lowercase letters, numbers, and underscores"
         end
 
@@ -27,6 +28,7 @@ module Daan
         agent_file = agents_dir.join("#{agent_name}.md")
         
         if agent_file.exist?
+          Rails.logger.error("CreateAgent: Attempt to create duplicate agent '#{agent_name}'")
           return "Error: Agent '#{agent_name}' already exists"
         end
 
@@ -41,6 +43,7 @@ module Daan
           begin
             Object.const_get(tool_name)
           rescue NameError
+            Rails.logger.error("CreateAgent: Tool class '#{tool_name}' does not exist")
             return "Error: Tool class '#{tool_name}' does not exist"
           end
         end
@@ -50,6 +53,7 @@ module Daan
           delegates_to.each do |delegate_name|
             delegate_file = agents_dir.join("#{delegate_name}.md")
             unless delegate_file.exist?
+              Rails.logger.error("CreateAgent: Delegate agent '#{delegate_name}' does not exist")
               return "Error: Delegate agent '#{delegate_name}' does not exist"
             end
           end
@@ -89,11 +93,13 @@ module Daan
           agent = Daan::Agent.new(**definition)
           Daan::AgentRegistry.register(agent)
           
+          Rails.logger.info("CreateAgent: Successfully created agent '#{agent_name}' (#{display_name})")
           "Successfully created agent '#{agent_name}' (#{display_name})"
         rescue => e
           # If there's an error registering, clean up the file
           agent_file.delete if agent_file.exist?
-          "Error: Failed to register agent - #{e.message}"
+          Rails.logger.error("CreateAgent: Failed to register agent '#{agent_name}' - #{e.message}")
+          return "Error: Failed to register agent - #{e.message}"
         end
       end
     end
