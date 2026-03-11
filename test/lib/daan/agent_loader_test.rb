@@ -28,7 +28,7 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
   test "sync! re-running overwrites previous registration" do
     Daan::AgentLoader.sync!(@definitions_path)
     Daan::AgentLoader.sync!(@definitions_path)
-    assert_equal 3, Daan::AgentRegistry.all.length
+    assert_equal 4, Daan::AgentRegistry.all.length
   end
 
   test "parse returns base_tools array for chief_of_staff agent" do
@@ -83,10 +83,10 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     assert agent.base_tools.include?(Daan::Core::ReportBack)
   end
 
-  test "chief_of_staff has DelegateTask and delegates_to engineering_manager" do
+  test "chief_of_staff has DelegateTask and delegates_to engineering_manager and agent_resource_manager" do
     Daan::AgentLoader.sync!(@definitions_path)
     agent = Daan::AgentRegistry.find("chief_of_staff")
-    assert_equal ["engineering_manager"], agent.delegates_to
+    assert_equal ["engineering_manager", "agent_resource_manager"], agent.delegates_to
     assert agent.base_tools.include?(Daan::Core::DelegateTask)
   end
 
@@ -94,5 +94,19 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     Daan::AgentLoader.sync!(@definitions_path)
     agent = Daan::AgentRegistry.find("developer")
     assert agent.base_tools.include?(Daan::Core::ReportBack)
+  end
+
+  test "loads agent_resource_manager with appropriate tools and workspace" do
+    Daan::AgentLoader.sync!(@definitions_path)
+    agent = Daan::AgentRegistry.find("agent_resource_manager")
+    assert_not_nil agent
+    assert_equal "Agent Resource Manager", agent.display_name
+    assert_equal [], agent.delegates_to
+    assert agent.base_tools.include?(Daan::Core::CreateAgent)
+    assert agent.base_tools.include?(Daan::Core::EditAgent)
+    assert agent.base_tools.include?(Daan::Core::Read)
+    assert agent.base_tools.include?(Daan::Core::Write)
+    assert agent.base_tools.include?(Daan::Core::ReportBack)
+    assert agent.workspace.to_s.end_with?("tmp/workspaces/agent_resource_manager")
   end
 end
