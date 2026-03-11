@@ -3,6 +3,7 @@ require "test_helper"
 
 class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   include ActionCable::TestHelper
+  include ActiveJob::TestHelper
 
   setup do
     @agent = Daan::Agent.new(
@@ -59,10 +60,12 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert @chat.reload.failed?
   end
 
-  test "broadcasts to chat stream: typing on, message, typing off" do
+  test "broadcasts typing on and off, and enqueues BroadcastMessagesJob" do
     with_stub_complete do
-      assert_broadcasts("chat_#{@chat.id}", 3) do
-        Daan::ConversationRunner.call(@chat)
+      assert_broadcasts("chat_#{@chat.id}", 2) do
+        assert_enqueued_with(job: BroadcastMessagesJob) do
+          Daan::ConversationRunner.call(@chat)
+        end
       end
     end
   end

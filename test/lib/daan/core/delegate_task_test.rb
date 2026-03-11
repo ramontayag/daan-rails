@@ -74,6 +74,16 @@ class Daan::Core::DelegateTaskTest < ActiveSupport::TestCase
     assert_equal "Follow up", sub_chat.messages.where(role: "user").last.content
   end
 
+  test "resets a failed sub-chat to pending before adding the follow-up message" do
+    @tool.execute(agent_name: "engineering_manager", task: "First task")
+    sub_chat = @parent_chat.sub_chats.find_by!(agent_name: "engineering_manager")
+    sub_chat.update!(task_status: "failed")
+
+    @tool.execute(agent_name: "engineering_manager", task: "Follow up")
+
+    assert sub_chat.reload.pending?
+  end
+
   test "raises when target agent is in delegates_to but absent from registry" do
     Daan::AgentRegistry.register(
       Daan::Agent.new(name: "ghost_delegator", display_name: "Ghost",

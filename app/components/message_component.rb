@@ -21,5 +21,5 @@ class MessageComponent < ViewComponent::Base
   def bubble_classes    = self_message? ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-900"
   def prose_classes     = self_message? ? "prose prose-sm prose-invert" : "prose prose-sm"
 
-  def rendered_body = MARKDOWN.render(body).html_safe
+  def rendered_body = MARKDOWN.render(body.to_s).html_safe
 end

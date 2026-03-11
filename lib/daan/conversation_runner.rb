@@ -11,13 +11,21 @@ module Daan
       last_message_id = chat.messages.maximum(:id) || 0
       run_llm(chat)
 
-      broadcast_new_messages(chat, last_message_id)
+      BroadcastMessagesJob.perform_later(chat, last_message_id)
       broadcast_typing(chat, false)
       finish_conversation(chat, agent)
     end
 
     def self.start_conversation(chat)
       chat.reload
+      # Anthropic rejects empty text content blocks. Empty assistant messages
+      # with no tool calls are streaming artifacts (created at start of stream,
+      # content never written because the model only used tools or an error
+      # interrupted). Delete them before replay — they have no value in history.
+      orphaned_ids = chat.messages.where(role: "assistant", content: [nil, ""])
+                                  .left_joins(:tool_calls).where(tool_calls: { id: nil })
+                                  .ids
+      Message.where(id: orphaned_ids).destroy_all if orphaned_ids.any?
       chat.continue! if chat.may_continue?
       chat.start!    if chat.may_start?
       chat.broadcast_agent_status
@@ -105,7 +113,6 @@ module Daan
         )
       end
     end
-    private_class_method :broadcast_new_messages
 
     def self.broadcast_typing(chat, typing)
       Turbo::StreamsChannel.broadcast_replace_to(
