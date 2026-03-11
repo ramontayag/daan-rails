@@ -24,4 +24,9 @@ class Daan::Core::WriteTest < ActiveSupport::TestCase
     @tool.execute(path: "subdir/nested.txt", content: "hi")
     assert (@workspace.root / "subdir" / "nested.txt").exist?
   end
+
+  test "returns error string on path traversal" do
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    assert_match(/Error/, @tool.execute(path: "../../etc/passwd", content: "bad"))
+  end
 end
