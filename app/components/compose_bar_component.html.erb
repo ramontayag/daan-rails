@@ -1,13 +1,17 @@
 <div data-testid="compose-bar" class="border-t p-4">
-  <%= form_with url: agent_messages_path(agent), method: :post, class: "flex gap-2" do |f| %>
-    <%= f.text_field :content, name: "message[content]",
-        placeholder: "Message #{agent.display_name}...",
-        class: "flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500",
-        autofocus: true,
-        required: true,
-        data: { testid: "message-input" } %>
-    <%= f.submit "Send",
-        class: "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer",
-        data: { testid: "send-button" } %>
+  <% if readonly %>
+    <p class="text-sm text-gray-400 italic text-center">read-only — viewing another agent's perspective</p>
+  <% else %>
+    <%= form_with url: action, method: :post, class: "flex gap-2" do |f| %>
+      <%= f.text_field :content, name: "message[content]",
+          placeholder: "Message...",
+          class: "flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500",
+          autofocus: true,
+          required: true,
+          data: { testid: "message-input" } %>
+      <%= f.submit "Send",
+          class: "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer",
+          data: { testid: "send-button" } %>
+    <% end %>
   <% end %>
 </div>

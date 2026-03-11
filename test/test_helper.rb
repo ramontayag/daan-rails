@@ -10,6 +10,7 @@ VCR.configure do |config|
   config.hook_into :webmock
   config.filter_sensitive_data("<ANTHROPIC_API_KEY>") { ENV["ANTHROPIC_API_KEY"] }
   config.default_cassette_options = { record: :new_episodes }
+  config.ignore_localhost = true
 end
 
 module ActiveSupport

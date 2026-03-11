@@ -28,12 +28,12 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
   test "sync! re-running overwrites previous registration" do
     Daan::AgentLoader.sync!(@definitions_path)
     Daan::AgentLoader.sync!(@definitions_path)
-    assert_equal 2, Daan::AgentRegistry.all.length
+    assert_equal 3, Daan::AgentRegistry.all.length
   end
 
-  test "parse returns empty base_tools array when not in frontmatter" do
+  test "parse returns base_tools array for chief_of_staff agent" do
     definition = Daan::AgentLoader.parse(@definitions_path.join("chief_of_staff.md"))
-    assert_equal [], definition[:base_tools]
+    assert_includes definition[:base_tools], Daan::Core::DelegateTask
   end
 
   test "parse returns nil workspace when not in frontmatter" do
@@ -57,5 +57,32 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     agent = Daan::AgentRegistry.find("developer")
     assert_not_nil agent.workspace
     assert agent.tools.all? { |t| t.is_a?(RubyLLM::Tool) }
+  end
+
+  test "parse returns empty delegates_to array for developer agent" do
+    definition = Daan::AgentLoader.parse(@definitions_path.join("developer.md"))
+    assert_equal [], definition[:delegates_to]
+  end
+
+  test "loads engineering_manager with delegates_to developer" do
+    Daan::AgentLoader.sync!(@definitions_path)
+    agent = Daan::AgentRegistry.find("engineering_manager")
+    assert_not_nil agent
+    assert_equal ["developer"], agent.delegates_to
+    assert agent.base_tools.include?(Daan::Core::DelegateTask)
+    assert agent.base_tools.include?(Daan::Core::ReportBack)
+  end
+
+  test "chief_of_staff has DelegateTask and delegates_to engineering_manager" do
+    Daan::AgentLoader.sync!(@definitions_path)
+    agent = Daan::AgentRegistry.find("chief_of_staff")
+    assert_equal ["engineering_manager"], agent.delegates_to
+    assert agent.base_tools.include?(Daan::Core::DelegateTask)
+  end
+
+  test "developer has ReportBack tool" do
+    Daan::AgentLoader.sync!(@definitions_path)
+    agent = Daan::AgentRegistry.find("developer")
+    assert agent.base_tools.include?(Daan::Core::ReportBack)
   end
 end

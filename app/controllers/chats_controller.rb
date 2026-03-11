@@ -1,42 +1,24 @@
 class ChatsController < ApplicationController
-  before_action :set_agents
-  before_action :set_agent, only: %i[show create_message]
+  include Perspective
 
-  rescue_from KeyError, with: :agent_not_found
+  before_action :set_perspective
+  before_action :set_agent, only: :show
 
   def index
-    @agent = @agents.first
-    render :show if @agent
+    redirect_to chat_agent_path(@perspective_agent.name) if @perspective_agent
   end
 
   def show
-    @chat = Chat.where(agent_name: @agent.name).order(created_at: :desc).first
-  end
-
-  def create_message
-    @chat = Chat.where(agent_name: @agent.name).order(created_at: :desc).first ||
-            Chat.create!(agent_name: @agent.name)
-    @chat.continue! if @chat.may_continue?
-    Daan::CreateMessage.call(@chat, role: "user", content: message_params[:content])
-    LlmJob.perform_later(@chat)
-    redirect_to agent_chat_path(@agent)
+    @chats = if perspective_name != "me" && @agent.name != perspective_name
+      Chat.where(agent_name: @agent.name, parent_chat_id: perspective_tree_ids)
+    else
+      Chat.where(agent_name: @agent.name, parent_chat_id: nil)
+    end.order(created_at: :desc).includes(:messages)
   end
 
   private
 
-  def set_agents
-    @agents = Daan::AgentRegistry.all
-  end
-
   def set_agent
-    @agent = Daan::AgentRegistry.find(params[:agent_name])
-  end
-
-  def message_params
-    params.require(:message).permit(:content)
-  end
-
-  def agent_not_found
-    head :not_found
+    @agent = Daan::AgentRegistry.find(params[:name])
   end
 end

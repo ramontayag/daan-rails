@@ -1,5 +1,7 @@
 # lib/daan/agent_registry.rb
 module Daan
+  class AgentNotFoundError < StandardError; end
+
   class AgentRegistry
     @registry = {}
 
@@ -9,7 +11,7 @@ module Daan
       end
 
       def find(name)
-        @registry.fetch(name) { raise KeyError, "No agent registered: #{name.inspect}" }
+        @registry.fetch(name) { raise AgentNotFoundError, "No agent registered: #{name.inspect}" }
       end
 
       def all

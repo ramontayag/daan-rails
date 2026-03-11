@@ -25,4 +25,38 @@ class MessageComponentTest < ActiveSupport::TestCase
     render_inline(MessageComponent.new(role: "user", body: "Hello", dom_id: "message_42"))
     assert_includes rendered_content, "id=\"message_42\""
   end
+
+  test "renders markdown as HTML" do
+    render_inline(MessageComponent.new(role: "assistant", body: "**bold** and `code`"))
+    assert_includes rendered_content, "<strong>bold</strong>"
+    assert_includes rendered_content, "<code>code</code>"
+  end
+
+  test "renders fenced code blocks" do
+    render_inline(MessageComponent.new(role: "assistant", body: "```\nputs 'hello'\n```"))
+    assert_includes rendered_content, "<code>"
+  end
+
+  test "applies prose class to assistant messages" do
+    render_inline(MessageComponent.new(role: "assistant", body: "Hi"))
+    assert_includes rendered_content, "prose"
+  end
+
+  test "applies prose-invert to user messages" do
+    render_inline(MessageComponent.new(role: "user", body: "Hi"))
+    assert_includes rendered_content, "prose-invert"
+  end
+
+  test "assistant message is right-aligned when viewer_is_agent" do
+    render_inline(MessageComponent.new(role: "assistant", body: "Done.", viewer_is_agent: true))
+    assert_includes rendered_content, "text-right"
+    assert_includes rendered_content, "bg-blue-500"
+    assert_includes rendered_content, "prose-invert"
+  end
+
+  test "user message is left-aligned when viewer_is_agent" do
+    render_inline(MessageComponent.new(role: "user", body: "Do the task.", viewer_is_agent: true))
+    assert_includes rendered_content, "text-left"
+    assert_includes rendered_content, "bg-gray-200"
+  end
 end

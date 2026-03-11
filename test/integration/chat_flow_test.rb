@@ -4,6 +4,7 @@ class ChatFlowTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
 
   setup do
+    Chat.destroy_all
     Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
   end
 
@@ -18,7 +19,7 @@ class ChatFlowTest < ActionDispatch::IntegrationTest
     agent = Daan::AgentRegistry.find("chief_of_staff")
 
     assert_enqueued_with(job: LlmJob) do
-      post agent_messages_path(agent), params: { message: { content: "Hello CoS!" } }
+      post chat_agent_threads_path(agent), params: { message: { content: "Hello CoS!" } }
     end
 
     assert_response :redirect
@@ -36,7 +37,7 @@ class ChatFlowTest < ActionDispatch::IntegrationTest
 
     VCR.use_cassette("llm_job/chief_of_staff_hello") do
       perform_enqueued_jobs do
-        post agent_messages_path(agent), params: { message: { content: "Say exactly: hello" } }
+        post chat_agent_threads_path(agent), params: { message: { content: "Say exactly: hello" } }
       end
     end
 
@@ -57,7 +58,7 @@ class ChatFlowTest < ActionDispatch::IntegrationTest
     chat.messages.create!(role: "system", content: "You are the Chief of Staff...")
     chat.messages.create!(role: "assistant", content: "Hi there!")
 
-    get agent_chat_path(agent)
+    get chat_thread_path(chat)
     assert_response :success
     assert_select "[data-testid='message']", 2  # user + assistant only
     assert_select "[data-role='user']", 1

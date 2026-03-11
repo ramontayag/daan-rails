@@ -18,7 +18,8 @@ module Daan
         max_turns:     fm.fetch("max_turns"),
         system_prompt: parsed.content.strip,
         base_tools:    base_tools,
-        workspace:     workspace
+        workspace:     workspace,
+        delegates_to:  fm.fetch("delegates_to", [])
       }
     end
 

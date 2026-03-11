@@ -1,0 +1,14 @@
+<form action="<%= chat_path %>" method="get" class="px-4 py-2">
+  <select name="perspective"
+          data-testid="perspective-picker"
+          data-controller="auto-submit"
+          data-action="change->auto-submit#submit"
+          class="w-full bg-gray-800 text-white text-sm rounded px-2 py-1 border border-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-400">
+    <option value="me" <%= "selected" if current_perspective == "me" %>>Me (Human)</option>
+    <% agents.each do |agent| %>
+      <option value="<%= agent.name %>" <%= "selected" if current_perspective == agent.name %>>
+        <%= agent.display_name %>
+      </option>
+    <% end %>
+  </select>
+</form>

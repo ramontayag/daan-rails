@@ -1,14 +1,19 @@
 # lib/daan/agent.rb
 module Daan
   Agent = Struct.new(:name, :display_name, :model_name, :system_prompt, :max_turns,
-                     :workspace, :base_tools, keyword_init: true) do
+                     :workspace, :base_tools, :delegates_to, keyword_init: true) do
     def initialize(**)
       super
       self.base_tools ||= []
+      self.delegates_to ||= []
     end
 
-    def tools
-      @tools ||= base_tools.map { |t| t.new(workspace: workspace) }
+    def tools(chat: nil)
+      all_kwargs = { workspace: workspace, chat: chat, storage: Daan::Memory.storage, agent_name: name }
+      base_tools.map do |t|
+        accepted = t.instance_method(:initialize).parameters.map(&:last)
+        t.new(**all_kwargs.slice(*accepted))
+      end
     end
 
     def to_param

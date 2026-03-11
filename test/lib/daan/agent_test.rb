@@ -57,7 +57,7 @@ class Daan::AgentTest < ActiveSupport::TestCase
     workspace = Dir.mktmpdir
     tool_class = Class.new(RubyLLM::Tool) do
       description "test"
-      def initialize(workspace: nil) = @workspace = workspace
+      def initialize(workspace: nil, chat: nil, storage: nil) = @workspace = workspace
       def execute = "ok"
     end
     agent = Daan::Agent.new(
@@ -72,19 +72,40 @@ class Daan::AgentTest < ActiveSupport::TestCase
     FileUtils.rm_rf(workspace)
   end
 
-  test "tools is memoized" do
-    workspace = Dir.mktmpdir
-    tool_class = Class.new(RubyLLM::Tool) do
-      description "test"
-      def initialize(workspace: nil) = @workspace = workspace
-    end
+  test "delegates_to defaults to empty array" do
     agent = Daan::Agent.new(
       name: "test", display_name: "Test", model_name: "m",
-      system_prompt: "p", max_turns: 5,
-      workspace: workspace, base_tools: [tool_class]
+      system_prompt: "p", max_turns: 5
     )
-    assert_same agent.tools, agent.tools
-  ensure
-    FileUtils.rm_rf(workspace)
+    assert_equal [], agent.delegates_to
+  end
+
+  test "delegates_to is set from constructor" do
+    agent = Daan::Agent.new(
+      name: "cos", display_name: "CoS", model_name: "m",
+      system_prompt: "p", max_turns: 10,
+      delegates_to: ["engineering_manager"]
+    )
+    assert_equal ["engineering_manager"], agent.delegates_to
+  end
+
+  test "tools passes storage to tool initializer" do
+    received_storage = nil
+    spy_tool = Class.new(RubyLLM::Tool) do
+      description "spy"
+      define_method(:initialize) do |workspace: nil, chat: nil, storage: nil, **|
+        received_storage = storage
+      end
+      define_method(:execute) { "ok" }
+    end
+
+    agent = Daan::Agent.new(
+      name: "test", display_name: "Test", model_name: "claude-sonnet-4-20250514",
+      system_prompt: "test", max_turns: 5, base_tools: [spy_tool]
+    )
+    chat = Chat.create!(agent_name: "test")
+    agent.tools(chat: chat)
+
+    assert_same Daan::Memory.storage, received_storage
   end
 end

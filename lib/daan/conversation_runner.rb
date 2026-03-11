@@ -17,7 +17,9 @@ module Daan
     end
 
     def self.start_conversation(chat)
-      chat.start!
+      chat.reload
+      chat.continue! if chat.may_continue?
+      chat.start!    if chat.may_start?
       chat.broadcast_agent_status
       broadcast_typing(chat, true)
     end
@@ -29,12 +31,36 @@ module Daan
     private_class_method :prepare_workspace
 
     def self.configure_llm(chat, agent)
+      system_prompt = agent.system_prompt
+      memories = retrieve_memories(chat)
+
+      if memories.any?
+        memory_lines = memories.map { |m|
+          "[#{m[:metadata]["confidence"] || "?"}] [#{m[:metadata]["type"]}] #{m[:title]} (#{m[:file_path]})"
+        }.join("\n")
+        system_prompt = "#{system_prompt}\n\n## Relevant memories\n#{memory_lines}"
+      end
+
       chat
         .with_model(agent.model_name)
-        .with_instructions(agent.system_prompt)
-        .with_tools(*agent.tools)
+        .with_instructions(system_prompt)
+        .with_tools(*agent.tools(chat: chat))
     end
     private_class_method :configure_llm
+
+    def self.retrieve_memories(chat)
+      query = chat.messages.where(role: "user").last&.content
+      return [] if query.blank?
+
+      index = Daan::Memory.storage.semantic_index
+      return [] unless Daan::Memory.storage.size > 0
+
+      index.search(query: query, top_k: 5)
+    rescue => e
+      Rails.logger.warn("Memory retrieval failed: #{e.message}")
+      []
+    end
+    private_class_method :retrieve_memories
 
     def self.run_llm(chat)
       chat.complete
@@ -47,8 +73,13 @@ module Daan
     private_class_method :run_llm
 
     def self.finish_conversation(chat, agent)
+      chat.reload
       chat.increment!(:turn_count)
-      agent.max_turns_reached?(chat.turn_count) ? chat.block! : chat.finish!
+      if agent.max_turns_reached?(chat.turn_count)
+        chat.block!   if chat.may_block?
+      else
+        chat.finish!  if chat.may_finish?
+      end
       chat.broadcast_agent_status
     end
     private_class_method :finish_conversation
@@ -59,35 +90,19 @@ module Daan
                      .where("messages.id > ?", since_id)
                      .order(:id)
 
-      # Pre-load tool results keyed by tool_call_id to avoid N+1 in ToolCallComponent.
       results_by_tool_call_id = messages
         .select { |m| m.role == "tool" }
         .index_by(&:tool_call_id)
         .transform_values(&:content)
 
       messages.each do |message|
-        next if message.role == "tool"
-        next if message.role == "user"
+        next if message.role == "tool" || message.role == "user"
 
-        message.tool_calls.each do |tool_call|
-          Turbo::StreamsChannel.broadcast_append_to(
-            "chat_#{chat.id}",
-            target: "messages",
-            renderable: ToolCallComponent.new(
-              tool_call: tool_call,
-              result: results_by_tool_call_id[tool_call.id]
-            )
-          )
-        end
-
-        if message.tool_calls.none? || message.content.present?
-          Turbo::StreamsChannel.broadcast_append_to(
-            "chat_#{chat.id}",
-            target: "messages",
-            renderable: MessageComponent.new(role: message.role, body: message.content,
-                                            dom_id: "message_#{message.id}")
-          )
-        end
+        Turbo::StreamsChannel.broadcast_append_to(
+          "chat_#{chat.id}",
+          target: "messages",
+          renderable: ChatMessageComponent.new(message: message, results: results_by_tool_call_id)
+        )
       end
     end
     private_class_method :broadcast_new_messages
