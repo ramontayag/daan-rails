@@ -1,4 +1,9 @@
 <div class="flex h-screen" data-testid="chat-layout">
   <%= render SidebarComponent.new(current_perspective: perspective_name, current_agent: @agent) %>
-  <%= render "chats/dm_view", agent: @agent, chats: @chats, open_chat: @chat %>
+  <div class="flex flex-1 overflow-hidden">
+    <%= render ThreadListComponent.new(agent: @agent, chats: @chats, open_chat: @chat, readonly: perspective_name != "me") %>
+    <%= turbo_frame_tag "thread_panel", class: "flex flex-col flex-1 border-l border-gray-200" do %>
+      <%= render "threads/thread_panel", agent: @agent, chat: @chat %>
+    <% end %>
+  </div>
 </div>
