@@ -30,11 +30,15 @@ module Daan
     end
 
     def self.workspace_instructions(workspace)
-      <<~TEXT.strip
-        Your workspace is at #{workspace.root}. It is yours alone — no other agent shares it. You are responsible for keeping it orderly: decide where repos, projects, and temporary files live, and stick to that structure.
+      lines = []
+      lines << "Your workspace is at #{workspace.root}. It is yours alone — no other agent shares it. You are responsible for keeping it orderly: decide where repos, projects, and temporary files live, and stick to that structure."
+      lines << "Use #{SwarmMemory::Tools::MemoryWrite.name.demodulize} to record where you put things (repos, projects, temp files) so you can find them again without re-exploring. When starting a task, check memory first — you may have worked in this workspace before and know exactly where things are."
 
-        Use MemoryWrite to record where you put things (repos, projects, temp files) so you can find them again without re-exploring. When starting a task, check memory first — you may have worked in this workspace before and know exactly where things are.
-      TEXT
+      if (self_repo = ENV["DAAN_SELF_REPO"].presence)
+        lines << "The team you are part of lives at #{self_repo}. When asked to modify the team — add or change agents, tools, or behaviour — clone that repo, make your changes on a branch, and open a pull request."
+      end
+
+      lines.join("\n\n")
     end
 
     def self.sync!(directory)
