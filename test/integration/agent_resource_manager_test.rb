@@ -9,10 +9,12 @@ class AgentResourceManagerTest < ActionDispatch::IntegrationTest
   end
 
   teardown do
-    # Clean up any test agent files
-    test_agent_file = Rails.root.join("lib/daan/core/agents/test_created_agent.md")
-    test_agent_file.delete if test_agent_file.exist?
-    
+    # Clean up any test agent files created during tests
+    %w[test_created_agent test_integration_agent].each do |name|
+      file = Rails.root.join("lib/daan/core/agents/#{name}.md")
+      file.delete if file.exist?
+    end
+
     Daan::AgentRegistry.clear
     Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
   end

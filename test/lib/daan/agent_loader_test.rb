@@ -28,7 +28,7 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
   test "sync! re-running overwrites previous registration" do
     Daan::AgentLoader.sync!(@definitions_path)
     Daan::AgentLoader.sync!(@definitions_path)
-    assert_equal 4, Daan::AgentRegistry.all.length
+    assert_equal 4, Daan::AgentRegistry.all.length # 4 agents: chief_of_staff, developer, engineering_manager, agent_resource_manager
   end
 
   test "parse returns base_tools array for chief_of_staff agent" do
