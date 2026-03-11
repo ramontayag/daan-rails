@@ -71,6 +71,11 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
     assert_includes result, File.join(@workspace_dir, "subdir")
   end
 
+  test "accepts commands as a JSON-encoded string (LLM fallback)" do
+    result = @tool.execute(commands: '[["echo", "hello"]]')
+    assert_includes result, "hello"
+  end
+
   test "raises when path escapes workspace" do
     assert_raises(ArgumentError) do
       @tool.execute(commands: [["echo", "hi"]], path: "../escape")
