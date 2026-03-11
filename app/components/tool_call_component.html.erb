@@ -7,13 +7,13 @@
       <div class="text-sm font-bold text-gray-900 mb-0.5"><%= agent_display_name %></div>
     <% end %>
     <details class="text-sm font-mono bg-gray-100 rounded border border-gray-300">
-      <summary class="px-3 py-1 cursor-pointer text-gray-600 select-none">
+      <summary class="px-3 py-1 cursor-pointer text-gray-600 select-none truncate">
         <span class="font-semibold text-gray-800"><%= tool_name %></span>
-        <span class="text-gray-500">(<%= arguments.map { |k, v| "#{k}: #{v.inspect}" }.join(", ") %>)</span>
       </summary>
-      <div class="px-3 py-2 border-t border-gray-300 text-gray-700 whitespace-pre-wrap">
+      <div class="px-3 py-2 border-t border-gray-300 space-y-2">
+        <div class="text-gray-500 whitespace-pre-wrap"><%= arguments.map { |k, v| "#{k}: #{v.inspect}" }.join("\n") %></div>
         <% if result %>
-          <%= h(result) %>
+          <div class="text-gray-700 whitespace-pre-wrap border-t border-gray-200 pt-2"><%= h(result) %></div>
         <% else %>
           <span class="text-gray-400 italic">running...</span>
         <% end %>
