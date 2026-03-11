@@ -12,8 +12,9 @@ module Daan
       param :model, desc: "AI model to use (optional, defaults to claude-sonnet-4-20250514)", required: false
       param :max_turns, desc: "Maximum conversation turns (optional, defaults to 10)", required: false
 
-      def initialize(workspace: nil, chat: nil)
+      def initialize(workspace: nil, chat: nil, agents_dir: nil)
         @chat = chat
+        @agents_dir = agents_dir || Rails.root.join("lib/daan/core/agents")
       end
 
       def execute(agent_name:, display_name:, description:, tools: nil, delegates_to: nil, workspace: nil, model: nil, max_turns: nil)
@@ -23,7 +24,7 @@ module Daan
         end
 
         # Check if agent already exists
-        agents_dir = Rails.root.join("lib/daan/core/agents")
+        agents_dir = @agents_dir
         agent_file = agents_dir.join("#{agent_name}.md")
         
         if agent_file.exist?

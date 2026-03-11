@@ -12,12 +12,13 @@ module Daan
       param :model, desc: "New AI model (optional)"
       param :max_turns, desc: "New max turns (optional)"
 
-      def initialize(workspace: nil, chat: nil)
+      def initialize(workspace: nil, chat: nil, agents_dir: nil)
         @workspace = workspace
+        @agents_dir = agents_dir || Rails.root.join("lib/daan/core/agents")
       end
 
       def execute(agent_name:, display_name: nil, description: nil, tools: nil, delegates_to: nil, workspace: nil, model: nil, max_turns: nil)
-        agent_file_path = Rails.root.join("lib/daan/core/agents/#{agent_name}.md")
+        agent_file_path = @agents_dir.join("#{agent_name}.md")
 
         # Check if agent exists
         unless agent_file_path.exist?
@@ -29,8 +30,11 @@ module Daan
           parsed = FrontMatterParser::Parser.parse_file(agent_file_path.to_s)
           existing_fm = parsed.front_matter
           existing_content = parsed.content
+          if existing_fm["name"].nil?
+            return "Error: Failed to parse existing agent file: missing required frontmatter"
+          end
         rescue => e
-          return "Error parsing existing agent file: #{e.message}"
+          return "Error: Failed to parse existing agent file: #{e.message}"
         end
 
         # Build updated frontmatter
@@ -38,33 +42,41 @@ module Daan
         updated_fm["display_name"] = display_name if display_name
         updated_fm["model"] = model if model
         updated_fm["max_turns"] = max_turns if max_turns
-        updated_fm["workspace"] = workspace if workspace
+        if workspace
+          workspace.empty? ? updated_fm.delete("workspace") : updated_fm["workspace"] = workspace
+        end
 
         # Handle tools array
         if tools
           tools = Array(tools)
-          # Validate tools exist
-          tools.each do |tool_name|
-            begin
-              Object.const_get(tool_name)
-            rescue NameError
-              return "Error: Tool class '#{tool_name}' does not exist"
+          if tools.empty?
+            updated_fm.delete("tools")
+          else
+            tools.each do |tool_name|
+              begin
+                Object.const_get(tool_name)
+              rescue NameError
+                return "Error: Tool class '#{tool_name}' does not exist"
+              end
             end
+            updated_fm["tools"] = tools
           end
-          updated_fm["tools"] = tools
         end
 
         # Handle delegates_to array
         if delegates_to
           delegates_to = Array(delegates_to)
-          # Validate delegate agents exist
-          delegates_to.each do |delegate_name|
-            delegate_file = Rails.root.join("lib/daan/core/agents/#{delegate_name}.md")
-            unless delegate_file.exist?
-              return "Error: Delegate agent '#{delegate_name}' does not exist"
+          if delegates_to.empty?
+            updated_fm.delete("delegates_to")
+          else
+            delegates_to.each do |delegate_name|
+              delegate_file = @agents_dir.join("#{delegate_name}.md")
+              unless delegate_file.exist?
+                return "Error: Delegate agent '#{delegate_name}' does not exist"
+              end
             end
+            updated_fm["delegates_to"] = delegates_to
           end
-          updated_fm["delegates_to"] = delegates_to
         end
 
         # Use new description or keep existing
@@ -93,6 +105,15 @@ module Daan
               old_workspace_path.rmdir rescue nil # Ignore errors
             end
           end
+        end
+
+        # Update the registry with the new definition
+        begin
+          definition = Daan::AgentLoader.parse(agent_file_path)
+          agent = Daan::Agent.new(**definition)
+          Daan::AgentRegistry.register(agent)
+        rescue => e
+          return "Error: Failed to register updated agent - #{e.message}"
         end
 
         changes = []

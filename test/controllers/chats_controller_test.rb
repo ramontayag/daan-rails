@@ -11,7 +11,7 @@ class ChatsControllerTest < ActionDispatch::IntegrationTest
     get chat_path
     assert_response :success
     assert_select "[data-testid='sidebar']"
-    assert_select "[data-testid='agent-item']", count: 3
+    assert_select "[data-testid='agent-item']", count: 4
   end
 
   test "GET /chat/agents/:agent_name shows thread list" do
@@ -47,6 +47,6 @@ class ChatsControllerTest < ActionDispatch::IntegrationTest
   test "non-me perspective shows human plus all agents except the perspective agent" do
     get chat_agent_path("engineering_manager"), params: { perspective: "engineering_manager" }
     assert_response :success
-    assert_select "[data-testid='agent-item']", count: 3
+    assert_select "[data-testid='agent-item']", count: 4
   end
 end
