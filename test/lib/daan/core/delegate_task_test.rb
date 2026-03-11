@@ -52,6 +52,13 @@ class Daan::Core::DelegateTaskTest < ActiveSupport::TestCase
     assert_includes result, "engineering_manager"
   end
 
+  test "returns follow-up confirmation string when thread already exists" do
+    @tool.execute(agent_name: "engineering_manager", task: "First task")
+    result = @tool.execute(agent_name: "engineering_manager", task: "Follow up")
+    assert_includes result, "follow-up"
+    assert_includes result, "Engineering Manager"
+  end
+
   test "reuses existing sub-chat for the same agent" do
     @tool.execute(agent_name: "engineering_manager", task: "First task")
     assert_no_difference "Chat.count" do
