@@ -64,6 +64,15 @@ class PerspectiveSwitchingTest < ApplicationSystemTestCase
     find("[data-testid='thread-list-item'] a", match: :first).click
     assert_text em_task_to_dev.content
 
+    # === Developer perspective ===
+    select "Developer", from: "perspective"
+    assert_selector "[data-testid='agent-item']", count: 3
+
+    # Navigate to EM — should show the task CoS gave EM (upward traversal)
+    click_on "Engineering Manager"
+    find("[data-testid='thread-list-item'] a", match: :first).click
+    assert_text cos_task_to_em.content
+
     # === Back to human ===
     select "Me (Human)", from: "perspective"
     assert_selector "[data-testid='agent-item']", count: 3
