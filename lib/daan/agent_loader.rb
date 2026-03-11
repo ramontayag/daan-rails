@@ -11,17 +11,30 @@ module Daan
       workspace_rel = fm["workspace"]
       workspace = workspace_rel ? Workspace.new(Rails.root.join(workspace_rel)) : nil
 
+      system_prompt = parsed.content.strip
+      if workspace
+        system_prompt += "\n\n" + workspace_instructions(workspace)
+      end
+
       {
         name:          fm.fetch("name"),
         display_name:  fm.fetch("display_name"),
         model_name:    fm.fetch("model"),
         max_turns:     fm.fetch("max_turns"),
-        system_prompt: parsed.content.strip,
+        system_prompt: system_prompt,
         base_tools:    base_tools,
         workspace:     workspace,
         delegates_to:     fm.fetch("delegates_to", []),
         allowed_commands: fm.fetch("allowed_commands", [])
       }
+    end
+
+    def self.workspace_instructions(workspace)
+      <<~TEXT.strip
+        Your workspace is at #{workspace.root}. It is yours alone — no other agent shares it. You are responsible for keeping it orderly: decide where repos, projects, and temporary files live, and stick to that structure.
+
+        Use MemoryWrite to record where you put things (repos, projects, temp files) so you can find them again without re-exploring. When starting a task, check memory first — you may have worked in this workspace before and know exactly where things are.
+      TEXT
     end
 
     def self.sync!(directory)
