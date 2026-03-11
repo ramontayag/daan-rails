@@ -19,7 +19,8 @@ module Daan
         system_prompt: parsed.content.strip,
         base_tools:    base_tools,
         workspace:     workspace,
-        delegates_to:  fm.fetch("delegates_to", [])
+        delegates_to:     fm.fetch("delegates_to", []),
+        allowed_commands: fm.fetch("allowed_commands", [])
       }
     end
 
