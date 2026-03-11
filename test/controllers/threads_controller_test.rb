@@ -37,8 +37,9 @@ class ThreadsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /threads/:id with perspective param is successful" do
-    chat = Chat.create!(agent_name: "chief_of_staff")
-    get chat_thread_path(chat), params: { perspective: "engineering_manager" }
+    em_chat = Chat.create!(agent_name: "engineering_manager")
+    sub_chat = Chat.create!(agent_name: "chief_of_staff", parent_chat_id: em_chat.id)
+    get chat_thread_path(sub_chat), params: { perspective: "engineering_manager" }
     assert_response :success
   end
 end

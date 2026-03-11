@@ -36,7 +36,7 @@ class PerspectiveSwitchingTest < ApplicationSystemTestCase
 
     # === CoS perspective ===
     select "Chief of Staff", from: "perspective"
-    assert_selector "[data-testid='agent-item']", count: 3
+    assert_selector "[data-testid='agent-item']", count: 4
 
     # CoS's own page — shows conversation with the human
     find("[data-testid='thread-list-item'] a", match: :first).click
@@ -57,7 +57,7 @@ class PerspectiveSwitchingTest < ApplicationSystemTestCase
 
     # === EM perspective ===
     select "Engineering Manager", from: "perspective"
-    assert_selector "[data-testid='agent-item']", count: 3
+    assert_selector "[data-testid='agent-item']", count: 4
 
     # Navigate to Developer — same EM→Dev task
     click_on "Developer"
@@ -66,16 +66,16 @@ class PerspectiveSwitchingTest < ApplicationSystemTestCase
 
     # === Developer perspective ===
     select "Developer", from: "perspective"
-    assert_selector "[data-testid='agent-item']", count: 3
+    assert_selector "[data-testid='agent-item']", count: 4
 
-    # Navigate to EM — should show the task CoS gave EM (upward traversal)
+    # Navigate to EM — should show the Developer's own chat under EM
     click_on "Engineering Manager"
     find("[data-testid='thread-list-item'] a", match: :first).click
-    assert_text cos_task_to_em.content
+    assert_text em_task_to_dev.content
 
     # === Back to human ===
     select "Me (Human)", from: "perspective"
-    assert_selector "[data-testid='agent-item']", count: 3
+    assert_selector "[data-testid='agent-item']", count: 4
     click_on "Chief of Staff"
     assert_selector "[data-testid='message-input']"
   end

@@ -44,6 +44,15 @@ class ChatsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href*='perspective=engineering_manager']"
   end
 
+  test "junior perspective on senior page shows the junior sub-chat" do
+    cos_chat = Chat.create!(agent_name: "chief_of_staff")
+    em_chat  = Chat.create!(agent_name: "engineering_manager", parent_chat_id: cos_chat.id)
+    dev_chat = Chat.create!(agent_name: "developer", parent_chat_id: em_chat.id)
+    get chat_agent_path("engineering_manager"), params: { perspective: "developer" }
+    assert_response :success
+    assert_select "[data-testid='thread-list-item']", count: 1
+  end
+
   test "non-me perspective shows human plus all agents except the perspective agent" do
     get chat_agent_path("engineering_manager"), params: { perspective: "engineering_manager" }
     assert_response :success
