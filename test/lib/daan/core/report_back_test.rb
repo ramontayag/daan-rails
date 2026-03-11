@@ -42,9 +42,11 @@ class Daan::Core::ReportBackTest < ActiveSupport::TestCase
     assert_includes result, "Chief of Staff"
   end
 
-  test "raises when chat has no parent" do
+  test "returns guidance when chat has no parent" do
     orphan_chat = Chat.create!(agent_name: "engineering_manager")
     tool = Daan::Core::ReportBack.new(chat: orphan_chat)
-    assert_raises(RuntimeError) { tool.execute(message: "oops") }
+    result = tool.execute(message: "oops")
+    assert_match(/top-level/, result)
+    assert_match(/[Rr]espond directly/, result)
   end
 end

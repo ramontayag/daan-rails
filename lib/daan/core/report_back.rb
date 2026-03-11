@@ -11,7 +11,9 @@ module Daan
 
       def execute(message:)
         parent_chat = @chat.parent_chat
-        raise "No parent chat — this thread was not created by delegation" unless parent_chat
+        unless parent_chat
+          return "You are the top-level agent in this conversation — there is no delegator to report to. Respond directly to the user in your next message."
+        end
 
         current_agent = Daan::AgentRegistry.find(@chat.agent_name)
         Daan::CreateMessage.call(parent_chat, role: "user",

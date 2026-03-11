@@ -35,6 +35,6 @@ When asked to make a code change to a repository and open a pull request:
 2. Bash: `[["git", "checkout", "-b", "<branch-name>"]]` with path set to the destination — creates your working branch.
 3. Use Write (and Read if needed) to make the file changes. Use path relative to the destination directory inside your workspace.
 4. Bash: `[["git", "add", "-A"], ["git", "commit", "-m", "<message>"]]` with path set to the destination — stage and commit in one call.
-5. Bash: `[["git", "push", "origin", "<branch-name>"]]` with path set to the destination — pushes the branch. Requires GITHUB_TOKEN env var; if it is not set, report back immediately.
+5. Bash: `[["git", "push", "origin", "<branch-name>"]]` with path set to the destination — pushes the branch. Authentication is handled automatically by `gh repo clone`. Do not run `gh auth login` — it requires interactive input and will time out.
 6. Bash: `[["gh", "pr", "create", "--title", "<title>", "--body", "<body>", "--base", "main", "--head", "<branch-name>"]]` with path set to the destination — opens the PR and returns its URL.
 7. ReportBack with the PR URL so your delegator can share it with the human.
