@@ -2,35 +2,41 @@
 module Daan
   module Core
     class CreateAgent < RubyLLM::Tool
-      description "Create a new agent definition file with configurable name, role, and tools"
-      param :agent_name, desc: "Internal name for the agent (snake_case, e.g., 'data_analyst')"
-      param :display_name, desc: "Human-readable display name (e.g., 'Data Analyst')"
-      param :description, desc: "The agent's role and system prompt description"
-      param :tools, desc: "Array of tool class names the agent should have (e.g., ['Daan::Core::Read', 'Daan::Core::Write'])"
-      param :delegates_to, desc: "Array of agent names this agent can delegate to (optional, defaults to empty array)"
-      param :workspace, desc: "Relative workspace path (optional, e.g., 'tmp/workspaces/data_analyst')"
-      param :model, desc: "AI model to use (optional, defaults to 'claude-sonnet-4-20250514')"
-      param :max_turns, desc: "Maximum conversation turns (optional, defaults to 10)"
+      description "Create a new agent configuration file"
+      param :agent_name, desc: "The internal name for the agent (e.g., 'data_analyst')"
+      param :display_name, desc: "The human-readable display name (e.g., 'Data Analyst')"
+      param :description, desc: "The agent's role and capabilities description"
+      param :tools, desc: "Array of tool class names the agent can use (optional)", required: false
+      param :delegates_to, desc: "Array of agent names this agent can delegate to (optional)", required: false
+      param :workspace, desc: "Relative workspace path for the agent (optional)", required: false
+      param :model, desc: "AI model to use (optional, defaults to claude-sonnet-4-20250514)", required: false
+      param :max_turns, desc: "Maximum conversation turns (optional, defaults to 10)", required: false
 
       def initialize(workspace: nil, chat: nil)
-        @workspace = workspace
+        @chat = chat
       end
 
-      def execute(agent_name:, display_name:, description:, tools:, delegates_to: [], workspace: nil, model: "claude-sonnet-4-20250514", max_turns: 10)
-        # Validate agent name format
-        unless agent_name.match?(/\A[a-z_]+\z/)
-          return "Error: agent_name must be lowercase with underscores only (e.g., 'data_analyst')"
+      def execute(agent_name:, display_name:, description:, tools: nil, delegates_to: nil, workspace: nil, model: nil, max_turns: nil)
+        # Validate agent_name format
+        unless agent_name.match?(/\A[a-z][a-z0-9_]*\z/)
+          return "Error: agent_name must start with a lowercase letter and contain only lowercase letters, numbers, and underscores"
         end
-
-        agent_file_path = Rails.root.join("lib/daan/core/agents/#{agent_name}.md")
 
         # Check if agent already exists
-        if agent_file_path.exist?
-          return "Error: Agent '#{agent_name}' already exists at #{agent_file_path}"
+        agents_dir = Rails.root.join("lib/daan/core/agents")
+        agent_file = agents_dir.join("#{agent_name}.md")
+        
+        if agent_file.exist?
+          return "Error: Agent '#{agent_name}' already exists"
         end
 
-        # Validate tools exist
-        tools = Array(tools)
+        # Set defaults
+        model ||= "claude-sonnet-4-20250514"
+        max_turns ||= 10
+        tools ||= []
+        delegates_to ||= []
+
+        # Validate tool names exist
         tools.each do |tool_name|
           begin
             Object.const_get(tool_name)
@@ -39,45 +45,56 @@ module Daan
           end
         end
 
-        # Validate delegate agents exist (if any)
-        delegates_to = Array(delegates_to)
-        delegates_to.each do |delegate_name|
-          delegate_file = Rails.root.join("lib/daan/core/agents/#{delegate_name}.md")
-          unless delegate_file.exist?
-            return "Error: Delegate agent '#{delegate_name}' does not exist"
+        # Validate delegate agents exist (only check if not empty)
+        unless delegates_to.empty?
+          delegates_to.each do |delegate_name|
+            delegate_file = agents_dir.join("#{delegate_name}.md")
+            unless delegate_file.exist?
+              return "Error: Delegate agent '#{delegate_name}' does not exist"
+            end
           end
         end
 
-        # Create the agent file content
+        # Build frontmatter
         frontmatter = {
           "name" => agent_name,
           "display_name" => display_name,
           "model" => model,
-          "max_turns" => max_turns,
-          "delegates_to" => delegates_to,
-          "tools" => tools
+          "max_turns" => max_turns
         }
 
-        # Add workspace if provided
         frontmatter["workspace"] = workspace if workspace
+        frontmatter["delegates_to"] = delegates_to unless delegates_to.empty?
+        frontmatter["tools"] = tools unless tools.empty?
 
-        frontmatter_yaml = frontmatter.to_yaml
-
-        agent_content = <<~CONTENT
-          #{frontmatter_yaml}---
-          #{description.strip}
-        CONTENT
-
-        # Write the agent file
-        agent_file_path.write(agent_content)
-
-        # Create workspace directory if specified
-        if workspace
-          workspace_path = Rails.root.join(workspace)
-          workspace_path.mkpath unless workspace_path.exist?
+        # Build file content
+        content = "---\n"
+        frontmatter.each do |key, value|
+          if value.is_a?(Array)
+            content << "#{key}:\n"
+            value.each { |item| content << "  - #{item}\n" }
+          else
+            content << "#{key}: #{value}\n"
+          end
         end
+        content << "---\n"
+        content << description
 
-        "Successfully created agent '#{agent_name}' (#{display_name}) at #{agent_file_path}"
+        # Write the file
+        agent_file.write(content)
+
+        # Reload the agent registry to include the new agent
+        begin
+          definition = Daan::AgentLoader.parse(agent_file)
+          agent = Daan::Agent.new(**definition)
+          Daan::AgentRegistry.register(agent)
+          
+          "Successfully created agent '#{agent_name}' (#{display_name})"
+        rescue => e
+          # If there's an error registering, clean up the file
+          agent_file.delete if agent_file.exist?
+          "Error: Failed to register agent - #{e.message}"
+        end
       end
     end
   end
