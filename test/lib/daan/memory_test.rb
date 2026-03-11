@@ -6,6 +6,8 @@ class Daan::MemoryTest < ActiveSupport::TestCase
   end
 
   test "storage is memoized (same object on every call)" do
-    assert_equal Daan::Memory.storage.object_id, Daan::Memory.storage.object_id
+    first = Daan::Memory.storage
+    second = Daan::Memory.storage
+    assert_same first, second
   end
 end

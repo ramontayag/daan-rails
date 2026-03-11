@@ -1,5 +1,6 @@
 module Daan
   module Memory
+    # Thread-safe: @storage is set at boot by the initializer before Puma spawns threads.
     def self.storage
       @storage ||= SwarmMemory::Core::Storage.new(
         adapter: SwarmMemory::Adapters::FilesystemAdapter.new(
