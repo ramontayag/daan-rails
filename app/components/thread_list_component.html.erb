@@ -1,0 +1,15 @@
+<div class="<%= open_chat ? 'hidden md:flex' : 'flex' %> flex-col w-full md:w-96 border-r border-gray-200"
+     data-testid="thread-list-column">
+  <div class="flex-1 overflow-y-auto">
+    <% if chats.any? %>
+      <ul>
+        <% chats.each do |chat| %>
+          <%= render ThreadListItemComponent.new(chat: chat, open: chat == open_chat) %>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-gray-400 text-sm p-4">No conversations yet.</p>
+    <% end %>
+  </div>
+  <%= render ComposeBarComponent.new(action: chat_agent_threads_path(agent), readonly: readonly) %>
+</div>

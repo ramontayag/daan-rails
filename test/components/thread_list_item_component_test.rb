@@ -46,8 +46,21 @@ class ThreadListItemComponentTest < ActiveSupport::TestCase
     assert_not_includes rendered_content, "1 replies"
   end
 
-  test "link targets thread_panel turbo frame" do
+  test "link navigates directly to thread url (no turbo frame target)" do
     render_inline(ThreadListItemComponent.new(chat: @chat))
-    assert_includes rendered_content, "data-turbo-frame=\"thread_panel\""
+    assert_not_includes rendered_content, "data-turbo-frame"
+    assert_includes rendered_content, "href=\"/chat/threads/#{@chat.id}\""
+  end
+
+  test "shows selected style when open" do
+    render_inline(ThreadListItemComponent.new(chat: @chat, open: true))
+    assert_includes rendered_content, "bg-blue-50"
+    assert_not_includes rendered_content, "hover:bg-gray-50"
+  end
+
+  test "shows hover style when not open" do
+    render_inline(ThreadListItemComponent.new(chat: @chat))
+    assert_includes rendered_content, "hover:bg-gray-50"
+    assert_not_includes rendered_content, "bg-blue-50"
   end
 end

@@ -1,11 +1,12 @@
 class ThreadListItemComponent < ViewComponent::Base
-  def initialize(chat:)
+  def initialize(chat:, open: false)
     @chat = chat
+    @open = open
   end
 
   private
 
-  attr_reader :chat
+  attr_reader :chat, :open
 
   def preview_text
     chat.messages.find { |m| m.role == "user" }&.content&.truncate(80) || "(empty)"
