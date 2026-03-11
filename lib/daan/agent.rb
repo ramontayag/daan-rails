@@ -9,7 +9,7 @@ module Daan
     end
 
     def tools(chat: nil)
-      base_tools.map { |t| t.new(workspace: workspace, chat: chat) }
+      base_tools.map { |t| t.new(workspace: workspace, chat: chat, storage: Daan::Memory.storage) }
     end
 
     def to_param
