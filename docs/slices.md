@@ -19,6 +19,27 @@ Vertical slices of Shape A (Event-Driven Agent Team). Each slice ends in demo-ab
 | **V5** | Memory | A1 (Memory model), A6 | Agent remembers context from a prior task, uses it in a new one |
 | **V6** | Self-modification | A4 (git tools), A9 | Agent creates a branch, commits changes, opens a PR |
 | **V7** | Context compaction | A3 (compaction) | Long conversation stays coherent after compaction |
+| **V8** | CoS discovers team | NA1, NA10 | "Who is on your team?" → CoS calls ListAgents, describes all agents |
+| **V9** | Developer self-modifies in dev | NA2, NA5, NA7, NA8 | Developer makes a code change, pushes branch, MergeBranchToSelf → visible immediately |
+| **V10** | ARM self-modifies agent definitions | NA6 (updated), NA9 | CoS asks ARM to add QA Engineer → ARM clones, CreateAgent, commits, pushes, merges → new agent in sidebar |
+
+---
+
+## V10: ARM Self-Modifies Agent Definitions
+
+See [docs/plans/V10-plan.md](plans/V10-plan.md) for full slice detail.
+
+---
+
+## V9: Developer Self-Modifies in Dev
+
+See [docs/plans/V9-plan.md](plans/V9-plan.md) for full slice detail.
+
+---
+
+## V8: CoS Discovers Team
+
+See [docs/plans/V8-plan.md](plans/V8-plan.md) for full slice detail.
 
 ---
 
