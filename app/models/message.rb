@@ -4,7 +4,7 @@ class Message < ApplicationRecord
   belongs_to :compacted_message, class_name: "Message", optional: true,
                                  counter_cache: :compacted_messages_count
   has_many :compacted_messages, class_name: "Message", foreign_key: :compacted_message_id,
-                                inverse_of: :compacted_message
+                                inverse_of: :compacted_message, dependent: :nullify
 
   scope :active, -> { where(compacted_message_id: nil) }
 
