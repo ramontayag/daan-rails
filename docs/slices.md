@@ -52,6 +52,12 @@ See [docs/plans/V2-plan.md](plans/V2-plan.md) for full slice detail (parts, affo
 
 ---
 
+## V7: Context Compaction
+
+See [docs/plans/V7-plan.md](plans/V7-plan.md) for full slice detail (parts, tasks, demo script).
+
+---
+
 ## V1: Human Chats With One Agent
 
 See [docs/plans/V1-slice.md](plans/V1-slice.md) for full slice detail (parts, affordances, wiring, demo script).
