@@ -34,14 +34,6 @@ shaping: true
 require "test_helper"
 
 class Daan::Core::ListAgentsTest < ActiveSupport::TestCase
-  setup do
-    Daan::AgentRegistry.clear
-  end
-
-  teardown do
-    Daan::AgentRegistry.clear
-  end
-
   test "returns formatted list of all registered agents" do
     agent = Daan::Agent.new(
       name: "developer",
@@ -56,7 +48,7 @@ class Daan::Core::ListAgentsTest < ActiveSupport::TestCase
     tool = Daan::Core::ListAgents.new
     result = tool.execute
 
-    assert_includes result, "Developer"
+    assert_includes result, "Developer (developer)"
     assert_includes result, "Daan::Core::Read"
   end
 
@@ -64,12 +56,6 @@ class Daan::Core::ListAgentsTest < ActiveSupport::TestCase
     tool = Daan::Core::ListAgents.new
     result = tool.execute
     assert_includes result, "No agents"
-  end
-
-  test "absorbs unknown kwargs silently" do
-    assert_nothing_raised do
-      Daan::Core::ListAgents.new(workspace: nil, chat: nil, allowed_commands: [])
-    end
   end
 end
 ```
@@ -90,7 +76,7 @@ module Daan
       description "List all registered agents on the team — their names, descriptions, and tools. " \
                   "Use this to understand who is available and what each agent can do before delegating."
 
-      def initialize(**)
+      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil, allowed_commands: nil)
       end
 
       def execute
@@ -99,7 +85,7 @@ module Daan
 
         agents.map do |agent|
           tools = agent.base_tools.map(&:name).join(", ")
-          tools_line = tools.present? ? "\n  Tools: #{tools}" : ""
+          tools_line = tools.empty? ? "" : "\n  Tools: #{tools}"
           "#{agent.display_name} (#{agent.name})#{tools_line}"
         end.join("\n\n")
       end
@@ -141,9 +127,13 @@ Add `Daan::Core::ListAgents` to the tools list. Add a note to the system prompt 
 ```markdown
 tools:
   - Daan::Core::DelegateTask
-  - Daan::Core::ReportBack
   - Daan::Core::ListAgents
-  # ... existing tools
+  - SwarmMemory::Tools::MemoryWrite
+  - SwarmMemory::Tools::MemoryRead
+  - SwarmMemory::Tools::MemoryEdit
+  - SwarmMemory::Tools::MemoryDelete
+  - SwarmMemory::Tools::MemoryGlob
+  - SwarmMemory::Tools::MemoryGrep
 ```
 
 Add to the system prompt body:
