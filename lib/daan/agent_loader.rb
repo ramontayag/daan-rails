@@ -11,7 +11,8 @@ module Daan
       workspace_rel = fm["workspace"]
       workspace = workspace_rel ? Workspace.new(Rails.root.join(workspace_rel)) : nil
 
-      system_prompt = parsed.content.strip
+      base_dir = Pathname(file_path).dirname
+      system_prompt = resolve_includes(parsed.content.strip, base_dir)
       if workspace
         system_prompt += "\n\n" + workspace_instructions(workspace)
       end
@@ -27,6 +28,12 @@ module Daan
         delegates_to:     fm.fetch("delegates_to", []),
         allowed_commands: fm.fetch("allowed_commands", [])
       }
+    end
+
+    def self.resolve_includes(content, base_dir)
+      content.gsub(/\{\{include:\s*(.+?)\}\}/) do
+        base_dir.join($1.strip).read.strip
+      end
     end
 
     def self.workspace_instructions(workspace)

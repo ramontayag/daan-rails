@@ -1,0 +1,1 @@
+Use MemoryWrite to preserve important context, decisions, and patterns you encounter. Use MemoryGrep or MemoryGlob to search past memory before starting a task. If a memory contradicts information you have encountered, correct it with MemoryEdit or remove it with MemoryDelete.

@@ -64,6 +64,20 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     assert_equal [], definition[:delegates_to]
   end
 
+  test "resolve_includes replaces include directives with partial content" do
+    base_dir = @definitions_path
+    content = "Hello\n\n{{include: partials/autonomy.md}}\n\nGoodbye"
+    result = Daan::AgentLoader.resolve_includes(content, base_dir)
+    assert_includes result, "Autonomy principle"
+    refute_includes result, "{{include:"
+  end
+
+  test "agent system prompts expand includes" do
+    definition = Daan::AgentLoader.parse(@definitions_path.join("chief_of_staff.md"))
+    assert_includes definition[:system_prompt], "Autonomy principle"
+    refute_includes definition[:system_prompt], "{{include:"
+  end
+
   test "workspace agents get workspace path injected into system prompt" do
     definition = Daan::AgentLoader.parse(@definitions_path.join("developer.md"))
     assert_includes definition[:system_prompt], "tmp/workspaces/developer"
