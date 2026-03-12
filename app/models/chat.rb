@@ -63,4 +63,14 @@ class Chat < ApplicationRecord
       renderable: AgentItemComponent.new(agent: agent)
     )
   end
+
+  private
+
+  # RubyLLM calls this private hook (defined in RubyLLM::ActiveRecord::ChatMethods,
+  # chat_methods.rb) before every API call. We call super first so RubyLLM can apply
+  # its own ordering, then reject archived originals so they are never sent to the API.
+  # Overriding this hook keeps chat.messages a clean, unscoped Rails association.
+  def order_messages_for_llm(messages)
+    super(messages.reject { |m| m.compacted_message_id.present? })
+  end
 end

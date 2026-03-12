@@ -23,5 +23,20 @@ module ActiveSupport
 
     setup    { Daan::AgentRegistry.clear }
     teardown { Daan::AgentRegistry.clear }
+
+    private
+
+    def fake_anthropic_response(text: "ok")
+      {
+        id: "msg_fake",
+        type: "message",
+        role: "assistant",
+        model: "claude-haiku-4-5-20251001",
+        content: [ { type: "text", text: text } ],
+        stop_reason: "end_turn",
+        stop_sequence: nil,
+        usage: { input_tokens: 10, output_tokens: 5 }
+      }.to_json
+    end
   end
 end
