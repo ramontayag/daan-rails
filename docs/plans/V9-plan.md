@@ -9,15 +9,14 @@ shaping: true
 **Goal:** The Developer can push a feature branch to `DAAN_SELF_REPO` and immediately see the changes in the running app via `MergeBranchToSelf`. In production the tool is absent — the Developer opens a PR to `main` instead (already works via V6). This slice makes dev self-modification a first-class workflow.
 
 **Architecture:**
-- `Daan::Core::MergeBranchToSelf` — new tool, param: `branch`. Runs `git fetch && git checkout develop && git merge origin/<branch>` in `Rails.root`, then calls `AgentLoader.sync!`. Only available in dev via `config/agents/developer.md` override.
-- `config/agents/developer.md` — new file in `config/agents/`, adds `MergeBranchToSelf` to the Developer's tool list. This file only exists in dev environments (not committed for prod deployments, or managed via env-specific config).
-- `DAAN_SELF_REPO` env var — already used by the Developer via Bash to clone the repo. No new usage needed; the tool operates on `Rails.root` which is always the self repo in dev.
-- `AgentLoader.sync!` — existing method; called after merge so new/changed agent definitions take effect without restart.
-- Developer system prompt — updated to describe the dev self-modification workflow step that calls `MergeBranchToSelf` after pushing.
+- `config/agents/` override directory — loaded after `lib/daan/core/agents/` in development only. Same-name file wins. Committed to the repo; the initializer only loads it in development, so prod is unaffected.
+- `Daan::Core::MergeBranchToSelf` — new tool, param: `branch`. Runs `git fetch origin`, `git checkout develop`, `git merge origin/<branch>` in `Rails.root` (array form, no shell), then re-syncs both agent directories. Only available in dev via `config/agents/developer.md` override.
+- `config/agents/developer.md` — dev override adding `MergeBranchToSelf` to the Developer's tool list.
+- `DAAN_SELF_REPO` env var — injected into agent workspace instructions by `AgentLoader` (already implemented).
 
 **Git flow assumption:** A `develop` branch exists on `DAAN_SELF_REPO`. Create it before running the demo if it doesn't exist.
 
-**Not in V9:** ARM git access (V10). Running `db:migrate` after merge (add later if needed — Rails dev mode picks up most changes without it).
+**Not in V9:** ARM git access (V10). Running `db:migrate` after merge.
 
 **Tech Stack:** Rails 8.1, stdlib `Open3`, Minitest
 
@@ -25,7 +24,104 @@ shaping: true
 
 ## Implementation Plan
 
-### Task 1: `Daan::Core::MergeBranchToSelf` tool
+### Task 1: Load `config/agents/` overrides in development
+
+The initializer currently only loads `lib/daan/core/agents/`. Override support must land before `MergeBranchToSelf` exists, because `MergeBranchToSelf#execute` must re-sync both directories so the Developer doesn't lose its own tool after a sync.
+
+**Files:**
+- Create: `config/agents/.gitkeep`
+- Modify: `config/initializers/daan.rb`
+- Create: `test/lib/daan/agent_loader_override_test.rb`
+
+**Step 1: Write failing test**
+
+```ruby
+# test/lib/daan/agent_loader_override_test.rb
+require "test_helper"
+
+class AgentLoaderOverrideTest < ActiveSupport::TestCase
+  test "config/agents/ override takes precedence over lib/daan/core/agents/" do
+    base_dir = Dir.mktmpdir
+    override_dir = Dir.mktmpdir
+
+    File.write(File.join(base_dir, "tester.md"), <<~MD)
+      ---
+      name: tester
+      display_name: Tester Base
+      model: claude-sonnet-4-20250514
+      max_turns: 5
+      ---
+      Base prompt.
+    MD
+
+    File.write(File.join(override_dir, "tester.md"), <<~MD)
+      ---
+      name: tester
+      display_name: Tester Override
+      model: claude-sonnet-4-20250514
+      max_turns: 5
+      ---
+      Override prompt.
+    MD
+
+    Daan::AgentLoader.sync!(base_dir)
+    Daan::AgentLoader.sync!(override_dir)
+
+    agent = Daan::AgentRegistry.find("tester")
+    assert_equal "Tester Override", agent.display_name
+  ensure
+    FileUtils.rm_rf(base_dir)
+    FileUtils.rm_rf(override_dir)
+  end
+end
+```
+
+**Step 2: Run to confirm the test passes**
+
+`sync!` called twice already gives override-wins behaviour because `AgentRegistry.register` overwrites by name. This test should pass immediately — confirming the contract before we rely on it.
+
+```
+bin/rails test test/lib/daan/agent_loader_override_test.rb
+```
+
+**Step 3: Update initializer to load overrides in development**
+
+```ruby
+# config/initializers/daan.rb
+Rails.application.config.to_prepare do
+  next if Rails.env.test? # Tests load the registry explicitly in setup
+  Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+  if Rails.env.development?
+    override_dir = Rails.root.join("config/agents")
+    Daan::AgentLoader.sync!(override_dir) if override_dir.exist?
+  end
+end
+```
+
+**Step 4: Create `config/agents/` directory**
+
+```bash
+mkdir -p config/agents
+touch config/agents/.gitkeep
+```
+
+**Step 5: Run full suite**
+
+```
+bin/rails test && bin/rails test:system
+```
+
+**Step 6: Commit**
+
+```bash
+git add config/initializers/daan.rb config/agents/.gitkeep \
+        test/lib/daan/agent_loader_override_test.rb
+git commit -m "feat: load config/agents/ overrides in development — same-name file wins"
+```
+
+---
+
+### Task 2: `Daan::Core::MergeBranchToSelf` tool
 
 **Files:**
 - Create: `lib/daan/core/merge_branch_to_self.rb`
@@ -38,39 +134,54 @@ shaping: true
 require "test_helper"
 
 class Daan::Core::MergeBranchToSelfTest < ActiveSupport::TestCase
-  test "absorbs unknown kwargs silently" do
-    assert_nothing_raised do
-      Daan::Core::MergeBranchToSelf.new(workspace: nil, chat: nil, allowed_commands: [])
-    end
+  def fake_status(success:, exitstatus: 0)
+    s = Object.new
+    s.define_singleton_method(:success?) { success }
+    s.define_singleton_method(:exitstatus) { exitstatus }
+    s
   end
 
-  test "calls git fetch, checkout develop, merge, then AgentLoader.sync!" do
-    tool = Daan::Core::MergeBranchToSelf.new
+  test "runs git fetch, checkout develop, merge in sequence" do
     commands_run = []
+    tool = Daan::Core::MergeBranchToSelf.new
 
-    Open3.stub(:capture3, ->(cmd, **opts) {
+    Open3.stub(:capture3, ->(*cmd, **_opts) {
       commands_run << cmd
-      ["", "", stub(success?: true)]
+      ["", "", fake_status(success: true)]
     }) do
-      Daan::AgentLoader.stub(:sync!, nil) do
+      Daan::AgentLoader.stub(:sync!, ->(*) {}) do
         tool.execute(branch: "feature/test-branch")
       end
     end
 
-    assert_includes commands_run, "git fetch origin"
-    assert_includes commands_run, "git checkout develop"
-    assert_includes commands_run, "git merge origin/feature/test-branch"
+    assert_equal [%w[git fetch origin],
+                  %w[git checkout develop],
+                  %w[git merge origin/feature/test-branch]], commands_run
   end
 
-  test "raises if git command fails" do
+  test "calls AgentLoader.sync! for both agent directories" do
+    synced_dirs = []
     tool = Daan::Core::MergeBranchToSelf.new
 
-    Open3.stub(:capture3, ->(*) {
-      ["", "fatal: branch not found", stub(success?: false, exitstatus: 128)]
+    Open3.stub(:capture3, ->(*_cmd, **_opts) {
+      ["", "", fake_status(success: true)]
     }) do
-      assert_raises(RuntimeError) do
-        tool.execute(branch: "feature/nonexistent")
+      Daan::AgentLoader.stub(:sync!, ->(dir) { synced_dirs << dir.to_s }) do
+        tool.execute(branch: "feature/test-branch")
       end
+    end
+
+    assert_includes synced_dirs, Rails.root.join("lib/daan/core/agents").to_s
+    assert_includes synced_dirs, Rails.root.join("config/agents").to_s
+  end
+
+  test "raises if a git command fails" do
+    tool = Daan::Core::MergeBranchToSelf.new
+
+    Open3.stub(:capture3, ->(*_cmd, **_opts) {
+      ["", "fatal: branch not found", fake_status(success: false, exitstatus: 128)]
+    }) do
+      assert_raises(RuntimeError) { tool.execute(branch: "feature/nonexistent") }
     end
   end
 end
@@ -96,25 +207,27 @@ module Daan
                   "branch to see changes immediately. Only use in development."
       param :branch, desc: "The feature branch name to merge into develop (e.g. 'feature/add-qa-agent')"
 
-      def initialize(**)
+      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil, allowed_commands: nil)
       end
 
       def execute(branch:)
         app_root = Rails.root.to_s
-        run!("git fetch origin", app_root)
-        run!("git checkout develop", app_root)
-        run!("git merge origin/#{branch}", app_root)
+        run!(%w[git fetch origin], app_root)
+        run!(%w[git checkout develop], app_root)
+        run!(["git", "merge", "origin/#{branch}"], app_root)
         Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+        override_dir = Rails.root.join("config/agents")
+        Daan::AgentLoader.sync!(override_dir) if override_dir.exist?
         "Merged origin/#{branch} into develop and reloaded agent definitions."
       end
 
       private
 
       def run!(cmd, dir)
-        stdout, stderr, status = Open3.capture3(cmd, chdir: dir)
+        stdout, stderr, status = Open3.capture3(*cmd, chdir: dir)
         return if status.success?
         output = [ stdout, stderr ].reject(&:empty?).join("\n")
-        raise "#{cmd} failed (exit #{status.exitstatus}): #{output}"
+        raise "#{cmd.join(' ')} failed (exit #{status.exitstatus}): #{output}"
       end
     end
   end
@@ -136,27 +249,28 @@ bin/rails test && bin/rails test:system
 **Step 6: Commit**
 
 ```bash
-git add lib/daan/core/merge_branch_to_self.rb test/lib/daan/core/merge_branch_to_self_test.rb
+git add lib/daan/core/merge_branch_to_self.rb \
+        test/lib/daan/core/merge_branch_to_self_test.rb
 git commit -m "feat: MergeBranchToSelf tool — merge feature branch into develop and hot-reload agents"
 ```
 
 ---
 
-### Task 2: Developer dev override + system prompt update
+### Task 3: Developer dev override + system prompt update
 
 **Files:**
 - Create: `config/agents/developer.md`
 
-**Step 1: Create config/agents/ directory if absent and add developer.md override**
+**Step 1: Create the dev override**
 
-The override adds `MergeBranchToSelf` to the tool list and appends a dev self-modification workflow step to the system prompt.
+Copy the full current `lib/daan/core/agents/developer.md` content, add `Daan::Core::MergeBranchToSelf` to the tools list, and extend the PR workflow steps to include the dev path. Keep `max_turns: 15`.
 
 ```markdown
 ---
 name: developer
 display_name: Developer
 model: claude-sonnet-4-20250514
-max_turns: 20
+max_turns: 15
 workspace: tmp/workspaces/developer
 delegates_to: []
 allowed_commands:
@@ -193,33 +307,23 @@ When asked to make a code change to a repository and open a pull request:
 2. Bash: `[["git", "checkout", "-b", "<branch-name>"]]` with path set to the destination — creates your working branch.
 3. Use Write (and Read if needed) to make the file changes. Use path relative to the destination directory inside your workspace.
 4. Bash: `[["git", "add", "-A"], ["git", "commit", "-m", "<message>"]]` with path set to the destination — stage and commit in one call.
-5. Bash: `[["git", "push", "origin", "<branch-name>"]]` with path set to the destination — pushes the branch.
+5. Bash: `[["git", "push", "origin", "<branch-name>"]]` with path set to the destination — pushes the branch. Authentication is handled automatically by `gh repo clone`. Do not run `gh auth login` — it requires interactive input and will time out.
 6. **In development (you have MergeBranchToSelf):** Call MergeBranchToSelf with the branch name — this merges the branch into develop in the running app and reloads agent definitions immediately. Skip opening a PR.
 7. **In production (no MergeBranchToSelf):** Bash: `[["gh", "pr", "create", "--title", "<title>", "--body", "<body>", "--base", "main", "--head", "<branch-name>"]]` — opens the PR and returns its URL.
 8. ReportBack with the outcome (merge confirmation in dev, PR URL in prod).
 ```
 
-**Step 2: Ensure `config/agents/` is picked up by AgentLoader**
-
-Verify `Daan::AgentLoader` loads from `config/agents/` with same-name-wins precedence (per D13/A2 in shaping.md). If not yet implemented, add it now.
-
-```ruby
-# In AgentLoader.sync! or wherever definitions are loaded:
-# 1. Load lib/daan/core/agents/*.md
-# 2. Load config/agents/*.md — same-name file takes precedence
-```
-
-**Step 3: Run full suite**
+**Step 2: Run full suite**
 
 ```
 bin/rails test && bin/rails test:system
 ```
 
-**Step 4: Commit**
+**Step 3: Commit**
 
 ```bash
 git add config/agents/developer.md
-git commit -m "feat: dev override for Developer — adds MergeBranchToSelf for immediate self-mod in development"
+git commit -m "feat: dev override for Developer — MergeBranchToSelf for immediate self-mod in development"
 ```
 
 ---
