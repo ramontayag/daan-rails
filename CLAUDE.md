@@ -67,6 +67,16 @@ DB query fires during rendering. Production callers omit the param and get the l
 lookup. Use `find_or_create_by!` (not `create!`) in previews to avoid uniqueness
 errors on repeated renders.
 
+## lib/ is a future gem — respect the boundary
+
+`lib/daan/core/` will be extracted as a standalone gem. Do not couple `config/`
+(deployment layer) to `lib/` internals.
+
+- Override files in `config/agents/` must be self-contained — inline partial
+  content rather than using `{{include:}}` pointing into `lib/`
+- Never symlink `config/` paths into `lib/`
+- Agent partials under `lib/daan/core/agents/partials/` are gem internals
+
 ## Jobs are thin wrappers around services
 
 Jobs call a service and nothing else. The service holds all logic.

@@ -23,6 +23,16 @@ Things you may want to cover:
 
 * ...
 
+# Architecture
+
+This repo is the **reference deployment** for the Daan agent platform. It is structured in three layers that will eventually be separated:
+
+- **`lib/daan/core/`** — agent runtime (loader, registry, tools, memory). Will become the `daan-core` gem.
+- **`lib/daan/chat/`** — Slack-like chat UI engine. Will become the `daan-ui` Rails engine.
+- **`config/agents/`** — deployment-level agent overrides (this repo only).
+
+Keep `config/` and `app/` free of direct references to `lib/daan/core/` internals. The boundary between the future gem and the deployment app should stay clean now, so extraction is painless later.
+
 # Setup
 
 Fill out the `.env.local` file:
