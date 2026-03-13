@@ -12,5 +12,5 @@
 <% else %>
   <%= render MessageComponent.new(role: message.role, body: message.content,
                                  dom_id: "message_#{message.id}",
-                                 sender_name: sender_name) %>
+                                 sender_name: sender_name, message: message) %>
 <% end %>

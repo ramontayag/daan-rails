@@ -12,5 +12,10 @@
     <div class="prose prose-sm max-w-none">
       <%= rendered_body %>
     </div>
+    <% if message&.summary? %>
+      <p class="mt-2 text-xs text-gray-400">
+        <%= message.compacted_messages_count %> messages archived
+      </p>
+    <% end %>
   </div>
 </div>
