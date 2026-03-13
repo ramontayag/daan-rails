@@ -37,6 +37,10 @@ module Daan
       # update_all bypasses callbacks so the counter cache needs a manual reset
       Message.reset_counters(summary.id, :compacted_messages)
 
+      to_compact.each do |message|
+        Turbo::StreamsChannel.broadcast_remove_to("chat_#{chat.id}", target: "message_#{message.id}")
+      end
+
       summary
     end
 

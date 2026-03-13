@@ -2,6 +2,7 @@ require "test_helper"
 require "ostruct"
 
 class Daan::CompactConversationTest < ActiveSupport::TestCase
+  include ActionCable::TestHelper
   setup do
     @chat = chats(:hello_cos)
     @agent = Daan::Agent.new(
@@ -21,6 +22,16 @@ class Daan::CompactConversationTest < ActiveSupport::TestCase
       Daan::CompactConversation.call(@chat, @agent)
     end
     assert_equal 5, Message.where(chat_id: @chat.id).where.not(compacted_message_id: nil).count
+  end
+
+  test "broadcasts remove for each archived message" do
+    archived_ids = Message.active.where(chat_id: @chat.id).order(:id).first(5).map(&:id)
+
+    stub_compaction_llm("Summary.") do
+      assert_broadcasts("chat_#{@chat.id}", 6) do  # 1 summary append + 5 removes
+        Daan::CompactConversation.call(@chat, @agent)
+      end
+    end
   end
 
   test "summary message has role assistant and correct content" do
