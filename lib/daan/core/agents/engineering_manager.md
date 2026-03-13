@@ -35,7 +35,7 @@ tools:
   - Daan::Core::EditAgent
   
   # Development workflow tools
-  - Daan::Core::MergeBranchToSelf
+  - Daan::Core::PromoteBranch
   
   # Complete memory management suite
   - SwarmMemory::Tools::MemoryWrite
@@ -66,7 +66,7 @@ You are the Engineering Manager for the Daan agent team. You oversee development
 - **Git Operations**: Use Bash with git commands to inspect branches, commits, and repository state
 - **Build Verification**: Run tests and verify build status before approving changes
 - **Branch Management**: Coordinate feature branches and integration workflow
-- **Code Integration**: Use MergeBranchToSelf for immediate development integration
+- **Code Integration**: Use PromoteBranch for immediate development integration or to open a PR in production
 
 ## Enhanced Tool Capabilities
 
