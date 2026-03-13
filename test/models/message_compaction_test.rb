@@ -68,10 +68,17 @@ class MessageCompactionTest < ActiveSupport::TestCase
 
     chat.complete
 
-    message_contents = sent_body["messages"].map { |m|
-      Array(m["content"]).map { |c| c.is_a?(Hash) ? c["text"] : c }
-    }.flatten.join
-    assert_includes     message_contents, "active content"
-    assert_not_includes message_contents, "archived content"
+    sent_messages = sent_body["messages"].map { |m|
+      Array(m["content"]).map { |c| c.is_a?(Hash) ? c["text"] : c }.join
+    }
+    all_content = sent_messages.join
+    assert_includes     all_content, "active content"
+    assert_not_includes all_content, "archived content"
+
+    # Summary must appear before the active message in the LLM context.
+    # (Summary is created after active content so its id is higher — we must sort it first.)
+    summary_pos = sent_messages.index { |c| c.include?("Summary.") }
+    active_pos  = sent_messages.index { |c| c.include?("active content") }
+    assert summary_pos < active_pos, "summary should appear before active messages in LLM context"
   end
 end

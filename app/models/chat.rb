@@ -67,10 +67,12 @@ class Chat < ApplicationRecord
   private
 
   # RubyLLM calls this private hook (defined in RubyLLM::ActiveRecord::ChatMethods,
-  # chat_methods.rb) before every API call. We call super first so RubyLLM can apply
-  # its own ordering, then reject archived originals so they are never sent to the API.
-  # Overriding this hook keeps chat.messages a clean, unscoped Rails association.
+  # chat_methods.rb) before every API call. We reject archived originals, then sort
+  # summaries first — summaries are created after the messages they replace, so their
+  # id/created_at is later, but they must appear first in the LLM context.
   def order_messages_for_llm(messages)
-    super(messages.reject { |m| m.compacted_message_id.present? })
+    active = messages.reject { |m| m.compacted_message_id.present? }
+    summaries, regular = active.partition(&:summary?)
+    super(summaries + regular)
   end
 end
