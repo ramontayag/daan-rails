@@ -46,12 +46,11 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
       tool.define_singleton_method(:run!) { |*| nil }
       tool.define_singleton_method(:branch_exists_in_origin?) { |*| true }
       tool.define_singleton_method(:branch_already_merged?) { |*| false }
-      Daan::AgentLoader.singleton_class.define_method(:sync!) { |*| nil }
-      result = tool.execute(branch: "feature/my-change")
-      assert_includes result, "feature/my-change"
-      assert_includes result, "pull request"
-    ensure
-      Daan::AgentLoader.singleton_class.remove_method(:sync!)
+      with_stub_agent_loader_sync do
+        result = tool.execute(branch: "feature/my-change")
+        assert_includes result, "feature/my-change"
+        assert_includes result, "pull request"
+      end
     end
   end
 
@@ -145,5 +144,15 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
     s.define_singleton_method(:success?) { success }
     s.define_singleton_method(:exitstatus) { success ? 0 : 1 }
     s
+  end
+
+  def with_stub_agent_loader_sync
+    sc = Daan::AgentLoader.singleton_class
+    sc.alias_method(:__orig_sync__, :sync!)
+    sc.define_method(:sync!) { |*| nil }
+    yield
+  ensure
+    sc.alias_method(:sync!, :__orig_sync__)
+    sc.remove_method(:__orig_sync__)
   end
 end
