@@ -1,0 +1,20 @@
+name: Sync develop with main
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync-develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fast-forward develop to main
+        run: |
+          git checkout develop
+          git merge --ff-only origin/main
+          git push origin develop
