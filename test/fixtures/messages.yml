@@ -1,0 +1,17 @@
+# Messages fixtures for tests
+
+basic_user_message:
+  chat: hello_cos
+  role: user
+  content: "Hello, can you help me?"
+  visible: true
+  compacted_message_id: 
+  compacted_messages_count: 0
+
+basic_assistant_message:
+  chat: hello_cos
+  role: assistant
+  content: "Sure, I'd be happy to help!"
+  visible: true
+  compacted_message_id: 
+  compacted_messages_count: 0
