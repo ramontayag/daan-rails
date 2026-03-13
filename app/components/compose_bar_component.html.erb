@@ -10,7 +10,8 @@
           required: true,
           data: { testid: "message-input" } %>
       <%= f.submit "Send",
-          class: "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer",
+          class: "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed",
+          disable_with: "Sending...",
           data: { testid: "send-button" } %>
     <% end %>
   <% end %>
