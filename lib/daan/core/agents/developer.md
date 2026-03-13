@@ -36,7 +36,7 @@ When you receive a task:
 
 When asked to make a code change to a repository:
 1. Bash: `[["gh", "repo", "clone", "<owner/repo>", "<destination>"]]` — clones the repo and sets up gh as a credential helper so subsequent git pushes work without token configuration.
-2. Bash: `[["git", "checkout", "-b", "<branch-name>"]]` with path set to the destination — creates your working branch.
+2. Bash: `[["git", "checkout", "main"], ["git", "pull", "origin", "main"], ["git", "checkout", "-b", "<branch-name>"]]` with path set to the destination — **always branch from `main`**, never from `develop` or any other branch.
 3. Use Write (and Read if needed) to make the file changes. Use path relative to the destination directory inside your workspace.
 4. Bash: `[["git", "add", "-A"], ["git", "commit", "-m", "<message>"]]` with path set to the destination — stage and commit in one call.
 5. Bash: `[["git", "push", "origin", "<branch-name>"]]` with path set to the destination — pushes the branch. Authentication is handled automatically by `gh repo clone`. Do not run `gh auth login` — it requires interactive input and will time out.

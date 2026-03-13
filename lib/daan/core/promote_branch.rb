@@ -52,6 +52,7 @@ module Daan
         end
 
         run!(%w[git checkout develop], app_root)
+        run!(["git", "merge", "--ff-only", "origin/main"], app_root) rescue nil
         begin
           run!(["git", "merge", "origin/#{branch}"], app_root)
         rescue => e
