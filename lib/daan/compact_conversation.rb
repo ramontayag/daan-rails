@@ -32,7 +32,7 @@ module Daan
       return if to_compact.blank?
 
       summary_text = generate_summary(to_compact, agent)
-      summary = Daan::CreateMessage.call(chat, role: "assistant", content: summary_text)
+      summary = Daan::CreateMessage.call(chat, role: "assistant", content: summary_text, broadcast_action: :prepend)
       Message.where(id: to_compact.map(&:id)).update_all(compacted_message_id: summary.id)
       # update_all bypasses callbacks so the counter cache needs a manual reset
       Message.reset_counters(summary.id, :compacted_messages)
