@@ -21,6 +21,35 @@ After completing each task:
 
 Do not chain multiple tasks together without stopping for review.
 
+## Agent Self-Modification Workflow
+
+When modifying agent definitions or core tools:
+
+### Development Mode (with MergeBranchToSelf)
+1. Create feature branch: `git checkout -b feature/my-enhancement`
+2. Make changes to agent files or tools
+3. Commit changes: `git add -A && git commit -m "Description"`
+4. **CRITICAL: Push to GitHub origin**: `git push origin feature/my-enhancement`
+5. Use MergeBranchToSelf tool: merges branch and hot-reloads agent definitions
+6. Skip opening a PR — changes are live immediately
+
+### Production Mode (no MergeBranchToSelf)  
+1. Create feature branch and make changes
+2. Push to GitHub origin: `git push origin feature/my-enhancement`
+3. Open PR: `gh pr create --title "Title" --body "Description" --base main --head feature/my-enhancement`
+
+### MergeBranchToSelf Requirements
+- **Branch must exist in GitHub origin** before calling the tool
+- Tool validates branch exists and provides clear error if not: "Push it to GitHub first: git push origin branch-name"
+- Handles already-merged branches gracefully
+- Automatically reloads agent definitions after merge
+
+### Common Mistakes to Avoid
+- ❌ Calling MergeBranchToSelf on local-only branches (not pushed to GitHub)
+- ❌ Manually merging branches before calling MergeBranchToSelf
+- ❌ Forgetting to push feature branches to origin
+- ✅ Always push first, then call MergeBranchToSelf
+
 ## Let it crash
 
 Write for the happy path. Don't add defensive guards for inputs that can't
