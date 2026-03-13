@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_10_152318) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_12_222151) do
   create_table "chats", force: :cascade do |t|
     t.string "agent_name", null: false
     t.datetime "created_at", null: false
@@ -28,6 +28,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_10_152318) do
     t.integer "cache_creation_tokens"
     t.integer "cached_tokens"
     t.integer "chat_id", null: false
+    t.integer "compacted_message_id"
+    t.integer "compacted_messages_count", default: 0, null: false
     t.text "content"
     t.json "content_raw"
     t.datetime "created_at", null: false
@@ -42,6 +44,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_10_152318) do
     t.datetime "updated_at", null: false
     t.boolean "visible", default: true, null: false
     t.index ["chat_id"], name: "index_messages_on_chat_id"
+    t.index ["compacted_message_id"], name: "index_messages_on_compacted_message_id"
     t.index ["model_id"], name: "index_messages_on_model_id"
     t.index ["role"], name: "index_messages_on_role"
     t.index ["tool_call_id"], name: "index_messages_on_tool_call_id"
@@ -83,6 +86,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_10_152318) do
   add_foreign_key "chats", "chats", column: "parent_chat_id"
   add_foreign_key "chats", "models"
   add_foreign_key "messages", "chats"
+  add_foreign_key "messages", "messages", column: "compacted_message_id"
   add_foreign_key "messages", "models"
   add_foreign_key "messages", "tool_calls"
   add_foreign_key "tool_calls", "messages"

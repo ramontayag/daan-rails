@@ -22,7 +22,8 @@ class ThreadPanelComponent < ViewComponent::Base
   end
 
   def chat_messages
-    @chat_messages ||= chat.messages.where(visible: true).includes(:tool_calls).order(:created_at)
+    @chat_messages ||= chat.messages.active.where(visible: true).includes(:tool_calls)
+                           .order(Arel.sql("compacted_messages_count > 0 DESC"), :created_at)
   end
 
   def tool_results

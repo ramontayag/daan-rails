@@ -1,5 +1,6 @@
 # test/lib/daan/conversation_runner_test.rb
 require "test_helper"
+require "ostruct"
 
 class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   include ActionCable::TestHelper
@@ -124,6 +125,34 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   ensure
     msc.alias_method(:storage, :__orig_storage__)
     msc.remove_method(:__orig_storage__)
+  end
+
+  test "enqueues CompactJob when token count exceeds 80% of context window" do
+    @chat.messages.where(compacted_message_id: nil).delete_all
+    25.times do |i|
+      @chat.messages.create!(role: i.even? ? "user" : "assistant",
+                             content: "message #{i}", output_tokens: 40)
+    end
+    # 25 * 40 = 1000 tokens; 80% of 1000 = 800 → triggers compaction
+
+    @chat.define_singleton_method(:model) { OpenStruct.new(context_window: 1000) }
+    assert_enqueued_with(job: CompactJob) do
+      Daan::ConversationRunner.send(:enqueue_compaction_if_needed, @chat)
+    end
+  ensure
+    @chat.singleton_class.remove_method(:model) if @chat.singleton_class.method_defined?(:model, false)
+  end
+
+  test "does not enqueue CompactJob when token count is below threshold" do
+    @chat.messages.where(compacted_message_id: nil).delete_all
+    @chat.messages.create!(role: "user", content: "hi", output_tokens: 10)
+
+    @chat.define_singleton_method(:model) { OpenStruct.new(context_window: 1000) }
+    assert_no_enqueued_jobs(only: CompactJob) do
+      Daan::ConversationRunner.send(:enqueue_compaction_if_needed, @chat)
+    end
+  ensure
+    @chat.singleton_class.remove_method(:model) if @chat.singleton_class.method_defined?(:model, false)
   end
 
   # Temporarily override retrieve_memories using alias/restore on the singleton class.

@@ -63,4 +63,16 @@ class Chat < ApplicationRecord
       renderable: AgentItemComponent.new(agent: agent)
     )
   end
+
+  private
+
+  # RubyLLM calls this private hook (defined in RubyLLM::ActiveRecord::ChatMethods,
+  # chat_methods.rb) before every API call. We reject archived originals, then sort
+  # summaries first — summaries are created after the messages they replace, so their
+  # id/created_at is later, but they must appear first in the LLM context.
+  def order_messages_for_llm(messages)
+    active = messages.reject { |m| m.compacted_message_id.present? }
+    summaries, regular = active.partition(&:summary?)
+    super(summaries + regular)
+  end
 end
