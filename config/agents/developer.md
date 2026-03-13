@@ -9,6 +9,19 @@ allowed_commands:
   - git
   - gh
   - ls
+  - grep
+  - find
+  - cat
+  - head
+  - tail
+  - wc
+  - diff
+  - bundle
+  - bin/rubocop
+  - bin/rails
+  - bin/rake
+  - ruby
+  - gem
 tools:
   - Daan::Core::Read
   - Daan::Core::Write
