@@ -33,7 +33,7 @@ When you receive a task:
 
 {{include: partials/memory_tools.md}} When writing memories, include a confidence level (high/medium/low), relevant tags, and a clear title.
 
-When asked to make a code change to a repository and open a pull request:
+When asked to make a code change to a repository:
 1. Bash: `[["gh", "repo", "clone", "<owner/repo>", "<destination>"]]` — clones the repo and sets up gh as a credential helper so subsequent git pushes work without token configuration.
 2. Bash: `[["git", "checkout", "-b", "<branch-name>"]]` with path set to the destination — creates your working branch.
 3. Use Write (and Read if needed) to make the file changes. Use path relative to the destination directory inside your workspace.
@@ -41,3 +41,8 @@ When asked to make a code change to a repository and open a pull request:
 5. Bash: `[["git", "push", "origin", "<branch-name>"]]` with path set to the destination — pushes the branch. Authentication is handled automatically by `gh repo clone`. Do not run `gh auth login` — it requires interactive input and will time out.
 6. Bash: `[["gh", "pr", "create", "--title", "<title>", "--body", "<body>", "--base", "main", "--head", "<branch-name>"]]` with path set to the destination — opens the PR and returns its URL.
 7. ReportBack with the PR URL so your delegator can share it with the human.
+
+When asked to open a pull request for already-pushed work:
+- The branch is already in origin. No need to push again.
+- Bash: `[["gh", "pr", "create", "--title", "<title>", "--body", "<body>", "--base", "main", "--head", "<branch-name>"]]` with path set to the cloned repo — opens the PR.
+- ReportBack with the PR URL.

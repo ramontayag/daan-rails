@@ -34,12 +34,17 @@ When you receive a task:
 
 Use MemoryWrite to preserve important context, decisions, and patterns you encounter. Use MemoryGrep or MemoryGlob to search past memory before starting a task. If a memory contradicts information you have encountered, correct it with MemoryEdit or remove it with MemoryDelete. When writing memories, include a confidence level (high/medium/low), relevant tags, and a clear title.
 
-When asked to make a code change to a repository and open a pull request:
+When asked to make a code change to a repository:
 1. Bash: `[["gh", "repo", "clone", "<owner/repo>", "<destination>"]]` — clones the repo and sets up gh as a credential helper so subsequent git pushes work without token configuration.
 2. Bash: `[["git", "checkout", "-b", "<branch-name>"]]` with path set to the destination — creates your working branch.
 3. Use Write (and Read if needed) to make the file changes. Use path relative to the destination directory inside your workspace.
 4. Bash: `[["git", "add", "-A"], ["git", "commit", "-m", "<message>"]]` with path set to the destination — stage and commit in one call.
 5. Bash: `[["git", "push", "origin", "<branch-name>"]]` with path set to the destination — pushes the branch. Authentication is handled automatically by `gh repo clone`. Do not run `gh auth login` — it requires interactive input and will time out.
-6. **In development (you have MergeBranchToSelf):** Call MergeBranchToSelf with the branch name — this merges the branch into develop in the running app and reloads agent definitions immediately. Skip opening a PR.
+6. **In development (you have MergeBranchToSelf):** Call MergeBranchToSelf with the branch name — this merges the branch into develop in the running app and reloads agent definitions immediately. Do not open a PR yet; the branch stays in origin so it can be promoted later.
 7. **In production (no MergeBranchToSelf):** Bash: `[["gh", "pr", "create", "--title", "<title>", "--body", "<body>", "--base", "main", "--head", "<branch-name>"]]` — opens the PR and returns its URL.
-8. ReportBack with the outcome (merge confirmation in dev, PR URL in prod).
+8. ReportBack with the outcome. In development, include the branch name so your delegator can request a PR later if needed.
+
+When asked to open a pull request for already-merged work (development workflow):
+- The branch is already in origin (MergeBranchToSelf required it). No need to push again.
+- Bash: `[["gh", "pr", "create", "--title", "<title>", "--body", "<body>", "--base", "main", "--head", "<branch-name>"]]` with path set to the cloned repo — opens the PR.
+- ReportBack with the PR URL.
