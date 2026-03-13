@@ -15,13 +15,16 @@ module Daan
 
       param :branch, desc: "The feature branch name to promote (e.g. 'feature/add-qa-agent'). " \
                            "Must be pushed to origin first."
+      param :tests_passed, desc: "Confirm you ran `bin/rails test && bin/rails test:system` in the " \
+                                 "cloned repo and all tests passed. Must be true to promote."
       param :title, desc: "Pull request title (production only).", required: false
       param :body,  desc: "Pull request body (production only).", required: false
 
       def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil, allowed_commands: nil)
       end
 
-      def execute(branch:, title: nil, body: nil)
+      def execute(branch:, tests_passed:, title: nil, body: nil)
+        raise "Tests must pass before promoting. Run `bin/rails test && bin/rails test:system` first." unless tests_passed
         if development?
           promote_to_development(branch)
         else

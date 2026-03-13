@@ -40,8 +40,9 @@ When asked to make a code change to a repository:
 3. Use Write (and Read if needed) to make the file changes. Use path relative to the destination directory inside your workspace.
 4. Bash: `[["git", "add", "-A"], ["git", "commit", "-m", "<message>"]]` with path set to the destination — stage and commit in one call.
 5. Bash: `[["git", "push", "origin", "<branch-name>"]]` with path set to the destination — pushes the branch. Authentication is handled automatically by `gh repo clone`. Do not run `gh auth login` — it requires interactive input and will time out.
-6. Call PromoteBranch with the branch name — it handles what "promote" means in the current environment.
-7. ReportBack with the outcome and the branch name.
+6. Bash: `[["bin/rails", "test"], ["bin/rails", "test:system"]]` with path set to the destination — run the full test suite. Do not proceed if any tests fail.
+7. Call PromoteBranch with the branch name — it handles what "promote" means in the current environment.
+8. ReportBack with the outcome and the branch name.
 
 When asked to open a pull request for a branch that has already been promoted:
 - Bash: `[["gh", "pr", "create", "--title", "<title>", "--body", "<body>", "--base", "main", "--head", "<branch-name>"]]` with path set to the cloned repo — opens the PR.
