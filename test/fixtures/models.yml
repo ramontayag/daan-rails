@@ -1,0 +1,13 @@
+# Models fixtures for tests
+
+claude_haiku:
+  provider: anthropic
+  model_id: claude-haiku-4-5-20251001
+  name: Claude 3.5 Haiku
+  family: claude
+  context_window: 200000
+  max_output_tokens: 8192
+  capabilities: []
+  modalities: {}
+  metadata: {}
+  pricing: {}

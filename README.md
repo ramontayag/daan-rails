@@ -1,28 +1,40 @@
-# README
+# Daan Rails
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+An AI agent team management platform built with Rails.
 
-Things you may want to cover:
+## Setup
 
-* Ruby version
+Fill out the `.env.local` file:
 
-* System dependencies
+```bash
+cp .env{,.local}
+```
 
-* Configuration
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `ANTHROPIC_API_KEY` | Yes | Anthropic API key for LLM calls |
+| `DAAN_SELF_REPO` | No | GitHub repo this app lives in (e.g. `ramontayag/daan-rails`). When set, agents with a workspace know what repo to clone when asked to modify the team or themselves. |
 
-* Database creation
+## Development
 
-* Database initialization
+### Running the Application
 
-* How to run the test suite
+```bash
+bin/dev
+```
 
-* Services (job queues, cache servers, search engines, etc.)
+### Tests
 
-* Deployment instructions
+```bash
+bin/rails test
+bin/rails test:system
+```
 
-* ...
+### Code Style
 
+```bash
+bin/rubocop
+```
 # Architecture
 
 This repo is the **reference deployment** for the Daan agent platform. It is structured in three layers that will eventually be separated:
@@ -35,13 +47,35 @@ Keep `config/` and `app/` free of direct references to `lib/daan/core/` internal
 
 # Setup
 
-Fill out the `.env.local` file:
+## Contributing
 
-```
-cp .env{,.local}
-```
+### Commit Message Format
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `ANTHROPIC_API_KEY` | Yes | Anthropic API key for LLM calls |
-| `DAAN_SELF_REPO` | No | GitHub repo this app lives in (e.g. `ramontayag/daan-rails`). When set, agents with a workspace know what repo to clone when asked to modify the team or themselves. |
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) for commit messages and pull request titles.
+
+**Format:** `<type>[optional scope]: <description>`
+
+**Examples:**
+- `feat: add agent delegation feature`
+- `fix: resolve memory leak in conversation runner`
+- `docs: update README with setup instructions`
+- `refactor: simplify CI workflow`
+- `test: add integration tests for agent creation`
+
+**Types:**
+- `feat`: new feature
+- `fix`: bug fix
+- `docs`: documentation changes
+- `style`: code style changes (formatting, etc.)
+- `refactor`: code refactoring
+- `test`: adding or modifying tests
+- `chore`: maintenance tasks, dependency updates
+
+**Pull Request Titles:**
+Use the same conventional commit format for PR titles. The title will become the commit message when squash-merged.
+
+### Code Quality
+
+- All code must pass RuboCop linting
+- Tests are required for new features
+- Follow Rails conventions and best practices

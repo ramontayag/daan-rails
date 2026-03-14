@@ -40,6 +40,9 @@ module Daan
     private_class_method :prepare_workspace
 
     def self.enqueue_compaction_if_needed(chat)
+      # Skip compaction if no model is configured (e.g., in tests)
+      return unless chat.model&.context_window
+
       context_window = chat.model.context_window
       threshold = (context_window * 0.8).to_i
       # Integer division in COALESCE fallback is intentional — rough estimate,
@@ -70,7 +73,8 @@ module Daan
     private_class_method :configure_llm
 
     def self.retrieve_memories(chat)
-      query = chat.messages.where(role: "user").last&.content
+      # Use active scope to avoid getting compacted messages
+      query = chat.messages.active.where(role: "user").last&.content
       return [] if query.blank?
 
       index = Daan::Memory.storage.semantic_index
@@ -106,7 +110,8 @@ module Daan
     private_class_method :finish_conversation
 
     def self.broadcast_new_messages(chat, since_id)
-      messages = chat.messages
+      # Only broadcast active messages (not compacted originals)
+      messages = chat.messages.active
                      .includes(:tool_calls)
                      .where("messages.id > ?", since_id)
                      .order(:id)
