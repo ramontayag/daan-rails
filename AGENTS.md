@@ -21,6 +21,34 @@ After completing each task:
 
 Do not chain multiple tasks together without stopping for review.
 
+## Agent Self-Modification Workflow
+
+When modifying agent definitions or core tools:
+
+### Development Mode
+1. Create feature branch: `git checkout -b feature/my-enhancement`
+2. Make changes to agent files or tools
+3. Commit changes: `git add -A && git commit -m "Description"`
+4. **CRITICAL: Push to GitHub origin**: `git push origin feature/my-enhancement`
+5. Use PromoteBranch tool: merges branch into develop and hot-reloads agent definitions
+6. Changes are live immediately — open a PR later when ready for production
+
+### Production Mode
+1. Create feature branch and make changes
+2. Push to GitHub origin: `git push origin feature/my-enhancement`
+3. Use PromoteBranch tool: opens a PR against main
+
+### PromoteBranch Requirements
+- **Branch must exist in GitHub origin** before calling the tool
+- Tool validates branch exists and provides clear error if not
+- Handles already-merged branches gracefully
+- In development: automatically reloads agent definitions after merge
+
+### Common Mistakes to Avoid
+- ❌ Calling PromoteBranch on local-only branches (not pushed to GitHub)
+- ❌ Forgetting to push feature branches to origin
+- ✅ Always push first, then call PromoteBranch
+
 ## Let it crash
 
 Write for the happy path. Don't add defensive guards for inputs that can't
@@ -66,6 +94,16 @@ Lookbook previews pass the value directly (`result: "Hello, world!"`) so no extr
 DB query fires during rendering. Production callers omit the param and get the lazy
 lookup. Use `find_or_create_by!` (not `create!`) in previews to avoid uniqueness
 errors on repeated renders.
+
+## lib/ is a future gem — respect the boundary
+
+`lib/daan/core/` will be extracted as a standalone gem. Do not couple `config/`
+(deployment layer) to `lib/` internals.
+
+- Override files in `config/agents/` must be self-contained — inline partial
+  content rather than using `{{include:}}` pointing into `lib/`
+- Never symlink `config/` paths into `lib/`
+- Agent partials under `lib/daan/core/agents/partials/` are gem internals
 
 ## Jobs are thin wrappers around services
 

@@ -14,6 +14,7 @@ tools:
   - Daan::Core::Write
   - Daan::Core::Bash
   - Daan::Core::ReportBack
+  - Daan::Core::PromoteBranch
   - SwarmMemory::Tools::MemoryWrite
   - SwarmMemory::Tools::MemoryRead
   - SwarmMemory::Tools::MemoryEdit
@@ -33,11 +34,17 @@ When you receive a task:
 
 {{include: partials/memory_tools.md}} When writing memories, include a confidence level (high/medium/low), relevant tags, and a clear title.
 
-When asked to make a code change to a repository and open a pull request:
+When asked to make a code change to a repository:
 1. Bash: `[["gh", "repo", "clone", "<owner/repo>", "<destination>"]]` — clones the repo and sets up gh as a credential helper so subsequent git pushes work without token configuration.
-2. Bash: `[["git", "checkout", "-b", "<branch-name>"]]` with path set to the destination — creates your working branch.
-3. Use Write (and Read if needed) to make the file changes. Use path relative to the destination directory inside your workspace.
-4. Bash: `[["git", "add", "-A"], ["git", "commit", "-m", "<message>"]]` with path set to the destination — stage and commit in one call.
-5. Bash: `[["git", "push", "origin", "<branch-name>"]]` with path set to the destination — pushes the branch. Authentication is handled automatically by `gh repo clone`. Do not run `gh auth login` — it requires interactive input and will time out.
-6. Bash: `[["gh", "pr", "create", "--title", "<title>", "--body", "<body>", "--base", "main", "--head", "<branch-name>"]]` with path set to the destination — opens the PR and returns its URL.
-7. ReportBack with the PR URL so your delegator can share it with the human.
+2. Read `AGENTS.md` in the repo root if it exists — it contains repo-specific instructions (test commands, conventions, architecture notes). Follow them throughout your work.
+3. Bash: `[["git", "checkout", "main"], ["git", "pull", "origin", "main"], ["git", "checkout", "-b", "<branch-name>"]]` with path set to the destination — **always branch from `main`**, never from `develop` or any other branch.
+4. Use Write (and Read if needed) to make the file changes. Use path relative to the destination directory inside your workspace.
+5. Bash: `[["git", "add", "-A"], ["git", "commit", "-m", "<message>"]]` with path set to the destination — stage and commit in one call.
+6. Bash: `[["git", "push", "origin", "<branch-name>"]]` with path set to the destination — pushes the branch. Authentication is handled automatically by `gh repo clone`. Do not run `gh auth login` — it requires interactive input and will time out.
+7. Run the test suite as specified in `AGENTS.md`. Do not proceed if tests fail.
+8. Call PromoteBranch with the branch name — it handles what "promote" means in the current environment.
+9. ReportBack with the outcome and the branch name.
+
+When asked to open a pull request for a branch that has already been promoted:
+- Bash: `[["gh", "pr", "create", "--title", "<title>", "--body", "<body>", "--base", "main", "--head", "<branch-name>"]]` with path set to the cloned repo — opens the PR.
+- ReportBack with the PR URL.
