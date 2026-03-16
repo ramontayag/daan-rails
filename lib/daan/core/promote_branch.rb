@@ -55,9 +55,9 @@ module Daan
         end
 
         run!(%w[git checkout develop], app_root)
-        run!(["git", "merge", "--ff-only", "origin/main"], app_root) rescue nil
+        run!([ "git", "merge", "--ff-only", "origin/main" ], app_root) rescue nil
         begin
-          run!(["git", "merge", "origin/#{branch}"], app_root)
+          run!([ "git", "merge", "origin/#{branch}" ], app_root)
         rescue => e
           raise "Failed to merge origin/#{branch} into develop.\n\n" \
                 "This might be due to:\n" \
@@ -77,9 +77,9 @@ module Daan
 
       def promote_to_production(branch, title, body)
         app_root = Rails.root.to_s
-        cmd = ["gh", "pr", "create", "--base", "main", "--head", branch]
-        cmd += ["--title", title] if title
-        cmd += ["--body", body || ""]
+        cmd = [ "gh", "pr", "create", "--base", "main", "--head", branch ]
+        cmd += [ "--title", title ] if title
+        cmd += [ "--body", body || "" ]
 
         stdout, stderr, status = Open3.capture3(*cmd, chdir: app_root)
         raise "gh pr create failed: #{stderr}" unless status.success?
@@ -105,7 +105,7 @@ module Daan
       def run!(cmd, dir)
         stdout, stderr, status = Open3.capture3(*cmd, chdir: dir)
         return if status.success?
-        output = [stdout, stderr].reject(&:empty?).join("\n")
+        output = [ stdout, stderr ].reject(&:empty?).join("\n")
         raise "#{cmd.join(" ")} failed (exit #{status.exitstatus}): #{output}"
       end
     end

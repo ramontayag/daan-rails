@@ -8,7 +8,7 @@ class Daan::Core::DelegateTaskTest < ActiveSupport::TestCase
     Daan::AgentRegistry.register(
       Daan::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
                       model_name: "m", system_prompt: "p", max_turns: 10,
-                      delegates_to: ["engineering_manager"])
+                      delegates_to: [ "engineering_manager" ])
     )
     Daan::AgentRegistry.register(
       Daan::Agent.new(name: "engineering_manager", display_name: "Engineering Manager",
@@ -88,7 +88,7 @@ class Daan::Core::DelegateTaskTest < ActiveSupport::TestCase
     Daan::AgentRegistry.register(
       Daan::Agent.new(name: "ghost_delegator", display_name: "Ghost",
                       model_name: "m", system_prompt: "p", max_turns: 5,
-                      delegates_to: ["phantom_agent"])
+                      delegates_to: [ "phantom_agent" ])
     )
     ghost_chat = Chat.create!(agent_name: "ghost_delegator")
     tool = Daan::Core::DelegateTask.new(chat: ghost_chat)

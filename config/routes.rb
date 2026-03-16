@@ -7,9 +7,9 @@ Rails.application.routes.draw do
   get "chat", to: "chats#index", as: :chat
 
   scope "chat", as: "chat" do
-    resources :agents, only: [:show], param: :name, path: "agents", controller: "chats" do
-      resources :threads, only: [:show, :create], shallow: true do
-        resources :messages, only: [:create]
+    resources :agents, only: [ :show ], param: :name, path: "agents", controller: "chats" do
+      resources :threads, only: [ :show, :create ], shallow: true do
+        resources :messages, only: [ :create ]
       end
     end
   end

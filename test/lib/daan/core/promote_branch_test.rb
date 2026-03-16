@@ -12,7 +12,7 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
     with_dev_tool do |tool|
       tool.define_singleton_method(:run!) { |*| nil }
       tool.define_singleton_method(:branch_exists_in_origin?) { |*| false }
-      error = assert_raises(RuntimeError) { tool.execute(branch: "nonexistent") }
+      error = assert_raises(RuntimeError) { tool.execute(branch: "nonexistent", tests_passed: true) }
       assert_includes error.message, "Branch 'nonexistent' not found in origin remote"
       assert_includes error.message, "git push origin nonexistent"
       assert_includes error.message, "Then try PromoteBranch again"
@@ -24,7 +24,7 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
       tool.define_singleton_method(:run!) { |*| nil }
       tool.define_singleton_method(:branch_exists_in_origin?) { |*| true }
       tool.define_singleton_method(:branch_already_merged?) { |*| true }
-      result = tool.execute(branch: "already-merged")
+      result = tool.execute(branch: "already-merged", tests_passed: true)
       assert_equal "Branch 'already-merged' is already merged into develop. No action needed.", result
     end
   end
@@ -34,7 +34,7 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
       tool.define_singleton_method(:run!) { |cmd, _| raise "merge conflict" if cmd.include?("merge") }
       tool.define_singleton_method(:branch_exists_in_origin?) { |*| true }
       tool.define_singleton_method(:branch_already_merged?) { |*| false }
-      error = assert_raises(RuntimeError) { tool.execute(branch: "conflicting") }
+      error = assert_raises(RuntimeError) { tool.execute(branch: "conflicting", tests_passed: true) }
       assert_includes error.message, "Failed to merge origin/conflicting into develop"
       assert_includes error.message, "Merge conflicts that need manual resolution"
       assert_includes error.message, "Original error: merge conflict"
@@ -47,7 +47,7 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
       tool.define_singleton_method(:branch_exists_in_origin?) { |*| true }
       tool.define_singleton_method(:branch_already_merged?) { |*| false }
       with_stub_agent_loader_sync do
-        result = tool.execute(branch: "feature/my-change")
+        result = tool.execute(branch: "feature/my-change", tests_passed: true)
         assert_includes result, "feature/my-change"
         assert_includes result, "pull request"
       end
@@ -58,8 +58,8 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
 
   test "prod: opens a pull request and returns the URL" do
     with_prod_tool do |tool|
-      with_open3(["https://github.com/owner/repo/pull/42\n", "", fake_status(true)]) do
-        result = tool.execute(branch: "feature/my-change", title: "My change", body: "Details")
+      with_open3([ "https://github.com/owner/repo/pull/42\n", "", fake_status(true) ]) do
+        result = tool.execute(branch: "feature/my-change", tests_passed: true, title: "My change", body: "Details")
         assert_equal "https://github.com/owner/repo/pull/42", result
       end
     end
@@ -67,8 +67,8 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
 
   test "prod: raises on gh failure" do
     with_prod_tool do |tool|
-      with_open3(["", "some error", fake_status(false)]) do
-        error = assert_raises(RuntimeError) { tool.execute(branch: "feature/x", title: "T", body: "B") }
+      with_open3([ "", "some error", fake_status(false) ]) do
+        error = assert_raises(RuntimeError) { tool.execute(branch: "feature/x", tests_passed: true, title: "T", body: "B") }
         assert_includes error.message, "gh pr create failed"
       end
     end
@@ -77,13 +77,13 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
   # --- Shared helpers ---
 
   test "branch_exists_in_origin? returns true when ls-remote finds the branch" do
-    with_open3(["abc123\trefs/heads/existing\n", "", fake_status(true)]) do
+    with_open3([ "abc123\trefs/heads/existing\n", "", fake_status(true) ]) do
       assert @tool.send(:branch_exists_in_origin?, "existing", @app_root)
     end
   end
 
   test "branch_exists_in_origin? returns false when ls-remote returns empty" do
-    with_open3(["", "", fake_status(true)]) do
+    with_open3([ "", "", fake_status(true) ]) do
       refute @tool.send(:branch_exists_in_origin?, "missing", @app_root)
     end
   end
@@ -91,9 +91,9 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
   test "branch_already_merged? returns true when branch commit equals merge-base" do
     call_count = 0
     responses = [
-      ["abc123\n", "", fake_status(true)],
-      ["def456\n", "", fake_status(true)],
-      ["abc123\n", "", fake_status(true)]
+      [ "abc123\n", "", fake_status(true) ],
+      [ "def456\n", "", fake_status(true) ],
+      [ "abc123\n", "", fake_status(true) ]
     ]
     Open3.singleton_class.define_method(:capture3) do |*|
       responses[call_count].tap { call_count += 1 }
@@ -106,9 +106,9 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
   test "branch_already_merged? returns false when branch commit differs from merge-base" do
     call_count = 0
     responses = [
-      ["abc123\n", "", fake_status(true)],
-      ["def456\n", "", fake_status(true)],
-      ["def456\n", "", fake_status(true)]
+      [ "abc123\n", "", fake_status(true) ],
+      [ "def456\n", "", fake_status(true) ],
+      [ "def456\n", "", fake_status(true) ]
     ]
     Open3.singleton_class.define_method(:capture3) do |*|
       responses[call_count].tap { call_count += 1 }

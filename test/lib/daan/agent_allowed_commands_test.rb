@@ -9,7 +9,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
   end
 
   test "agent loader parses allowed_commands from frontmatter" do
-    file = Tempfile.new(["agent", ".md"])
+    file = Tempfile.new([ "agent", ".md" ])
     file.write(<<~MD)
       ---
       name: tester
@@ -34,7 +34,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
   end
 
   test "agent loader defaults allowed_commands to empty array when absent from frontmatter" do
-    file = Tempfile.new(["agent", ".md"])
+    file = Tempfile.new([ "agent", ".md" ])
     file.write(<<~MD)
       ---
       name: tester
@@ -67,7 +67,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
       name: "test", display_name: "Test",
       model_name: "claude-sonnet-4-20250514",
       system_prompt: "You help.", max_turns: 5,
-      base_tools: [narrow_tool],
+      base_tools: [ narrow_tool ],
       allowed_commands: %w[git gh]
     )
     agent.tools(chat: nil)
@@ -83,7 +83,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
       name: "test", display_name: "Test",
       model_name: "claude-sonnet-4-20250514",
       system_prompt: "You help.", max_turns: 5,
-      base_tools: [fake_tool]
+      base_tools: [ fake_tool ]
     )
     instance = agent.tools(chat: nil).first
     assert instance.singleton_class.ancestors.include?(Daan::Core::SafeExecute)
@@ -101,7 +101,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
       name: "test", display_name: "Test",
       model_name: "claude-sonnet-4-20250514",
       system_prompt: "You help.", max_turns: 5,
-      base_tools: [fake_tool],
+      base_tools: [ fake_tool ],
       allowed_commands: %w[git gh]
     )
     agent.tools(chat: nil)

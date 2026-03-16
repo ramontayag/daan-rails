@@ -41,8 +41,8 @@ class Daan::Core::CreateAgentTest < ActiveSupport::TestCase
       agent_name: "full_agent",
       display_name: "Full Agent",
       description: "A fully configured agent",
-      tools: ["Daan::Core::Read", "Daan::Core::Write"],
-      delegates_to: ["developer"],
+      tools: [ "Daan::Core::Read", "Daan::Core::Write" ],
+      delegates_to: [ "developer" ],
       workspace: "tmp/workspaces/full_agent",
       model: "claude-haiku",
       max_turns: 5
@@ -86,7 +86,7 @@ class Daan::Core::CreateAgentTest < ActiveSupport::TestCase
       agent_name: "test_agent",
       display_name: "Test Agent",
       description: "Test with invalid tool",
-      tools: ["NonExistentTool"]
+      tools: [ "NonExistentTool" ]
     )
 
     assert_includes result, "Error: Tool class 'NonExistentTool' does not exist"
@@ -97,7 +97,7 @@ class Daan::Core::CreateAgentTest < ActiveSupport::TestCase
       agent_name: "test_agent",
       display_name: "Test Agent",
       description: "Test with invalid delegate",
-      delegates_to: ["non_existent_agent"]
+      delegates_to: [ "non_existent_agent" ]
     )
 
     assert_includes result, "Error: Delegate agent 'non_existent_agent' does not exist"

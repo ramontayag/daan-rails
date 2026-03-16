@@ -23,7 +23,7 @@ module Daan
       # with no tool calls are streaming artifacts (created at start of stream,
       # content never written because the model only used tools or an error
       # interrupted). Delete them before replay — they have no value in history.
-      orphaned_ids = chat.messages.where(role: "assistant", content: [nil, ""])
+      orphaned_ids = chat.messages.where(role: "assistant", content: [ nil, "" ])
                                   .left_joins(:tool_calls).where(tool_calls: { id: nil })
                                   .ids
       Message.where(id: orphaned_ids).destroy_all if orphaned_ids.any?

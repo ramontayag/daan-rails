@@ -32,7 +32,7 @@ class Daan::Core::ReportBackTest < ActiveSupport::TestCase
   end
 
   test "enqueues LlmJob for the parent chat" do
-    assert_enqueued_with(job: LlmJob, args: [@parent_chat]) do
+    assert_enqueued_with(job: LlmJob, args: [ @parent_chat ]) do
       @tool.execute(message: "Here are my findings.")
     end
   end
