@@ -1,7 +1,13 @@
 class ComposeBarComponentPreview < ViewComponent::Preview
   def default
-    agent = Daan::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
-                            model_name: "claude-3-5-haiku-20241022", system_prompt: "p", max_turns: 10)
-    render ComposeBarComponent.new(agent: agent)
+    render ComposeBarComponent.new(action: "/messages", autofocus: false)
+  end
+
+  def with_autofocus
+    render ComposeBarComponent.new(action: "/messages", autofocus: true)
+  end
+
+  def readonly
+    render ComposeBarComponent.new(action: "/messages", readonly: true)
   end
 end
