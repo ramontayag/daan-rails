@@ -4,7 +4,7 @@ module Daan
   module Core
     class Bash < RubyLLM::Tool
       extend ToolTimeout
-      tool_timeout_seconds 600
+      tool_timeout_seconds 10.minutes
 
       description "Run one or more commands in the workspace. Each command is an array of " \
                   "strings: the binary plus its arguments. Commands run sequentially in the " \

@@ -4,7 +4,7 @@ module Daan
   module Core
     class PromoteBranch < RubyLLM::Tool
       extend ToolTimeout
-      tool_timeout_seconds 60
+      tool_timeout_seconds 1.minute
 
       if Rails.env.development?
         description "Promote a feature branch to the running development app. " \

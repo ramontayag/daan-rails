@@ -3,7 +3,7 @@ module Daan
   module Core
     class EditAgent < RubyLLM::Tool
       extend ToolTimeout
-      tool_timeout_seconds 10
+      tool_timeout_seconds 10.seconds
 
       description "Edit an existing agent configuration safely"
       param :agent_name, desc: "Name of the agent to edit"
