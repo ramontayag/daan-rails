@@ -2,6 +2,9 @@
 module Daan
   module Core
     class DelegateTask < RubyLLM::Tool
+      extend ToolTimeout
+      tool_timeout 10
+
       description "Delegate a task or follow-up message to a sub-agent. Each agent has one persistent thread — if a thread already exists, your message is added to it and the agent continues from where they left off. For follow-ups to an existing thread, keep the message brief; the agent already has the full context."
       param :agent_name, desc: "The agent to delegate to (e.g. 'engineering_manager', 'developer')"
       param :task,       desc: "The task or follow-up message. For initial delegation, include full context. For follow-ups to an existing thread, be brief — do not repeat what was already sent."

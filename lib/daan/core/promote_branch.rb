@@ -3,6 +3,9 @@ require "open3"
 module Daan
   module Core
     class PromoteBranch < RubyLLM::Tool
+      extend ToolTimeout
+      tool_timeout 60
+
       if Rails.env.development?
         description "Promote a feature branch to the running development app. " \
                     "Merges the branch into develop in your workspace clone, pushes develop to origin, " \

@@ -2,6 +2,9 @@
 module Daan
   module Core
     class Write < RubyLLM::Tool
+      extend ToolTimeout
+      tool_timeout 10
+
       description "Write content to a file in the workspace"
       param :path, desc: "Relative path to the file"
       param :content, desc: "The content to write"

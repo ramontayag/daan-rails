@@ -2,6 +2,9 @@
 module Daan
   module Core
     class ListAgents < RubyLLM::Tool
+      extend ToolTimeout
+      tool_timeout 10
+
       description "List all registered agents on the team — their names, descriptions, and tools. " \
                   "Use this to understand who is available and what each agent can do before delegating."
 
