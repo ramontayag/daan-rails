@@ -5,9 +5,8 @@ module Daan
     class PromoteBranch < RubyLLM::Tool
       if Rails.env.development?
         description "Promote a feature branch to the running development app. " \
-                    "Merges the branch into develop and hot-reloads agent definitions so changes are " \
-                    "immediately visible. The branch stays in origin and can be promoted to production " \
-                    "later by opening a pull request."
+                    "Merges the branch into develop in your workspace clone, pushes develop to origin, " \
+                    "then pulls the latest develop into the running app and reloads agent definitions."
       else
         description "Promote a feature branch to production by opening a pull request against main. " \
                     "Call this after pushing your branch to origin."
@@ -15,18 +14,21 @@ module Daan
 
       param :branch, desc: "The feature branch name to promote (e.g. 'feature/add-qa-agent'). " \
                            "Must be pushed to origin first."
+      param :repo_path, desc: "Path to the cloned repo in your workspace where the merge should happen " \
+                              "(e.g. 'daan-rails'). Relative to workspace root. Required in development.", required: false
       param :tests_passed, desc: "Confirm you ran `bin/rails test && bin/rails test:system` in the " \
                                  "cloned repo and all tests passed. Must be true to promote."
       param :title, desc: "Pull request title (production only).", required: false
       param :body,  desc: "Pull request body (production only).", required: false
 
       def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil, allowed_commands: nil)
+        @workspace = workspace
       end
 
-      def execute(branch:, tests_passed:, title: nil, body: nil)
+      def execute(branch:, tests_passed:, repo_path: nil, title: nil, body: nil)
         raise "Tests must pass before promoting. Run `bin/rails test && bin/rails test:system` first." unless tests_passed
         if development?
-          promote_to_development(branch)
+          promote_to_development(branch, repo_path)
         else
           promote_to_production(branch, title, body)
         end
@@ -38,34 +40,42 @@ module Daan
         Rails.env.development?
       end
 
-      def promote_to_development(branch)
+      def promote_to_development(branch, repo_path)
+        raise "repo_path is required in development mode" unless repo_path
+        clone_dir = @workspace ? File.join(@workspace.root.to_s, repo_path) : repo_path
         app_root = Rails.root.to_s
 
-        run!(%w[git fetch origin], app_root)
+        # Stage 1: merge feature branch into develop in the workspace clone
+        run!(%w[git fetch origin], clone_dir)
 
-        unless branch_exists_in_origin?(branch, app_root)
+        unless branch_exists_in_origin?(branch, clone_dir)
           raise "Branch '#{branch}' not found in origin remote.\n\n" \
                 "Push it to GitHub first with:\n" \
                 "  git push origin #{branch}\n\n" \
                 "Then try PromoteBranch again."
         end
 
-        if branch_already_merged?(branch, app_root)
-          return "Branch '#{branch}' is already merged into develop. No action needed."
+        unless branch_already_merged?(branch, clone_dir)
+          run!(%w[git checkout develop], clone_dir)
+          run!(%w[git reset --hard origin/develop], clone_dir)
+          begin
+            run!([ "git", "merge", "origin/#{branch}" ], clone_dir)
+          rescue => e
+            raise "Merge conflict merging origin/#{branch} into develop.\n\n" \
+                  "The merge is still in progress in your clone at #{clone_dir}. " \
+                  "Resolve the conflicts, then:\n" \
+                  "  git add -A && git commit\n" \
+                  "  git push origin develop\n\n" \
+                  "Then call PromoteBranch again — it will see the branch is merged and sync the running app.\n\n" \
+                  "Original error: #{e.message}"
+          end
+          run!(%w[git push origin develop], clone_dir)
         end
 
+        # Stage 2: pull latest develop into the running app
+        run!(%w[git fetch origin], app_root)
         run!(%w[git checkout develop], app_root)
-        run!([ "git", "merge", "--ff-only", "origin/main" ], app_root) rescue nil
-        begin
-          run!([ "git", "merge", "origin/#{branch}" ], app_root)
-        rescue => e
-          raise "Failed to merge origin/#{branch} into develop.\n\n" \
-                "This might be due to:\n" \
-                "- Merge conflicts that need manual resolution\n" \
-                "- Branch has diverged from develop\n" \
-                "- Git repository is in an inconsistent state\n\n" \
-                "Original error: #{e.message}"
-        end
+        run!(%w[git reset --hard origin/develop], app_root)
 
         Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
         override_dir = Rails.root.join("config/agents")
@@ -91,12 +101,12 @@ module Daan
         status.success? && !stdout.strip.empty?
       end
 
-      def branch_already_merged?(branch, app_root)
-        origin_hash, _, s1 = Open3.capture3("git", "rev-parse", "origin/#{branch}", chdir: app_root)
-        _develop_hash, _, s2 = Open3.capture3("git", "rev-parse", "develop", chdir: app_root)
+      def branch_already_merged?(branch, dir)
+        origin_hash, _, s1 = Open3.capture3("git", "rev-parse", "origin/#{branch}", chdir: dir)
+        _develop_hash, _, s2 = Open3.capture3("git", "rev-parse", "origin/develop", chdir: dir)
         return false unless s1.success? && s2.success?
 
-        merge_base, _, s3 = Open3.capture3("git", "merge-base", "develop", "origin/#{branch}", chdir: app_root)
+        merge_base, _, s3 = Open3.capture3("git", "merge-base", "origin/develop", "origin/#{branch}", chdir: dir)
         return false unless s3.success?
 
         origin_hash.strip == merge_base.strip
