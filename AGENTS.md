@@ -1,5 +1,12 @@
 # Development Workflow
 
+## Test first
+
+Write tests before implementation. Red-green-refactor:
+1. Write a failing test for the behavior you want
+2. Write the minimum code to make it pass
+3. Refactor if needed
+
 ## Running tests
 
 Always run:
