@@ -23,6 +23,12 @@ Things you may want to cover:
 
 * ...
 
+# Coding Conventions
+
+## Name time constants with their unit
+
+Constants that represent durations must include the unit in the name: `DEFAULT_TIMEOUT_SECONDS`, `POLL_INTERVAL_MS`, etc. Bare names like `DEFAULT_TIMEOUT` are ambiguous.
+
 # Architecture
 
 This repo is the **reference deployment** for the Daan agent platform. It is structured in three layers that will eventually be separated:

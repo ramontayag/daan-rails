@@ -2,6 +2,9 @@
 module Daan
   module Core
     class ReportBack < RubyLLM::Tool
+      extend ToolTimeout
+      tool_timeout_seconds 10.seconds
+
       description "Report your results back to the delegating agent"
       param :message, desc: "Your findings or results to report"
 

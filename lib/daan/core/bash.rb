@@ -3,6 +3,9 @@ require "open3"
 module Daan
   module Core
     class Bash < RubyLLM::Tool
+      extend ToolTimeout
+      tool_timeout_seconds 10.minutes
+
       description "Run one or more commands in the workspace. Each command is an array of " \
                   "strings: the binary plus its arguments. Commands run sequentially in the " \
                   "specified directory. Only binaries listed in allowed_commands may be used. " \
@@ -35,9 +38,9 @@ module Daan
         @allowed_commands = allowed_commands
       end
 
-      DEFAULT_TIMEOUT = 30
+      DEFAULT_TIMEOUT_SECONDS = 30
 
-      def execute(commands:, path: nil, timeout: DEFAULT_TIMEOUT)
+      def execute(commands:, path: nil, timeout: DEFAULT_TIMEOUT_SECONDS)
         commands = JSON.parse(commands) if commands.is_a?(String)
         return "" if commands.empty?
 

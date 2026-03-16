@@ -2,6 +2,9 @@
 module Daan
   module Core
     class Read < RubyLLM::Tool
+      extend ToolTimeout
+      tool_timeout_seconds 10.seconds
+
       description "Read a file from the workspace"
       param :path, desc: "Relative path to the file"
 
