@@ -14,7 +14,11 @@
       </div>
     <% end %>
     <% agents.each do |agent| %>
-      <%= render AgentItemComponent.new(agent: agent, active: agent == current_agent) %>
+      <%= render AgentItemComponent.new(
+            agent: agent, 
+            active: agent == current_agent, 
+            current_agent: current_agent
+          ) %>
     <% end %>
   </nav>
 </aside>

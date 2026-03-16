@@ -1,4 +1,4 @@
-<div id="agent_<%= agent.name %>">
+<div id="agent_<%= agent.name %>" <%= debug_data_attributes if Rails.env.development? %>>
   <%= link_to chat_agent_path(agent), class: item_classes, data: { testid: "agent-item" } do %>
     <span class="w-2 h-2 rounded-full <%= dot_classes %>"></span>
     <span><%= agent.display_name %></span>
