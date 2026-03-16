@@ -28,7 +28,7 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
   end
 
   teardown do
-    FileUtils.rm_rf(@test_agents_dir) if @test_agents_dir.exist?
+    FileUtils.rm_rf(@test_agents_dir) if @test_agents_dir&.exist?
     Daan::AgentRegistry.clear
   end
 
