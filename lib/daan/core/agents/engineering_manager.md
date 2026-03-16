@@ -6,6 +6,7 @@ max_turns: 10
 workspace: tmp/workspaces/engineering_manager
 delegates_to:
   - developer
+  - web_researcher
 allowed_commands:
   - git
   - gh
