@@ -63,7 +63,7 @@ class Daan::AgentTest < ActiveSupport::TestCase
     agent = Daan::Agent.new(
       name: "test", display_name: "Test", model_name: "m",
       system_prompt: "p", max_turns: 5,
-      workspace: workspace, base_tools: [tool_class]
+      workspace: workspace, base_tools: [ tool_class ]
     )
     bound = agent.tools
     assert_equal 1, bound.length
@@ -84,9 +84,9 @@ class Daan::AgentTest < ActiveSupport::TestCase
     agent = Daan::Agent.new(
       name: "cos", display_name: "CoS", model_name: "m",
       system_prompt: "p", max_turns: 10,
-      delegates_to: ["engineering_manager"]
+      delegates_to: [ "engineering_manager" ]
     )
-    assert_equal ["engineering_manager"], agent.delegates_to
+    assert_equal [ "engineering_manager" ], agent.delegates_to
   end
 
   test "tools passes storage to tool initializer" do
@@ -101,7 +101,7 @@ class Daan::AgentTest < ActiveSupport::TestCase
 
     agent = Daan::Agent.new(
       name: "test", display_name: "Test", model_name: "claude-sonnet-4-20250514",
-      system_prompt: "test", max_turns: 5, base_tools: [spy_tool]
+      system_prompt: "test", max_turns: 5, base_tools: [ spy_tool ]
     )
     chat = Chat.create!(agent_name: "test")
     agent.tools(chat: chat)

@@ -92,7 +92,7 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     Daan::AgentLoader.sync!(@definitions_path)
     agent = Daan::AgentRegistry.find("engineering_manager")
     assert_not_nil agent
-    assert_equal ["developer"], agent.delegates_to
+    assert_equal [ "developer" ], agent.delegates_to
     assert agent.base_tools.include?(Daan::Core::DelegateTask)
     assert agent.base_tools.include?(Daan::Core::ReportBack)
   end
@@ -100,7 +100,7 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
   test "chief_of_staff has DelegateTask and delegates_to engineering_manager and agent_resource_manager" do
     Daan::AgentLoader.sync!(@definitions_path)
     agent = Daan::AgentRegistry.find("chief_of_staff")
-    assert_equal ["engineering_manager", "agent_resource_manager"], agent.delegates_to
+    assert_equal [ "engineering_manager", "agent_resource_manager" ], agent.delegates_to
     assert agent.base_tools.include?(Daan::Core::DelegateTask)
   end
 

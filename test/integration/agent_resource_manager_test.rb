@@ -41,8 +41,8 @@ class AgentResourceManagerTest < ActionDispatch::IntegrationTest
     agent = Daan::AgentRegistry.find("agent_resource_manager")
 
     assert_enqueued_with(job: LlmJob) do
-      post chat_agent_threads_path(agent), params: { 
-        message: { content: "Create a new agent called test_agent" } 
+      post chat_agent_threads_path(agent), params: {
+        message: { content: "Create a new agent called test_agent" }
       }
     end
 
@@ -57,8 +57,8 @@ class AgentResourceManagerTest < ActionDispatch::IntegrationTest
 
     # Send message to Chief of Staff about creating an agent
     assert_enqueued_with(job: LlmJob) do
-      post chat_agent_threads_path(chief_of_staff), params: { 
-        message: { content: "Please create a new agent called 'task_manager' that helps manage tasks" } 
+      post chat_agent_threads_path(chief_of_staff), params: {
+        message: { content: "Please create a new agent called 'task_manager' that helps manage tasks" }
       }
     end
 
@@ -75,12 +75,12 @@ class AgentResourceManagerTest < ActionDispatch::IntegrationTest
   test "agent resource manager tools are accessible" do
     agent = Daan::AgentRegistry.find("agent_resource_manager")
     chat = Chat.create!(agent_name: agent.name)
-    
+
     # Test CreateAgent tool
     create_agent_tool = Daan::Core::CreateAgent.new(chat: chat)
     assert_respond_to create_agent_tool, :execute
-    
-    # Test EditAgent tool  
+
+    # Test EditAgent tool
     edit_agent_tool = Daan::Core::EditAgent.new(chat: chat)
     assert_respond_to edit_agent_tool, :execute
   end
@@ -89,7 +89,7 @@ class AgentResourceManagerTest < ActionDispatch::IntegrationTest
     agent = Daan::AgentRegistry.find("agent_resource_manager")
     chat = Chat.create!(agent_name: agent.name)
     create_agent_tool = Daan::Core::CreateAgent.new(chat: chat)
-    
+
     # This test uses a simplified version that doesn't fully create the file
     # to avoid filesystem side effects in integration tests
     result = create_agent_tool.execute(
@@ -97,7 +97,7 @@ class AgentResourceManagerTest < ActionDispatch::IntegrationTest
       display_name: "Test Integration Agent",
       description: "An agent created during integration testing"
     )
-    
+
     # Should at least validate the parameters without error
     # The actual file creation is tested in unit tests
     assert_includes result, "test_integration_agent"
@@ -107,13 +107,13 @@ class AgentResourceManagerTest < ActionDispatch::IntegrationTest
     agent = Daan::AgentRegistry.find("agent_resource_manager")
     chat = Chat.create!(agent_name: agent.name)
     edit_agent_tool = Daan::Core::EditAgent.new(chat: chat)
-    
+
     # Test editing a non-existent agent (should fail gracefully)
     result = edit_agent_tool.execute(
       agent_name: "nonexistent_agent",
       display_name: "Should Not Work"
     )
-    
+
     assert_includes result, "Error"
     assert_includes result, "does not exist"
   end

@@ -26,7 +26,7 @@ module Daan
         # Check if agent already exists
         agents_dir = @agents_dir
         agent_file = agents_dir.join("#{agent_name}.md")
-        
+
         if agent_file.exist?
           return "Error: Agent '#{agent_name}' already exists"
         end
@@ -89,7 +89,7 @@ module Daan
           definition = Daan::AgentLoader.parse(agent_file)
           agent = Daan::Agent.new(**definition)
           Daan::AgentRegistry.register(agent)
-          
+
           "Successfully created agent '#{agent_name}' (#{display_name})"
         rescue => e
           # If there's an error registering, clean up the file

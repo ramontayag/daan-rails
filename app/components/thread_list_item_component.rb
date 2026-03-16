@@ -12,6 +12,6 @@ class ThreadListItemComponent < ViewComponent::Base
     chat.messages.find { |m| m.role == "user" }&.content&.truncate(80) || "(empty)"
   end
 
-  def reply_count = [chat.messages.size - 1, 0].max
+  def reply_count = [ chat.messages.size - 1, 0 ].max
   def timestamp   = chat.created_at.strftime("%b %d %H:%M")
 end

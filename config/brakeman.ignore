@@ -1,0 +1,46 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Unmaintained Dependency",
+      "warning_code": 123,
+      "fingerprint": "40be17ee84017c91503dab23873e24bdd71665ab665bf6f351cfc09ff83e6582",
+      "check_name": "EOLRuby",
+      "message": "Support for Ruby 3.2.2 ends on 2026-03-31",
+      "file": ".ruby-version",
+      "line": 1,
+      "note": "Ruby 3.2 EOL acknowledged, upgrade planned"
+    },
+    {
+      "warning_type": "Command Injection",
+      "warning_code": 14,
+      "fingerprint": "525f74fedb0651deaa146f164dfb9060226f408088ea40aa04dfa193bb8cd9a8",
+      "check_name": "Execute",
+      "message": "Possible command injection",
+      "file": "lib/daan/core/promote_branch.rb",
+      "line": 95,
+      "note": "False positive: Open3.capture3 with array args prevents shell injection"
+    },
+    {
+      "warning_type": "Command Injection",
+      "warning_code": 14,
+      "fingerprint": "8ebccbc77435026e5a315f6220f08660310d4f8b921edf41952a1ce86ab9ff81",
+      "check_name": "Execute",
+      "message": "Possible command injection",
+      "file": "lib/daan/core/promote_branch.rb",
+      "line": 90,
+      "note": "False positive: Open3.capture3 with array args prevents shell injection"
+    },
+    {
+      "warning_type": "Command Injection",
+      "warning_code": 14,
+      "fingerprint": "f6cebe1f3f25cf0e8f601cbee78c066960cfb87be488e00f743a961f07aba5fd",
+      "check_name": "Execute",
+      "message": "Possible command injection",
+      "file": "lib/daan/core/promote_branch.rb",
+      "line": 99,
+      "note": "False positive: Open3.capture3 with array args prevents shell injection"
+    }
+  ],
+  "updated": "2026-03-16",
+  "brakeman_version": "8.0.4"
+}

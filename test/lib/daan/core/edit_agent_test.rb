@@ -28,7 +28,7 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
   end
 
   teardown do
-    FileUtils.rm_rf(@test_agents_dir) if @test_agents_dir.exist?
+    FileUtils.rm_rf(@test_agents_dir) if @test_agents_dir&.exist?
     Daan::AgentRegistry.clear
   end
 
@@ -61,7 +61,7 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
   end
 
   test "updates tools array" do
-    result = @tool.execute(agent_name: "test_agent", tools: ["Daan::Core::Read", "Daan::Core::ReportBack"])
+    result = @tool.execute(agent_name: "test_agent", tools: [ "Daan::Core::Read", "Daan::Core::ReportBack" ])
 
     assert_includes result, "Successfully updated agent 'test_agent'"
     assert_includes result, "tools"
@@ -82,7 +82,7 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
   end
 
   test "updates delegates_to array" do
-    result = @tool.execute(agent_name: "test_agent", delegates_to: ["developer"])
+    result = @tool.execute(agent_name: "test_agent", delegates_to: [ "developer" ])
 
     assert_includes result, "Successfully updated agent 'test_agent'"
     assert_includes result, "delegates_to"
@@ -131,7 +131,7 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
   end
 
   test "validates tool class existence" do
-    result = @tool.execute(agent_name: "test_agent", tools: ["NonExistentTool"])
+    result = @tool.execute(agent_name: "test_agent", tools: [ "NonExistentTool" ])
 
     assert_includes result, "Error: Tool class 'NonExistentTool' does not exist"
 
@@ -141,7 +141,7 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
   end
 
   test "validates delegate agent existence" do
-    result = @tool.execute(agent_name: "test_agent", delegates_to: ["nonexistent_delegate"])
+    result = @tool.execute(agent_name: "test_agent", delegates_to: [ "nonexistent_delegate" ])
 
     assert_includes result, "Error: Delegate agent 'nonexistent_delegate' does not exist"
 
@@ -171,7 +171,7 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
       display_name: "Multi Update Agent",
       description: "Updated with multiple changes",
       model: "claude-haiku",
-      tools: ["Daan::Core::ReportBack"]
+      tools: [ "Daan::Core::ReportBack" ]
     )
 
     assert_includes result, "Successfully updated agent 'test_agent'"
