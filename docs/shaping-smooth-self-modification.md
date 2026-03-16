@@ -46,6 +46,16 @@ The app can be used to develop itself (dogfooding): the developer agent pushes a
 
 ---
 
+## Branching Strategy
+
+- **`main`** is production. Feature branches are promoted to production via PRs targeting `main`.
+- **`develop`** is a disposable preview branch. Agents merge feature branches into it (via `PromoteBranch` in dev mode) for immediate visibility in the running dev app. It never flows into `main`.
+- **Auto-reset:** After any PR merges to `main`, a GitHub Actions workflow force-pushes `develop` to match `main`. This clears out rejected experiments and keeps `develop` clean.
+- **No re-merge:** In-flight feature branches are not automatically re-merged after a reset. Agents re-promote when they next need their branch visible. Conflicts between in-flight branches (rare) are resolved by the agent at promote time.
+- **The unit of promotion is always the individual feature branch**, never `develop` as a whole.
+
+---
+
 ## A: Config-gated dev sync via develop branch
 
 | Part | Mechanism |
