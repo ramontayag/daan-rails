@@ -6,6 +6,18 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     @definitions_path = Rails.root.join("lib/daan/core/agents")
   end
 
+  test "all agent definitions in lib/daan/core/agents load without error" do
+    assert_nothing_raised { Daan::AgentLoader.sync!(@definitions_path) }
+  end
+
+  test "all agent definitions in config/agents load without error" do
+    override_dir = Rails.root.join("config/agents")
+    assert_nothing_raised do
+      Daan::AgentLoader.sync!(@definitions_path)
+      Daan::AgentLoader.sync!(override_dir) if override_dir.exist?
+    end
+  end
+
   test "parse returns a hash with agent attributes" do
     definition = Daan::AgentLoader.parse(@definitions_path.join("chief_of_staff.md"))
 
