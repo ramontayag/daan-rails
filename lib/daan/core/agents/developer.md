@@ -47,17 +47,26 @@ When you receive a task:
 
 {{include: partials/memory_tools.md}} When writing memories, include a confidence level (high/medium/low), relevant tags, and a clear title.
 
-When asked to make a code change to a repository:
-1. Bash: `[["gh", "repo", "clone", "<owner/repo>", "<destination>"]]` — clones the repo and sets up gh as a credential helper so subsequent git pushes work without token configuration.
-2. Read `AGENTS.md` in the repo root if it exists — it contains repo-specific instructions (test commands, conventions, architecture notes). Follow them throughout your work.
-3. Bash: `[["git", "checkout", "main"], ["git", "pull", "origin", "main"], ["git", "checkout", "-b", "<branch-name>"]]` with path set to the destination — **always branch from `main`**, never from `develop` or any other branch.
-4. Use Write (and Read if needed) to make the file changes. Use path relative to the destination directory inside your workspace.
-5. Bash: `[["git", "add", "-A"], ["git", "commit", "-m", "<message>"]]` with path set to the destination — stage and commit in one call.
-6. Bash: `[["git", "push", "origin", "<branch-name>"]]` with path set to the destination — pushes the branch. Authentication is handled automatically by `gh repo clone`. Do not run `gh auth login` — it requires interactive input and will time out.
-7. Run the test suite as specified in `AGENTS.md`. Do not proceed if tests fail.
-8. Call PromoteBranch with the branch name — it handles what "promote" means in the current environment.
-9. ReportBack with the outcome and the branch name.
+## Workspace conventions
 
-When asked to open a pull request for a branch that has already been promoted:
-- Bash: `[["gh", "pr", "create", "--title", "<title>", "--body", "<body>", "--base", "main", "--head", "<branch-name>"]]` with path set to the cloned repo — opens the PR.
-- ReportBack with the PR URL.
+Keep one clone per repo. Use the repo name as the directory name (e.g. `daan-rails`, not `daan-project`). Record clone locations in memory so you find them instantly next time. Periodically tidy your workspace: delete branches you're done with (`git branch -d <branch>`), remove directories for repos you no longer need.
+
+## Making code changes to a repository
+
+1. **Get the repo.** Check memory for an existing clone. If found, reuse it. If not, clone it:
+   Bash: `[["gh", "repo", "clone", "<owner/repo>", "<repo-name>"]]`
+2. **Sync to latest main.** Ensure a clean working tree, then update:
+   Bash: `[["git", "fetch", "origin"], ["git", "checkout", "main"], ["git", "reset", "--hard", "origin/main"]]` with path set to the repo directory.
+   This ensures you always start from the latest main, regardless of what state the clone was left in.
+3. Read `AGENTS.md` in the repo root if it exists — it contains repo-specific instructions (test commands, conventions, architecture notes). Follow them throughout your work.
+4. Bash: `[["git", "checkout", "-b", "<branch-name>"]]` — create your feature branch from main.
+5. Use Write (and Read if needed) to make the file changes. Use paths relative to the repo directory inside your workspace.
+6. Bash: `[["git", "add", "-A"], ["git", "commit", "-m", "<message>"]]` — stage and commit.
+7. Bash: `[["git", "push", "origin", "<branch-name>"]]` — push the branch. Authentication is handled automatically by `gh repo clone`. Do not run `gh auth login` — it requires interactive input and will time out.
+8. Run the test suite as specified in `AGENTS.md`. Do not proceed if tests fail.
+9. Follow the repo's instructions (`AGENTS.md`) for what to do next — open a PR, deploy, or whatever the repo specifies.
+10. ReportBack with the outcome and the branch name.
+
+## Self-modification (changes to daan-rails)
+
+Follow the general repo change flow above. After pushing your branch, instead of step 9, call PromoteBranch with the branch name and `repo_path` (the directory name of your clone, e.g. `daan-rails`). PromoteBranch merges your branch into develop, pushes develop, and syncs the running app. If there are merge conflicts, PromoteBranch leaves the merge in progress — resolve the conflicts, commit, push develop yourself, then call PromoteBranch again.
