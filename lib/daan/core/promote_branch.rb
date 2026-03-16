@@ -56,6 +56,15 @@ module Daan
         end
 
         unless branch_already_merged?(branch, clone_dir)
+          unless branch_based_on_main?(branch, clone_dir)
+            raise "Branch '#{branch}' is not based on the latest origin/main.\n\n" \
+                  "Rebase your branch onto origin/main first:\n" \
+                  "  git fetch origin\n" \
+                  "  git rebase origin/main\n" \
+                  "  git push --force-with-lease origin #{branch}\n\n" \
+                  "Then call PromoteBranch again."
+          end
+
           run!(%w[git checkout develop], clone_dir)
           run!(%w[git reset --hard origin/develop], clone_dir)
           begin
@@ -99,6 +108,11 @@ module Daan
       def branch_exists_in_origin?(branch, app_root)
         stdout, _stderr, status = Open3.capture3("git", "ls-remote", "origin", "refs/heads/#{branch}", chdir: app_root)
         status.success? && !stdout.strip.empty?
+      end
+
+      def branch_based_on_main?(branch, dir)
+        _, _, status = Open3.capture3("git", "merge-base", "--is-ancestor", "origin/main", "origin/#{branch}", chdir: dir)
+        status.success?
       end
 
       def branch_already_merged?(branch, dir)

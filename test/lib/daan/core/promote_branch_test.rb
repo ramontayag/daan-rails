@@ -40,6 +40,18 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
     end
   end
 
+  test "dev: refuses branch not based on origin/main" do
+    with_dev_tool do |tool|
+      tool.define_singleton_method(:run!) { |*| nil }
+      tool.define_singleton_method(:branch_exists_in_origin?) { |*| true }
+      tool.define_singleton_method(:branch_already_merged?) { |*| false }
+      tool.define_singleton_method(:branch_based_on_main?) { |*| false }
+      error = assert_raises(RuntimeError) { tool.execute(branch: "stale-branch", tests_passed: true, repo_path: "daan-rails") }
+      assert_includes error.message, "not based on the latest origin/main"
+      assert_includes error.message, "rebase"
+    end
+  end
+
   test "dev: leaves merge in progress on conflict and instructs developer to resolve" do
     with_dev_tool do |tool|
       tool.define_singleton_method(:run!) do |cmd, _dir|
@@ -47,6 +59,7 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
       end
       tool.define_singleton_method(:branch_exists_in_origin?) { |*| true }
       tool.define_singleton_method(:branch_already_merged?) { |*| false }
+      tool.define_singleton_method(:branch_based_on_main?) { |*| true }
       error = assert_raises(RuntimeError) { tool.execute(branch: "conflicting", tests_passed: true, repo_path: "daan-rails") }
       assert_includes error.message, "Merge conflict merging origin/conflicting into develop"
       assert_includes error.message, "merge is still in progress"
@@ -60,6 +73,7 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
       tool.define_singleton_method(:run!) { |*| nil }
       tool.define_singleton_method(:branch_exists_in_origin?) { |*| true }
       tool.define_singleton_method(:branch_already_merged?) { |*| false }
+      tool.define_singleton_method(:branch_based_on_main?) { |*| true }
       with_stub_agent_loader_sync do
         result = tool.execute(branch: "feature/my-change", tests_passed: true, repo_path: "daan-rails")
         assert_includes result, "feature/my-change"
