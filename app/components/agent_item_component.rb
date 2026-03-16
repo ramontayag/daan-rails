@@ -32,6 +32,13 @@ class AgentItemComponent < ViewComponent::Base
     false
   end
 
+  def debug_attributes_html
+    # Return clean HTML string for debug attributes in development
+    return "" unless Rails.env.development?
+
+    debug_attributes.map { |k, v| "#{k}=\"#{v}\"" }.join(" ").html_safe
+  end
+
   def debug_attributes
     # Add data attributes for debugging highlighting issues
     return {} unless Rails.env.development?
