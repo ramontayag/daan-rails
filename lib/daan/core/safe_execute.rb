@@ -5,19 +5,19 @@ module Daan
       DEFAULT_TIMEOUT_SECONDS = 10
 
       def execute(...)
-        Timeout.timeout(tool_timeout) do
+        Timeout.timeout(tool_timeout_seconds) do
           super
         end
       rescue Timeout::Error
-        "Error: timed out after #{tool_timeout}s"
+        "Error: timed out after #{tool_timeout_seconds}s"
       rescue => e
         "Error: #{e.message}"
       end
 
       private
 
-      def tool_timeout
-        self.class.tool_timeout || DEFAULT_TIMEOUT_SECONDS
+      def tool_timeout_seconds
+        self.class.tool_timeout_seconds || DEFAULT_TIMEOUT_SECONDS
       end
     end
   end

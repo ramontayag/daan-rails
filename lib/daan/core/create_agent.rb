@@ -3,7 +3,7 @@ module Daan
   module Core
     class CreateAgent < RubyLLM::Tool
       extend ToolTimeout
-      tool_timeout 10
+      tool_timeout_seconds 10
 
       description "Create a new agent configuration file"
       param :agent_name, desc: "The internal name for the agent (e.g., 'data_analyst')"

@@ -4,7 +4,7 @@ class Daan::Core::SafeExecuteTest < ActiveSupport::TestCase
   setup do
     @tool_class = Class.new(RubyLLM::Tool) do
       extend Daan::Core::ToolTimeout
-      tool_timeout 10
+      tool_timeout_seconds 10
 
       def execute(raise_error: false)
         raise "boom" if raise_error
@@ -27,7 +27,7 @@ class Daan::Core::SafeExecuteTest < ActiveSupport::TestCase
   test "returns timeout error when tool exceeds its timeout" do
     slow_class = Class.new(RubyLLM::Tool) do
       extend Daan::Core::ToolTimeout
-      tool_timeout 0.1
+      tool_timeout_seconds 0.1
 
       def execute
         sleep 1
@@ -41,7 +41,7 @@ class Daan::Core::SafeExecuteTest < ActiveSupport::TestCase
     assert_match(/Error: timed out after 0.1s/, result)
   end
 
-  test "uses DEFAULT_TIMEOUT when tool_timeout returns nil" do
+  test "uses DEFAULT_TIMEOUT when tool_timeout_seconds returns nil" do
     no_timeout_class = Class.new(RubyLLM::Tool) do
       extend Daan::Core::ToolTimeout
 
