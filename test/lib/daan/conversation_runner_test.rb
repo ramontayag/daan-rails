@@ -138,12 +138,8 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     parent_chat = Chat.create!(agent_name: "parent_agent")
     @chat.update!(parent_chat: parent_chat)
 
-    # max_turns=3, set turn_count so after increment remaining==3
-    # turn_count=0 after increment → 1, remaining=3-1=2 → no
-    # We need remaining==3 after increment. max_turns=3, turn_count after increment=0 → remaining=3.
-    # But turn_count starts at 0 and increments to 1, so remaining=2. Need max_turns higher.
     @agent.max_turns = 10
-    @chat.update!(turn_count: 6) # after increment: 7, remaining: 10-7=3 ✓
+    @chat.update!(turn_count: 6) # after increment: 7, remaining: 10-7=3
 
     with_stub_complete { Daan::ConversationRunner.call(@chat) }
 

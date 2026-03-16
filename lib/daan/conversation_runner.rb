@@ -89,7 +89,11 @@ module Daan
       chat.fail!
       chat.broadcast_agent_status
       broadcast_typing(chat, false)
-      notify_parent_of_termination(chat, :failed)
+      begin
+        notify_parent_of_termination(chat, :failed)
+      rescue => notify_error
+        Rails.logger.error("Failed to notify parent of child chat failure: #{notify_error.message}")
+      end
       raise
     end
     private_class_method :run_llm
