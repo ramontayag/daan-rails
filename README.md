@@ -45,3 +45,45 @@ cp .env{,.local}
 |----------|----------|-------------|
 | `ANTHROPIC_API_KEY` | Yes | Anthropic API key for LLM calls |
 | `DAAN_SELF_REPO` | No | GitHub repo this app lives in (e.g. `ramontayag/daan-rails`). When set, agents with a workspace know what repo to clone when asked to modify the team or themselves. |
+
+# Development
+
+## Commit Conventions
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) to ensure consistent and meaningful commit messages. Please follow this format:
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Types
+- **feat**: A new feature
+- **fix**: A bug fix
+- **docs**: Documentation only changes
+- **style**: Changes that do not affect the meaning of the code (white-space, formatting, etc.)
+- **refactor**: A code change that neither fixes a bug nor adds a feature
+- **test**: Adding missing tests or correcting existing tests
+- **chore**: Changes to the build process or auxiliary tools and libraries
+
+### Examples
+```
+feat(ui): add new message input component
+fix(sidebar): resolve agent highlighting on thread URLs
+docs(readme): add conventional commit guidelines
+test(components): add tests for AgentItemComponent
+refactor(tools): extract common tool validation logic
+chore(deps): update Rails to 7.1.2
+```
+
+### Scope (Optional)
+Common scopes include:
+- **ui**: User interface components and styling
+- **api**: API-related changes
+- **tools**: Agent tools and functionality
+- **core**: Core agent runtime
+- **config**: Configuration changes
+- **deps**: Dependencies
