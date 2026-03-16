@@ -37,4 +37,15 @@ class LlmJobTest < ActiveSupport::TestCase
   ensure
     FileUtils.rm_rf(workspace.join("test.txt"))
   end
+
+  test "fails chat gracefully when ConversationRunner raises" do
+    Daan::ConversationRunner.stub(:call, ->(_) { raise "LLM exploded" }) do
+      assert_raises(RuntimeError) do
+        LlmJob.perform_now(@chat)
+      end
+    end
+
+    @chat.reload
+    assert @chat.failed?, "Expected chat to be in failed state, got #{@chat.task_status}"
+  end
 end
