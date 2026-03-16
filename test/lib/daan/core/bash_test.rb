@@ -85,18 +85,10 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
     assert_includes result, "hint:"
   end
 
-  test "returns error string when command exceeds timeout" do
+  test "kills subprocess and returns error on timeout" do
     tool = Daan::Core::Bash.new(workspace: @workspace, allowed_commands: %w[sleep])
     tool.singleton_class.prepend(Daan::Core::SafeExecute)
-    result = tool.execute(commands: [ [ "sleep", "10" ] ], timeout: 0.1)
-    assert_match(/timed out/, result)
-    assert_match(/sleep 10/, result)
-  end
-
-  test "timeout applies per command" do
-    tool = Daan::Core::Bash.new(workspace: @workspace, allowed_commands: %w[echo sleep])
-    tool.singleton_class.prepend(Daan::Core::SafeExecute)
-    result = tool.execute(commands: [ [ "echo", "fast" ], [ "sleep", "10" ] ], timeout: 0.1)
+    result = tool.execute(commands: [ [ "sleep", "10" ] ], timeout_seconds: 0.2)
     assert_match(/timed out/, result)
   end
 

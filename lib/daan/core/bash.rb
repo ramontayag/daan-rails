@@ -9,7 +9,8 @@ module Daan
       description "Run one or more commands in the workspace. Each command is an array of " \
                   "strings: the binary plus its arguments. Commands run sequentially in the " \
                   "specified directory. Only binaries listed in allowed_commands may be used. " \
-                  "If any command fails, an error is raised and no output is returned."
+                  "If any command fails, an error is raised and no output is returned. " \
+                  "Use timeout_seconds to increase the timeout for slow operations like test suites."
 
       params({
         type: "object",
@@ -22,10 +23,6 @@ module Daan
           "path" => {
             type: "string",
             description: "Working directory relative to workspace (optional, defaults to workspace root)"
-          },
-          "timeout" => {
-            type: "number",
-            description: "Seconds to wait per command before killing it (default: 30). Increase for slow network operations like git push/pull/clone."
           }
         },
         required: [ "commands" ],
@@ -38,9 +35,7 @@ module Daan
         @allowed_commands = allowed_commands
       end
 
-      DEFAULT_TIMEOUT_SECONDS = 30
-
-      def execute(commands:, path: nil, timeout: DEFAULT_TIMEOUT_SECONDS)
+      def execute(commands:, path: nil)
         commands = JSON.parse(commands) if commands.is_a?(String)
         return "" if commands.empty?
 
@@ -52,7 +47,7 @@ module Daan
             raise "command '#{binary}' is not allowed. Permitted: #{@allowed_commands.join(', ')}"
           end
 
-          run_command(cmd, dir: dir, timeout: timeout)
+          run_command(cmd, dir: dir)
         end
 
         outputs.join("\n")
@@ -60,23 +55,25 @@ module Daan
 
       private
 
-      def run_command(cmd, dir:, timeout:)
+      def run_command(cmd, dir:)
         env = { "GIT_TERMINAL_PROMPT" => "0" }
         stdout_str = +""; stderr_str = +""
 
         Open3.popen3(env, *cmd, chdir: dir.to_s) do |stdin, stdout, stderr, wait_thr|
           stdin.close
-          out_thread = Thread.new { stdout_str = stdout.read }
-          err_thread = Thread.new { stderr_str = stderr.read }
+          out_thread = Thread.new { stdout_str = stdout.read rescue "" }
+          err_thread = Thread.new { stderr_str = stderr.read rescue "" }
 
-          unless wait_thr.join(timeout)
+          begin
+            out_thread.join; err_thread.join
+            wait_thr.join
+          rescue Timeout::Error
             Process.kill("KILL", wait_thr.pid) rescue nil
             wait_thr.join
             out_thread.join; err_thread.join
-            raise "#{cmd.join(' ')} timed out after #{timeout}s"
+            raise "#{cmd.join(' ')} timed out"
           end
 
-          out_thread.join; err_thread.join
           status = wait_thr.value
 
           unless status.success?
