@@ -13,8 +13,6 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Fast-forward develop to main
+      - name: Reset develop to main
         run: |
-          git checkout develop
-          git merge --ff-only origin/main
-          git push origin develop
+          git push --force origin main:develop
