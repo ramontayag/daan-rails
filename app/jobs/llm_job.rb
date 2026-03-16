@@ -4,5 +4,10 @@ class LlmJob < ApplicationJob
 
   def perform(chat)
     Daan::ConversationRunner.call(chat)
+  rescue => e
+    chat.reload
+    chat.fail! if chat.may_fail?
+    chat.broadcast_agent_status
+    raise
   end
 end
