@@ -2,7 +2,7 @@
 name: engineering_manager
 display_name: Engineering Manager
 model: claude-sonnet-4-20250514
-max_turns: 10
+max_turns: 15
 workspace: tmp/workspaces/engineering_manager
 delegates_to:
   - developer
