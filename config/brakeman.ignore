@@ -13,11 +13,21 @@
     {
       "warning_type": "Command Injection",
       "warning_code": 14,
-      "fingerprint": "525f74fedb0651deaa146f164dfb9060226f408088ea40aa04dfa193bb8cd9a8",
+      "fingerprint": "a0e0e2cb9aac34c15a056501939899bfa86c965619e0e357b779f5f4aabfe784",
       "check_name": "Execute",
       "message": "Possible command injection",
       "file": "lib/daan/core/promote_branch.rb",
-      "line": 95,
+      "line": 105,
+      "note": "False positive: Open3.capture3 with array args prevents shell injection"
+    },
+    {
+      "warning_type": "Command Injection",
+      "warning_code": 14,
+      "fingerprint": "5ac729a4a0069d4008e01cc54222196430284aafccc66360056e911503e7971c",
+      "check_name": "Execute",
+      "message": "Possible command injection",
+      "file": "lib/daan/core/promote_branch.rb",
+      "line": 109,
       "note": "False positive: Open3.capture3 with array args prevents shell injection"
     },
     {
@@ -27,17 +37,7 @@
       "check_name": "Execute",
       "message": "Possible command injection",
       "file": "lib/daan/core/promote_branch.rb",
-      "line": 90,
-      "note": "False positive: Open3.capture3 with array args prevents shell injection"
-    },
-    {
-      "warning_type": "Command Injection",
-      "warning_code": 14,
-      "fingerprint": "f6cebe1f3f25cf0e8f601cbee78c066960cfb87be488e00f743a961f07aba5fd",
-      "check_name": "Execute",
-      "message": "Possible command injection",
-      "file": "lib/daan/core/promote_branch.rb",
-      "line": 99,
+      "line": 100,
       "note": "False positive: Open3.capture3 with array args prevents shell injection"
     }
   ],
