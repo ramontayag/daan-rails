@@ -29,10 +29,11 @@ module Daan
       private
 
       def broadcast_step_list
+        @chat.reload
         Turbo::StreamsChannel.broadcast_replace_to(
           "chat_#{@chat.id}",
           target: "chat_step_list",
-          html: ApplicationController.render(ChatStepListComponent.new(chat: @chat.reload), layout: false)
+          renderable: ChatStepListComponent.new(chat: @chat)
         )
       end
     end

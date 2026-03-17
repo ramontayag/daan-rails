@@ -25,7 +25,9 @@ class Daan::Core::CreateStepsTest < ActiveSupport::TestCase
     assert_equal 2, steps[1].position
     assert_equal "Implement", steps[2].title
     assert_equal 3, steps[2].position
-    assert_includes result, "Clone repo"
+    assert_includes result, "1. [ ] Clone repo"
+    assert_includes result, "2. [ ] Write tests"
+    assert_includes result, "3. [ ] Implement"
   end
 
   test "appends to existing steps" do
