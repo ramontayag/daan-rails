@@ -60,7 +60,7 @@ cp .env{,.local}
 
 ## Commit Conventions
 
-This project uses [Conventional Commits](https://www.conventionalcommits.org/) to ensure consistent and meaningful commit messages. Please follow this format:
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) for both **commit messages** and **pull request titles**. Please follow this format:
 
 ```
 <type>(<scope>): <description>

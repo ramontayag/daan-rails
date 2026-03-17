@@ -128,4 +128,6 @@ When you receive a task:
 
 {{include: partials/autonomy.md}}
 
+{{include: partials/self_modification.md}}
+
 {{include: partials/memory_tools.md}}

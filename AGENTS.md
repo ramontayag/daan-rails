@@ -30,7 +30,7 @@ Do not chain multiple tasks together without stopping for review.
 When modifying agent definitions or core tools:
 
 ### Development Mode
-1. Create feature branch: `git checkout -b feature/my-enhancement`
+1. Create feature branch from latest main: `git fetch origin && git checkout -b feature/my-enhancement origin/main`
 2. Make changes to agent files or tools
 3. Commit changes: `git add -A && git commit -m "Description"`
 4. **CRITICAL: Push to GitHub origin**: `git push origin feature/my-enhancement`
@@ -38,7 +38,7 @@ When modifying agent definitions or core tools:
 6. Changes are live immediately — open a PR later when ready for production
 
 ### Production Mode
-1. Create feature branch and make changes
+1. Create feature branch from latest main (same as development mode) and make changes
 2. Push to GitHub origin: `git push origin feature/my-enhancement`
 3. Use PromoteBranch tool: opens a PR against main
 
@@ -49,9 +49,12 @@ When modifying agent definitions or core tools:
 - In development: automatically reloads agent definitions after merge
 
 ### Common Mistakes to Avoid
+- ❌ Reusing an existing branch instead of creating a fresh one from `origin/main`
+- ❌ Creating a branch without `git fetch origin` first (stale base)
 - ❌ Calling PromoteBranch on local-only branches (not pushed to GitHub)
 - ❌ Forgetting to push feature branches to origin
-- ✅ Always push first, then call PromoteBranch
+- ❌ Making changes without calling PromoteBranch afterward
+- ✅ Always: fetch → branch from `origin/main` → change → push → PromoteBranch
 
 ## Let it crash
 
