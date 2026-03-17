@@ -1,4 +1,4 @@
-<div class="flex h-screen" data-testid="chat-layout">
+<div class="flex h-screen" data-testid="chat-layout" data-controller="preserve-focus">
   <%= render SidebarComponent.new(current_perspective: perspective_name, current_agent: @agent) %>
   <div class="flex flex-1 overflow-hidden">
     <%= render ThreadListComponent.new(agent: @agent, chats: @chats, open_chat: @chat, readonly: perspective_name != "me") %>

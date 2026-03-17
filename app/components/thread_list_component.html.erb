@@ -11,5 +11,5 @@
       <p class="text-gray-400 text-sm p-4">No conversations yet.</p>
     <% end %>
   </div>
-  <%= render ComposeBarComponent.new(action: chat_agent_threads_path(agent), readonly: readonly, autofocus: !open_chat) %>
+  <%= render ComposeBarComponent.new(action: chat_agent_threads_path(agent), readonly: readonly, autofocus: false) %>
 </div>
