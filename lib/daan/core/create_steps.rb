@@ -7,7 +7,7 @@ module Daan
       description "Create a checklist of steps for the current task. " \
                   "Use this at the start of a task to plan your work. " \
                   "Steps appear in your system prompt so you always see them."
-      param :steps, desc: "Ordered list of step titles (array of strings)"
+      param :steps, type: "array", desc: "Ordered list of step titles"
 
       def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil, allowed_commands: nil)
         @chat = chat
