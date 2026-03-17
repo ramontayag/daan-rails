@@ -7,6 +7,13 @@ Write tests before implementation. Red-green-refactor:
 2. Write the minimum code to make it pass
 3. Refactor if needed
 
+This applies to bug fixes too. Reproduce the bug with a failing test before
+attempting a fix — especially for UI bugs. System tests can verify focus
+(`evaluate_script("document.activeElement")`), visibility, scroll position,
+and other browser state. A fast, repeatable test beats manual verification
+every time and prevents fix-attempt loops where you guess, push, and ask
+the user to click around.
+
 ## Running tests
 
 Always run `bin/ci` before committing, and especially before pushing. It runs
