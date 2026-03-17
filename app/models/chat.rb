@@ -54,6 +54,60 @@ class Chat < ApplicationRecord
     Daan::AgentRegistry.find(agent_name)
   end
 
+  # Token and cost calculation methods
+  def total_input_tokens
+    messages.sum(:input_tokens) || 0
+  end
+
+  def total_output_tokens
+    messages.sum(:output_tokens) || 0
+  end
+
+  def total_cached_tokens
+    messages.sum(:cached_tokens) || 0
+  end
+
+  def total_cache_creation_tokens
+    messages.sum(:cache_creation_tokens) || 0
+  end
+
+  def total_thinking_tokens
+    messages.sum(:thinking_tokens) || 0
+  end
+
+  def total_tokens
+    total_input_tokens + total_output_tokens + total_thinking_tokens
+  end
+
+  def estimated_cost_usd
+    return 0.0 unless model&.pricing&.dig("data", "text_tokens", "standard", "values")
+
+    pricing = model.pricing["data"]["text_tokens"]["standard"]["values"]
+    input_cost_per_million = pricing["input_per_million"] || 0
+    output_cost_per_million = pricing["output_per_million"] || 0
+    cached_input_cost_per_million = pricing["cached_input_per_million"] || 0
+
+    # Calculate costs in USD
+    input_cost = (total_input_tokens.to_f / 1_000_000) * input_cost_per_million
+    output_cost = (total_output_tokens.to_f / 1_000_000) * output_cost_per_million
+    cached_cost = (total_cached_tokens.to_f / 1_000_000) * cached_input_cost_per_million
+    thinking_cost = (total_thinking_tokens.to_f / 1_000_000) * input_cost_per_million # Thinking tokens priced as input
+    cache_creation_cost = (total_cache_creation_tokens.to_f / 1_000_000) * input_cost_per_million
+
+    input_cost + output_cost + cached_cost + thinking_cost + cache_creation_cost
+  end
+
+  def formatted_cost
+    cost = estimated_cost_usd
+    if cost >= 1.0
+      "$%.2f" % cost
+    elsif cost >= 0.01
+      "$%.3f" % cost
+    else
+      "$%.4f" % cost
+    end
+  end
+
   # Called explicitly by ConversationRunner after each AASM transition — not a callback.
   # See CLAUDE.md: broadcasts that render components belong in the caller.
   def broadcast_agent_status
