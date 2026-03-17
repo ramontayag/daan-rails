@@ -97,3 +97,45 @@ Common scopes include:
 - **core**: Core agent runtime
 - **config**: Configuration changes
 - **deps**: Dependencies
+
+## Clean Commits
+
+PRs should have clean, logical commits. Each commit should represent a single coherent change.
+
+If you make a follow-up commit that fixes something introduced in a previous commit on the same branch, **fixup** that commit rather than leaving a separate "fix typo" or "oops" commit.
+
+### Examples
+
+**Bad** — follow-up commits that should have been fixups:
+
+```
+a1b2c3d feat(ui): add compose bar autofocus parameter
+f4e5d6c fix: forgot to update the test
+9g8h7i6 fix: actually pass the parameter in the template
+```
+
+**Good** — the fixes are squashed into the original commit:
+
+```
+a1b2c3d feat(ui): add compose bar autofocus parameter
+```
+
+**Also good** — multiple commits that each stand on their own:
+
+```
+a1b2c3d refactor(ui): extract autofocus logic into parameter
+b2c3d4e feat(ui): disable autofocus when thread panel is open
+```
+
+### How to fixup
+
+```bash
+# Stage your fix
+git add app/components/compose_bar_component.rb
+
+# Fixup the commit that introduced the issue
+git commit --fixup <commit-sha>
+
+# Autosquash to fold it in (rebase onto the commit before the one you're fixing)
+git rebase -i --autosquash main
+```
