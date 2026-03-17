@@ -17,54 +17,34 @@ class FocusPreservationTest < ApplicationSystemTestCase
     ActiveJob::Base.queue_adapter = :test
   end
 
-  test "focus stays on thread panel textarea after sending a message" do
+  test "focus stays on thread panel textarea through send-and-reply cycle" do
     visit chat_thread_path(@chat)
 
+    # Send a message
     thread_input = find("[data-testid='thread-panel'] textarea[data-testid='message-input']")
     thread_input.fill_in with: "test message"
     thread_input.send_keys(:return)
 
-    # After submission, focus should remain on the thread panel textarea
-    assert_focused_on_thread_panel_input
-  end
-
-  test "focus stays on thread panel textarea after typing indicator appears" do
-    visit chat_thread_path(@chat)
-
-    thread_input = find("[data-testid='thread-panel'] textarea[data-testid='message-input']")
-    thread_input.click
-
     assert_focused_on_thread_panel_input
 
-    # Simulate the typing indicator broadcast
+    # Agent starts typing
     Turbo::StreamsChannel.broadcast_replace_to(
       "chat_#{@chat.id}",
       target: "typing_indicator",
       html: '<div id="typing_indicator"><p class="text-sm text-gray-400 italic px-4 py-1">Typing...</p></div>'
     )
-
     assert_text "Typing..."
 
     assert_focused_on_thread_panel_input
-  end
 
-  test "focus stays on thread panel textarea after new message is appended" do
-    visit chat_thread_path(@chat)
-
-    thread_input = find("[data-testid='thread-panel'] textarea[data-testid='message-input']")
-    thread_input.click
-
-    assert_focused_on_thread_panel_input
-
-    # Simulate a new message broadcast
-    msg = @chat.messages.create!(role: "assistant", content: "A new reply", visible: true)
+    # Agent replies
+    @chat.messages.create!(role: "assistant", content: "Got it!", visible: true)
     Turbo::StreamsChannel.broadcast_append_to(
       "chat_#{@chat.id}",
       target: "messages",
-      html: '<div class="p-2" data-role="assistant">A new reply</div>'
+      html: '<div class="p-2" data-role="assistant">Got it!</div>'
     )
-
-    assert_text "A new reply"
+    assert_text "Got it!"
 
     assert_focused_on_thread_panel_input
   end
