@@ -6,6 +6,16 @@ on:
     branches: [ main ]
 
 jobs:
+  branch-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reject PRs from develop
+        if: github.head_ref == 'develop'
+        run: |
+          echo "::error::PRs from 'develop' are not allowed. Use a feature branch (e.g. feat/*, fix/*)."
+          exit 1
+
   scan_ruby:
     runs-on: ubuntu-latest
 

@@ -19,8 +19,8 @@ module Daan
                            "Must be pushed to origin first."
       param :repo_path, desc: "Path to the cloned repo in your workspace where the merge should happen " \
                               "(e.g. 'daan-rails'). Relative to workspace root. Required in development.", required: false
-      param :tests_passed, desc: "Confirm you ran `bin/rails test && bin/rails test:system` in the " \
-                                 "cloned repo and all tests passed. Must be true to promote."
+      param :tests_passed, desc: "Confirm you ran `bin/ci` in the " \
+                                 "cloned repo and all checks passed. Must be true to promote."
       param :title, desc: "Pull request title (production only).", required: false
       param :body,  desc: "Pull request body (production only).", required: false
 
@@ -29,7 +29,7 @@ module Daan
       end
 
       def execute(branch:, tests_passed:, repo_path: nil, title: nil, body: nil)
-        raise "Tests must pass before promoting. Run `bin/rails test && bin/rails test:system` first." unless tests_passed
+        raise "Tests must pass before promoting. Run `bin/ci` first." unless tests_passed
         if development?
           promote_to_development(branch, repo_path)
         else
