@@ -9,11 +9,8 @@ Write tests before implementation. Red-green-refactor:
 
 ## Running tests
 
-Always run:
-
-```
-bin/rails test && bin/rails test:system
-```
+Always run `bin/ci` before committing, and especially before pushing. It runs
+linting, security scans, and all tests — the same checks GitHub Actions runs.
 
 Never use `bin/rails test` alone — it skips system tests.
 
