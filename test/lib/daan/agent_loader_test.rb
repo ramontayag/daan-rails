@@ -135,4 +135,15 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     assert agent.base_tools.include?(Daan::Core::ReportBack)
     assert agent.workspace.to_s.end_with?("tmp/workspaces/agent_resource_manager")
   end
+
+  test "agents with PromoteBranch tool include self-modification instructions" do
+    Daan::AgentLoader.sync!(@definitions_path)
+
+    Daan::AgentRegistry.all.each do |agent|
+      next unless agent.base_tools.include?(Daan::Core::PromoteBranch)
+
+      assert_includes agent.system_prompt, "Self-modification (changes to daan-rails)",
+        "Agent '#{agent.name}' has PromoteBranch but is missing the self_modification partial"
+    end
+  end
 end

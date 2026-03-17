@@ -67,6 +67,4 @@ Keep one clone per repo. Use the repo name as the directory name (e.g. `daan-rai
 9. Follow the repo's instructions (`AGENTS.md`) for what to do next — open a PR, deploy, or whatever the repo specifies.
 10. ReportBack with the outcome and the branch name.
 
-## Self-modification (changes to daan-rails)
-
-Follow the general repo change flow above. After pushing your branch, instead of step 9, call PromoteBranch with the branch name and `repo_path` (the directory name of your clone, e.g. `daan-rails`). PromoteBranch merges your branch into develop, pushes develop, and syncs the running app. If there are merge conflicts, PromoteBranch leaves the merge in progress — resolve the conflicts, commit, push develop yourself, then call PromoteBranch again.
+{{include: partials/self_modification.md}}
