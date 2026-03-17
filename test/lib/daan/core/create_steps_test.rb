@@ -14,7 +14,7 @@ class Daan::Core::CreateStepsTest < ActiveSupport::TestCase
 
   test "creates steps with sequential positions" do
     tool = Daan::Core::CreateSteps.new(chat: @chat)
-    result = tool.execute(steps: ["Clone repo", "Write tests", "Implement"])
+    result = tool.execute(steps: [ "Clone repo", "Write tests", "Implement" ])
 
     assert_equal 3, @chat.chat_steps.count
     steps = @chat.chat_steps.to_a
@@ -33,7 +33,7 @@ class Daan::Core::CreateStepsTest < ActiveSupport::TestCase
   test "appends to existing steps" do
     ChatStep.create!(chat: @chat, title: "Existing step", position: 1)
     tool = Daan::Core::CreateSteps.new(chat: @chat)
-    tool.execute(steps: ["New step"])
+    tool.execute(steps: [ "New step" ])
 
     assert_equal 2, @chat.chat_steps.count
     assert_equal 2, @chat.chat_steps.last.position
