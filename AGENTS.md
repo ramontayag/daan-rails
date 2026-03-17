@@ -14,6 +14,16 @@ linting, security scans, and all tests — the same checks GitHub Actions runs.
 
 Never use `bin/rails test` alone — it skips system tests.
 
+## Testing philosophy
+
+- **Unit tests** cover individual branches, edge cases, and error paths.
+- **System tests** cover golden paths — the full user journey through a
+  feature, not individual mechanisms. One system test that walks through
+  send → typing indicator → reply is better than three tests that each
+  check one of those in isolation. If the golden path works, the pieces work.
+- **Integration tests** (e.g. `DeveloperSmokeTest`) verify that jobs,
+  services, and broadcasts wire together correctly end-to-end.
+
 ## Task execution rhythm
 
 After completing each task:
