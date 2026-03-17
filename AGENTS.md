@@ -9,8 +9,8 @@ Write tests before implementation. Red-green-refactor:
 
 This applies to bug fixes too. Reproduce the bug with a failing test before
 attempting a fix — especially for UI bugs. System tests can verify focus
-(`evaluate_script("document.activeElement")`), visibility, scroll position,
-and other browser state. A fast, repeatable test beats manual verification
+(`assert_selector "textarea:focus"`), visibility, scroll position, and
+other browser state. A fast, repeatable test beats manual verification
 every time and prevents fix-attempt loops where you guess, push, and ask
 the user to click around.
 

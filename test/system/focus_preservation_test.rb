@@ -52,12 +52,6 @@ class FocusPreservationTest < ApplicationSystemTestCase
   private
 
   def assert_focused_on_thread_panel_input
-    active_testid = evaluate_script("document.activeElement?.dataset?.testid")
-    assert_equal "message-input", active_testid, "Expected focus on a message-input"
-
-    active_in_thread_panel = evaluate_script(
-      "document.activeElement?.closest('[data-testid=\"thread-panel\"]') !== null"
-    )
-    assert active_in_thread_panel, "Expected focus on the thread panel's input, not the thread list's"
+    assert_selector "[data-testid='thread-panel'] textarea[data-testid='message-input']:focus"
   end
 end
