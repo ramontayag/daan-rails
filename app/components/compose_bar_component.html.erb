@@ -2,17 +2,18 @@
   <% if readonly %>
     <p class="text-sm text-gray-400 italic text-center">read-only — viewing another agent's perspective</p>
   <% else %>
-    <div data-controller="auto-resize-textarea">
-      <%= form_with url: action, method: :post, class: "flex gap-2 items-end" do |f| %>
+    <div data-controller="auto-resize-textarea form-reset">
+      <%= form_with url: action, method: :post, class: "flex gap-2 items-end",
+            data: { action: "turbo:submit-end->form-reset#reset" } do |f| %>
         <%= f.text_area :content, name: "message[content]",
             placeholder: "Message...",
             class: "flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-y-auto",
             rows: 1,
-            autofocus: autofocus,
             required: true,
             data: {
               testid: "message-input",
               "auto-resize-textarea-target": "textarea",
+              "form-reset-target": "textarea",
               action: "input->auto-resize-textarea#input paste->auto-resize-textarea#paste keydown->auto-resize-textarea#keydown"
             } %>
         <%= f.submit "Send",

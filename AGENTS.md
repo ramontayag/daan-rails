@@ -7,12 +7,29 @@ Write tests before implementation. Red-green-refactor:
 2. Write the minimum code to make it pass
 3. Refactor if needed
 
+This applies to bug fixes too. Reproduce the bug with a failing test before
+attempting a fix — especially for UI bugs. System tests can verify focus
+(`assert_selector "textarea:focus"`), visibility, scroll position, and
+other browser state. A fast, repeatable test beats manual verification
+every time and prevents fix-attempt loops where you guess, push, and ask
+the user to click around.
+
 ## Running tests
 
 Always run `bin/ci` before committing, and especially before pushing. It runs
 linting, security scans, and all tests — the same checks GitHub Actions runs.
 
 Never use `bin/rails test` alone — it skips system tests.
+
+## Testing philosophy
+
+- **Unit tests** cover individual branches, edge cases, and error paths.
+- **System tests** cover golden paths — the full user journey through a
+  feature, not individual mechanisms. One system test that walks through
+  send → typing indicator → reply is better than three tests that each
+  check one of those in isolation. If the golden path works, the pieces work.
+- **Integration tests** (e.g. `DeveloperSmokeTest`) verify that jobs,
+  services, and broadcasts wire together correctly end-to-end.
 
 ## Task execution rhythm
 
