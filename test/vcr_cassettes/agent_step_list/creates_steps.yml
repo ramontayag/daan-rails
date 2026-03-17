@@ -1,0 +1,850 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.anthropic.com/v1/messages
+    body:
+      encoding: UTF-8
+      string: '{"model":"claude-sonnet-4-20250514","messages":[{"role":"user","content":[{"type":"text","text":"Use
+        the CreateSteps tool to make a task list with exactly these three steps: \"Say
+        hello\", \"Say hi\", \"Say goodbye\". Then reply with just \"Done.\""}]}],"stream":false,"max_tokens":64000,"tools":[{"name":"daan--core--read","description":"Read
+        a file from the workspace","input_schema":{"type":"object","properties":{"path":{"type":"string","description":"Relative
+        path to the file"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["path"],"additionalProperties":false,"strict":true}},{"name":"daan--core--write","description":"Write
+        content to a file in the workspace","input_schema":{"type":"object","properties":{"path":{"type":"string","description":"Relative
+        path to the file"},"content":{"type":"string","description":"The content to
+        write"},"timeout_seconds":{"type":"number","description":"Override execution
+        timeout in seconds (default: 10, max: 1800)"}},"required":["path","content"],"additionalProperties":false,"strict":true}},{"name":"daan--core--bash","description":"Run
+        one or more commands in the workspace. Each command is an array of strings:
+        the binary plus its arguments. Commands run sequentially in the specified
+        directory. Only binaries listed in allowed_commands may be used. If any command
+        fails, an error is raised and no output is returned. Use timeout_seconds to
+        increase the timeout for slow operations like test suites.","input_schema":{"type":"object","properties":{"commands":{"type":"array","description":"Commands
+        to run, each as [binary, arg1, arg2, ...]. Example: [[\"git\", \"add\", \"-A\"],
+        [\"git\", \"commit\", \"-m\", \"msg\"]]","items":{"type":"array","items":{"type":"string"}}},"path":{"type":"string","description":"Working
+        directory relative to workspace (optional, defaults to workspace root)"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 600, max: 1800)"}},"required":["commands"],"additionalProperties":false,"strict":true}},{"name":"daan--core--report_back","description":"Report
+        your results back to the delegating agent","input_schema":{"type":"object","properties":{"message":{"type":"string","description":"Your
+        findings or results to report"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["message"],"additionalProperties":false,"strict":true}},{"name":"daan--core--promote_branch","description":"Promote
+        a feature branch to production by opening a pull request against main. Call
+        this after pushing your branch to origin.","input_schema":{"type":"object","properties":{"branch":{"type":"string","description":"The
+        feature branch name to promote (e.g. ''feature/add-qa-agent''). Must be pushed
+        to origin first."},"repo_path":{"type":"string","description":"Path to the
+        cloned repo in your workspace where the merge should happen (e.g. ''daan-rails'').
+        Relative to workspace root. Required in development."},"tests_passed":{"type":"string","description":"Confirm
+        you ran `bin/ci` in the cloned repo and all checks passed. Must be true to
+        promote."},"title":{"type":"string","description":"Pull request title (production
+        only)."},"body":{"type":"string","description":"Pull request body (production
+        only)."},"timeout_seconds":{"type":"number","description":"Override execution
+        timeout in seconds (default: 60, max: 1800)"}},"required":["branch","tests_passed"],"additionalProperties":false,"strict":true}},{"name":"daan--core--create_steps","description":"Create
+        a checklist of steps for the current task. Use this at the start of a task
+        to plan your work. Steps appear in your system prompt so you always see them.","input_schema":{"type":"object","properties":{"steps":{"type":"array","description":"Ordered
+        list of step titles","items":{"type":"string"}},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["steps"],"additionalProperties":false,"strict":true}},{"name":"daan--core--update_step","description":"Update
+        the status of a step in your checklist. Use the position number shown in your
+        system prompt.","input_schema":{"type":"object","properties":{"position":{"type":"string","description":"Position
+        number of the step to update"},"status":{"type":"string","description":"New
+        status: pending, in_progress, or completed"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["position","status"],"additionalProperties":false,"strict":true}},{"name":"MemoryWrite","description":"Store
+        content in persistent memory with structured metadata for semantic search
+        and retrieval.\n\nCRITICAL: ALL 8 required parameters MUST be provided. Do
+        NOT skip any. If you''re missing information, ask the user or infer reasonable
+        defaults.\n\nREQUIRED PARAMETERS (provide ALL 8):\n1. file_path - Where to
+        store (e.g., ''concept/ruby/classes.md'', ''skill/debugging/trace-errors.md'')\n2.
+        content - Pure markdown content (no frontmatter)\n3. title - Brief descriptive
+        title\n4. type - Entry category: \"concept\", \"fact\", \"skill\", or \"experience\"\n5.
+        confidence - How sure you are: \"high\", \"medium\", or \"low\"\n6. tags -
+        JSON string of array of search keywords (e.g., ''[\"ruby\", \"classes\", \"oop\"]'')
+        - be comprehensive!\n7. related - JSON string of array of related memory paths
+        (e.g., ''[\"memory://concept/ruby/modules.md\", \"memory://concept/ruby/classes.md\"]'')
+        or ''[]'' if none\n8. domain - Category like ''programming/ruby'', ''people'',
+        ''debugging''\n9. source - Where this came from: \"user\", \"documentation\",
+        \"experimentation\", or \"inference\"\n\nOPTIONAL (for skills only):\n- tools
+        - JSON string of array of tool names needed (e.g., ''[\"Read\", \"Edit\",
+        \"Bash\"]'') or ''[]'' if none\n- permissions - Tool restrictions hash or
+        {}\n\nPATH STRUCTURE (EXACTLY 4 TOP-LEVEL CATEGORIES - NEVER CREATE OTHERS):\nMemory
+        has EXACTLY 4 fixed top-level categories. ALL paths MUST start with one of
+        these:\n\n1. concept/{domain}/{name}.md - Abstract ideas (e.g., concept/ruby/classes.md)\n2.
+        fact/{subfolder}/{name}.md - Concrete info (e.g., fact/people/john.md)\n3.
+        skill/{domain}/{name}.md - How-to procedures (e.g., skill/debugging/api-errors.md)\n4.
+        experience/{name}.md - Lessons learned (e.g., experience/fixed-cors-bug.md)\n\nINVALID
+        (do NOT create): documentation/, reference/, tutorial/, knowledge/, notes/\nThese
+        categories do NOT exist. Use concept/, fact/, skill/, or experience/ instead.\n\nTAGS
+        ARE CRITICAL: Think \"What would I search for in 6 months?\" For skills especially,
+        be VERY comprehensive with tags - they''re your search index.\n\nEXAMPLES:\n-
+        For concept: tags: [''ruby'', ''oop'', ''classes'', ''inheritance'', ''methods'']\n-
+        For skill: tags: [''debugging'', ''api'', ''http'', ''errors'', ''trace'',
+        ''network'', ''rest'']\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        with .md extension (e.g., ''concept/ruby/classes.md'', ''fact/people/john.md'')"},"content":{"type":"string","description":"Content
+        to store (pure markdown, no frontmatter needed)"},"title":{"type":"string","description":"Brief
+        title describing the content"},"type":{"type":"string","description":"Entry
+        type: concept, fact, skill, or experience (matches category: concept/, fact/,
+        skill/, experience/)"},"confidence":{"type":"string","description":"Confidence
+        level: high, medium, or low (defaults to ''medium'' if not specified)"},"tags":{"type":"string","description":"JSON
+        string of array of tag strings for searching (e.g., ''[\"ruby\", \"oop\"]'')"},"related":{"type":"string","description":"JSON
+        string of array of related memory path strings (e.g., ''[\"memory://concept/ruby/modules.md\",
+        \"memory://concept/ruby/classes.md\"]'')"},"domain":{"type":"string","description":"Category/subcategory
+        (e.g., ''programming/ruby'', ''people'')"},"source":{"type":"string","description":"Source
+        of information: user, documentation, experimentation, or inference (defaults
+        to ''user'' if not specified)"},"tools":{"type":"string","description":"JSON
+        string of array of tool name strings required for this skill (e.g., ''[\"Read\",
+        \"Edit\", \"Bash\"]''). Only for type: skill"},"permissions":{"type":"object","description":"Tool
+        permission restrictions (same format as swarm config). Only for type: skill"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path","content","title","type","tags","related","domain"],"additionalProperties":false,"strict":true}},{"name":"MemoryRead","description":"Read
+        content from your memory storage and retrieve all associated metadata.\n\nREQUIRED:
+        Provide the file_path parameter - the path to the memory entry you want to
+        read.\n\n**Parameters:**\n- file_path (REQUIRED): Path to memory entry - MUST
+        start with concept/, fact/, skill/, or experience/\n\n**MEMORY STRUCTURE -
+        EXACTLY 4 Top-Level Categories (NEVER create others):**\nALL paths MUST start
+        with one of these 4 fixed categories:\n- concept/{domain}/{name}.md - Abstract
+        ideas (e.g., concept/ruby/classes.md)\n- fact/{subfolder}/{name}.md - Concrete
+        info (e.g., fact/people/john.md)\n- skill/{domain}/{name}.md - Procedures
+        (e.g., skill/debugging/api-errors.md)\n- experience/{name}.md - Lessons (e.g.,
+        experience/fixed-bug.md)\n\nINVALID: documentation/, reference/, tutorial/,
+        parallel/, analysis/, notes/\n\n**Returns:**\nJSON with two fields:\n- content:
+        Markdown content with line numbers (same format as Read tool)\n- metadata:
+        All metadata (title, type, tags, tools, permissions, confidence, etc.)\n\n**Examples:**\n-
+        MemoryRead(file_path: \"concept/ruby/classes.md\") - Read a concept\n- MemoryRead(file_path:
+        \"fact/people/john.md\") - Read a fact\n- MemoryRead(file_path: \"skill/debugging/api-errors.md\")
+        - Read a skill before loading it\n\n**Important:**\n- Always read entries
+        before editing them with MemoryEdit or MemoryMultiEdit\n- Line numbers in
+        output are for reference only - don''t include them when editing\n- Each read
+        is tracked to enforce read-before-edit patterns\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to read from memory - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/ruby/classes.md'', ''skill/debugging/api.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path"],"additionalProperties":false,"strict":true}},{"name":"MemoryEdit","description":"Perform
+        exact string replacements in memory entries (works like Edit tool but for
+        memory content).\n\nREQUIRED: Provide ALL THREE parameters - file_path, old_string,
+        and new_string.\n\n**Required Parameters:**\n- file_path (REQUIRED): Path
+        to memory entry - MUST start with concept/, fact/, skill/, or experience/\n-
+        old_string (REQUIRED): The exact text to replace - must match exactly including
+        all whitespace and indentation\n- new_string (REQUIRED): The replacement text
+        - must be different from old_string\n\n**MEMORY STRUCTURE (4 Fixed Categories
+        Only):**\n- concept/{domain}/{name}.md - Abstract ideas\n- fact/{subfolder}/{name}.md
+        - Concrete information\n- skill/{domain}/{name}.md - Procedures\n- experience/{name}.md
+        - Lessons\nINVALID: documentation/, reference/, analysis/, parallel/, tutorial/\n\n**Optional
+        Parameters:**\n- replace_all: Set to true to replace all occurrences (default:
+        false, replaces only first occurrence)\n\n**CRITICAL - Before Using This Tool:**\n1.
+        You MUST use MemoryRead on the entry first - edits without reading will FAIL\n2.
+        Copy text exactly from MemoryRead output, EXCLUDING the line number prefix\n3.
+        Line number format: \"    123→actual content\" - only use text AFTER the arrow\n4.
+        Preserve exact indentation and whitespace from the original content\n\n**How
+        It Works:**\n- If old_string appears once: replacement succeeds\n- If old_string
+        appears multiple times: FAILS unless replace_all=true\n- If old_string not
+        found: FAILS with helpful error\n- Make old_string unique by including more
+        surrounding context\n\n**Examples:**\n```\n# Update a fact\nMemoryEdit(\n  file_path:
+        \"fact/people/john.md\",\n  old_string: \"status: active\",\n  new_string:
+        \"status: inactive\"\n)\n\n# Update a skill\nMemoryEdit(\n  file_path: \"skill/debugging/api-errors.md\",\n  old_string:
+        \"TODO: Add error codes\",\n  new_string: \"Common error codes: 401, 403,
+        404, 500\",\n  replace_all: true\n)\n\n# Update a concept\nMemoryEdit(\n  file_path:
+        \"concept/ruby/classes.md\",\n  old_string: \"def calculate_total(items)\n  return
+        sum(items)\nend\",\n  new_string: \"def compute_sum(items)\n  items.sum\nend\"\n)\n```\n\n**Common
+        Mistakes to Avoid:**\n- Including line numbers in old_string or new_string\n-
+        Not reading the entry first with MemoryRead\n- Not matching whitespace exactly\n-
+        Trying to replace non-unique text without replace_all\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to memory entry - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/ruby/classes.md'', ''skill/debugging/api.md'')"},"old_string":{"type":"string","description":"The
+        exact text to replace (must match exactly including whitespace)"},"new_string":{"type":"string","description":"The
+        text to replace it with (must be different from old_string)"},"replace_all":{"type":"string","description":"Replace
+        all occurrences of old_string (default false)"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path","old_string","new_string"],"additionalProperties":false,"strict":true}},{"name":"MemoryDelete","description":"Delete
+        entries from your memory storage when they''re no longer needed.\n\nREQUIRED:
+        Provide the file_path parameter - the path to the entry you want to delete.\n\n**Parameters:**\n-
+        file_path (REQUIRED): Path to memory entry - MUST start with concept/, fact/,
+        skill/, or experience/\n\n**MEMORY STRUCTURE (4 Fixed Categories Only):**\n-
+        concept/{domain}/{name}.md - Abstract ideas\n- fact/{subfolder}/{name}.md
+        - Concrete information\n- skill/{domain}/{name}.md - Procedures\n- experience/{name}.md
+        - Lessons\nINVALID: documentation/, reference/, analysis/, parallel/, temp/,
+        notes/\n\n**When to Delete:**\n- Outdated information that''s been superseded\n-
+        Completed tasks that are no longer relevant\n- Duplicate entries (after consolidating)\n-
+        Test data or temporary calculations\n- Low-quality entries with minimal value\n\n**IMPORTANT
+        WARNINGS:**\n- Deletion is PERMANENT - content cannot be recovered\n- Think
+        carefully before deleting - consider if it might be useful later\n- Use MemoryDefrag
+        to identify candidates for deletion (find_archival_candidates, compact)\n-
+        Consider reading the entry first to verify you''re deleting the right thing\n\n**Examples:**\n```\n#
+        Delete outdated concept\nMemoryDelete(file_path: \"concept/old-api/deprecated.md\")\n\n#
+        Delete completed experience\nMemoryDelete(file_path: \"experience/temp-experiment.md\")\n\n#
+        Delete obsolete fact\nMemoryDelete(file_path: \"fact/orgs/defunct-company.md\")\n```\n\n**Best
+        Practices:**\n1. Read entry first with MemoryRead to confirm it''s the right
+        one\n2. Use MemoryDefrag(action: \"find_archival_candidates\") to find old,
+        unused entries\n3. Delete in batches during memory maintenance sessions\n4.
+        Keep entries that might provide historical context\n5. Don''t delete skills
+        unless you''re certain they won''t be needed\n\n**Alternative to Deletion:**\nInstead
+        of deleting, consider:\n- Updating entries to mark them as archived\n- Consolidating
+        multiple entries into one comprehensive entry\n- Moving entries to an \"archive/\"
+        hierarchy for later reference\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to delete from memory - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/old-api/deprecated.md'', ''experience/temp.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path"],"additionalProperties":false,"strict":true}},{"name":"MemoryGlob","description":"Search
+        your memory entries using glob patterns (like filesystem glob).\n\nREQUIRED:
+        Provide the pattern parameter - the glob pattern to match entries against.\n\n**Parameters:**\n-
+        pattern (REQUIRED): Glob pattern with wildcards (e.g., ''**/*.txt'', ''parallel/*/task_*'',
+        ''skill/**'')\n\n**Glob Pattern Syntax (Standard Ruby Glob):**\n- `*` - matches
+        .md files at a single directory level (e.g., ''fact/*'' → fact/*.md)\n- `**`
+        - matches .md files recursively at any depth (e.g., ''fact/**'' → fact/**/*.md)\n-
+        `?` - matches any single character (e.g., ''task_?'')\n- `[abc]` - matches
+        any character in the set (e.g., ''task_[0-9]'')\n\n**Returns:**\nList of matching
+        .md memory entries with:\n- Full memory:// path\n- Entry title\n- Size in
+        bytes/KB/MB\n\n**Note**: Only returns .md files (actual memory entries), not
+        directory entries.\n\n**MEMORY STRUCTURE (4 Fixed Categories Only):**\nALL
+        patterns MUST target one of these 4 categories:\n- concept/{domain}/** - Abstract
+        ideas\n- fact/{subfolder}/** - Concrete information\n- skill/{domain}/** -
+        Procedures\n- experience/** - Lessons\nINVALID: documentation/, reference/,
+        parallel/, analysis/, tutorial/\n\n**Common Use Cases:**\n```\n# Find direct
+        .md files in fact/\nMemoryGlob(pattern: \"fact/*\")\nResult: fact/api.md (only
+        direct children, not nested)\n\n# Find ALL facts recursively\nMemoryGlob(pattern:
+        \"fact/**\")\nResult: fact/api.md, fact/people/john.md, fact/people/jane.md,
+        ...\n\n# Find all skills recursively\nMemoryGlob(pattern: \"skill/**\")\nResult:
+        skill/debugging/api-errors.md, skill/meta/deep-learning.md, ...\n\n# Find
+        all concepts in a domain\nMemoryGlob(pattern: \"concept/ruby/**\")\nResult:
+        concept/ruby/classes.md, concept/ruby/modules.md, ...\n\n# Find direct files
+        in fact/people/\nMemoryGlob(pattern: \"fact/people/*\")\nResult: fact/people/john.md,
+        fact/people/jane.md (not fact/people/teams/x.md)\n\n# Find all experiences\nMemoryGlob(pattern:
+        \"experience/**\")\nResult: experience/fixed-cors-bug.md, experience/optimization.md,
+        ...\n\n# Find debugging skills recursively\nMemoryGlob(pattern: \"skill/debugging/**\")\nResult:
+        skill/debugging/api-errors.md, skill/debugging/performance.md, ...\n\n# Find
+        all entries (all categories)\nMemoryGlob(pattern: \"**/*\")\nResult: All .md
+        entries across all 4 categories\n```\n\n**Understanding * vs **:**\n- `fact/*`
+        matches only direct .md files: fact/api.md\n- `fact/**` matches ALL .md files
+        recursively: fact/api.md, fact/people/john.md, ...\n- To explore subdirectories,
+        use recursive pattern and examine returned paths\n\n**When to Use MemoryGlob:**\n-
+        Discovering what''s in a memory hierarchy\n- Finding all entries matching
+        a naming convention\n- Locating related entries by path pattern\n- Exploring
+        memory structure before reading specific entries\n- Batch operations preparation
+        (find all, then process each)\n\n**Combining with Other Tools:**\n1. Use MemoryGlob
+        to find candidates\n2. Use MemoryRead to examine specific entries\n3. Use
+        MemoryEdit/MemoryDelete to modify/remove them\n\n**Tips:**\n- Start with broad
+        patterns and narrow down\n- Use `**` for recursive searching entire hierarchies\n-
+        Combine with MemoryGrep if you need content-based search\n- Check entry sizes
+        to identify large entries\n","input_schema":{"type":"object","properties":{"pattern":{"type":"string","description":"Glob
+        pattern - target concept/, fact/, skill/, or experience/ only (e.g., ''skill/**'',
+        ''concept/ruby/*'', ''fact/people/*.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["pattern"],"additionalProperties":false,"strict":true}},{"name":"MemoryGrep","description":"Search
+        your memory content using regular expression patterns (like grep).\n\nREQUIRED:
+        Provide the pattern parameter - the regex pattern to search for in entry content.\n\nMEMORY
+        STRUCTURE: Searches across all 4 fixed categories (concept/, fact/, skill/,
+        experience/)\nNO OTHER top-level categories exist.\n\n**Required Parameters:**\n-
+        pattern (REQUIRED): Regular expression pattern to search for (e.g., ''status:
+        pending'', ''TODO.*urgent'', ''\\btask_\\d+\\b'')\n\n**Optional Parameters:**\n-
+        path: Limit search to specific path (e.g., ''concept/'', ''fact/api-design/'',
+        ''skill/ruby'')\n- case_insensitive: Set to true for case-insensitive search
+        (default: false)\n- output_mode: Choose output format - ''files_with_matches''
+        (default), ''content'', or ''count''\n\n**Output Modes Explained:**\n1. **files_with_matches**
+        (default): Just shows which entries contain matches\n   - Fast and efficient
+        for discovery\n   - Use when you want to know WHERE matches exist\n\n2. **content**:
+        Shows matching lines with line numbers\n   - See the actual matching content\n   -
+        Use when you need to read the matches in context\n\n3. **count**: Shows how
+        many matches in each entry\n   - Quantify occurrences\n   - Use for statistics
+        or finding entries with most matches\n\n**Regular Expression Syntax:**\n-
+        Literal text: ''status: pending''\n- Any character: ''task.done''\n- Character
+        classes: ''[0-9]+'' (digits), ''[a-z]+'' (lowercase)\n- Word boundaries: ''\\btodo\\b''
+        (exact word)\n- Anchors: ''^Start'' (line start), ''end$'' (line end)\n- Quantifiers:
+        ''*'' (0+), ''+'' (1+), ''?'' (0 or 1), ''{3}'' (exactly 3)\n- Alternation:
+        ''pending|in-progress|blocked''\n\n**Path Parameter - Directory-Style Filtering:**\nThe
+        path parameter works just like searching in directories:\n- ''concept/'' -
+        Search only concept entries\n- ''fact/api-design'' - Search only in fact/api-design
+        (treats as directory)\n- ''fact/api-design/'' - Same as above\n- ''skill/ruby/blocks.md''
+        - Search only that specific file\n\n**Examples:**\n```\n# Find entries containing
+        \"TODO\" (case-sensitive)\nMemoryGrep(pattern: \"TODO\")\n\n# Search only
+        in concepts\nMemoryGrep(pattern: \"TODO\", path: \"concept/\")\n\n# Search
+        in a specific subdirectory\nMemoryGrep(pattern: \"endpoint\", path: \"fact/api-design\")\n\n#
+        Search a specific file\nMemoryGrep(pattern: \"lambda\", path: \"skill/ruby/blocks.md\")\n\n#
+        Find entries with any status (case-insensitive)\nMemoryGrep(pattern: \"status:\",
+        case_insensitive: true)\n\n# Show actual content of matches in skills only\nMemoryGrep(pattern:
+        \"error|warning|failed\", path: \"skill/\", output_mode: \"content\")\n\n#
+        Count how many times \"completed\" appears in experiences\nMemoryGrep(pattern:
+        \"completed\", path: \"experience/\", output_mode: \"count\")\n\n# Find task
+        numbers in facts\nMemoryGrep(pattern: \"task_\\d+\", path: \"fact/\")\n\n#
+        Find incomplete tasks\nMemoryGrep(pattern: \"^- \\[ \\]\", output_mode: \"content\")\n\n#
+        Find entries mentioning specific functions\nMemoryGrep(pattern: \"\\bprocess_data\\(\")\n```\n\n**Use
+        Cases:**\n- Finding entries by keyword or phrase\n- Locating TODO items or
+        action items\n- Searching for error messages or debugging info\n- Finding
+        entries about specific code/functions\n- Identifying patterns in your memory\n-
+        Content-based discovery (vs MemoryGlob''s path-based discovery)\n\n**Combining
+        with Other Tools:**\n1. Use MemoryGrep to find entries containing specific
+        content\n2. Use MemoryRead to examine full entries\n3. Use MemoryEdit to update
+        the found content\n\n**Tips:**\n- Start with simple literal patterns before
+        using complex regex\n- Use case_insensitive=true for broader matches\n- Use
+        path parameter to limit search scope (faster and more precise)\n- Use output_mode=\"content\"
+        to see context around matches\n- Escape special regex characters with backslash:
+        \\. \\* \\? \\[ \\]\n- Test patterns on a small set before broad searches\n-
+        Use word boundaries (\\b) for exact word matching\n","input_schema":{"type":"object","properties":{"pattern":{"type":"string","description":"Regular
+        expression pattern to search for"},"path":{"type":"string","description":"Limit
+        search to specific path (e.g., ''concept/'', ''fact/api-design/'', ''skill/ruby/blocks.md'')"},"case_insensitive":{"type":"boolean","description":"Set
+        to true for case-insensitive search (default: false)"},"output_mode":{"type":"string","description":"Output
+        mode: ''files_with_matches'' (default), ''content'', or ''count''"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["pattern"],"additionalProperties":false,"strict":true}}],"system":[{"type":"text","text":"You
+        are the Developer on the Daan agent team. You write and modify files in your
+        workspace to accomplish technical tasks.\n\n**Autonomy principle**: Resolve
+        questions at the level they arise. Before escalating, search memory, try alternate
+        approaches, and make reasonable assumptions. If you''re genuinely stuck on
+        something your delegator would know, ask them — but exhaust your own resources
+        first. When you receive questions from agents you''ve delegated to, absorb
+        and answer them at your level rather than passing them up. The goal is that
+        questions get resolved within the team, not forwarded to the human.\n\n**Reporting
+        back**: If you have a `report_back` tool, send interim reports as you make
+        progress rather than waiting until everything is done. Don''t risk running
+        out of turns with nothing reported.\n\nWhen you receive a task:\n1. Search
+        memory for relevant context, patterns, or past decisions.\n2. Use your Read
+        and Write tools to complete the work. Use relative paths — they resolve within
+        your workspace.\n3. When your work is complete, use ReportBack to send your
+        findings to your delegator. Note any assumptions you made or choices between
+        alternatives — be concise.\n4. After calling ReportBack, your work in this
+        thread is done — do not send any further messages.\n\nUse MemoryWrite to preserve
+        important context, decisions, and patterns you encounter. Use MemoryGrep or
+        MemoryGlob to search past memory before starting a task. If a memory contradicts
+        information you have encountered, correct it with MemoryEdit or remove it
+        with MemoryDelete. When writing memories, include a confidence level (high/medium/low),
+        relevant tags, and a clear title.\n\n## Workspace conventions\n\nKeep one
+        clone per repo. Use the repo name as the directory name (e.g. `daan-rails`,
+        not `daan-project`). Record clone locations in memory so you find them instantly
+        next time. Periodically tidy your workspace: delete branches you''re done
+        with (`git branch -d <branch>`), remove directories for repos you no longer
+        need.\n\n## Making code changes to a repository\n\n1. **Get the repo.** Check
+        memory for an existing clone. If found, reuse it. If not, clone it:\n   Bash:
+        `[[\"gh\", \"repo\", \"clone\", \"<owner/repo>\", \"<repo-name>\"]]`\n2. **Sync
+        to latest main.** Ensure a clean working tree, then update:\n   Bash: `[[\"git\",
+        \"fetch\", \"origin\"], [\"git\", \"checkout\", \"main\"], [\"git\", \"reset\",
+        \"--hard\", \"origin/main\"]]` with path set to the repo directory.\n   This
+        ensures you always start from the latest main, regardless of what state the
+        clone was left in.\n3. Read `AGENTS.md`, `CLAUDE.md`, `README.md`, and other
+        project documentation in the repo root — they contain repo-specific instructions
+        (test commands, conventions, architecture notes, PR guidelines). Follow them
+        throughout your work.\n4. Bash: `[[\"git\", \"checkout\", \"-b\", \"<branch-name>\"]]`
+        — create your feature branch from main.\n5. Use Write (and Read if needed)
+        to make the file changes. Use paths relative to the repo directory inside
+        your workspace.\n6. Bash: `[[\"git\", \"add\", \"-A\"], [\"git\", \"commit\",
+        \"-m\", \"<message>\"]]` — stage and commit.\n7. Bash: `[[\"git\", \"push\",
+        \"origin\", \"<branch-name>\"]]` — push the branch. Authentication is handled
+        automatically by `gh repo clone`. Do not run `gh auth login` — it requires
+        interactive input and will time out.\n8. Run the test suite as specified in
+        `AGENTS.md`. Do not proceed if tests fail.\n9. Follow the repo''s instructions
+        (`AGENTS.md`, `CLAUDE.md`, `README.md`, etc.) for what to do next — open a
+        PR, deploy, or whatever the repo specifies.\n10. ReportBack with the outcome
+        and the branch name.\n\n## Self-modification (changes to daan-rails)\n\nWhen
+        modifying agent definitions, core tools, or anything in the daan-rails repo
+        itself:\n\n1. **Start from latest main.** Fetch and create your branch from
+        `origin/main`:\n   ```\n   git fetch origin\n   git checkout -b <branch-name>
+        origin/main\n   ```\n   Never reuse an existing branch — always start fresh
+        from `origin/main`.\n\n2. **Make your changes.** Edit files, verify they look
+        correct.\n\n3. **Read `README.md` and `AGENTS.md`** in the repo root for conventions
+        (PR rules, commit format, test commands). Follow them throughout your work.\n\n4.
+        **Run `bin/ci`** — it runs linting, security scans, branch checks, and all
+        tests. Do not proceed if any step fails.\n\n5. **Commit and push.**\n   ```\n   git
+        add <files>\n   git commit -m \"<message>\"\n   git push origin <branch-name>\n   ```\n\n6.
+        **Call PromoteBranch** with the branch name. This merges your branch into
+        develop, pushes develop, and hot-reloads agent definitions in the running
+        app.\n   - The branch **must be pushed to origin** before calling PromoteBranch
+        — it will error otherwise.\n   - If there are merge conflicts, resolve them,
+        commit, push develop, and call PromoteBranch again.\n\n7. **Report back**
+        with the outcome and the branch name.\n\nYour workspace is at /home/ramon/src/me/daan-rails/tmp/workspaces/developer.
+        It is yours alone — no other agent shares it. You are responsible for keeping
+        it orderly: decide where repos, projects, and temporary files live, and stick
+        to that structure.\n\nUse MemoryWrite to record where you put things (repos,
+        projects, temp files) so you can find them again without re-exploring. When
+        starting a task, check memory first — you may have worked in this workspace
+        before and know exactly where things are."}]}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      X-Api-Key:
+      - "<ANTHROPIC_API_KEY>"
+      Anthropic-Version:
+      - '2023-06-01'
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Tue, 17 Mar 2026 21:25:52 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Anthropic-Ratelimit-Input-Tokens-Limit:
+      - '2000000'
+      Anthropic-Ratelimit-Input-Tokens-Remaining:
+      - '1996000'
+      Anthropic-Ratelimit-Input-Tokens-Reset:
+      - '2026-03-17T21:25:51Z'
+      Anthropic-Ratelimit-Output-Tokens-Limit:
+      - '400000'
+      Anthropic-Ratelimit-Output-Tokens-Remaining:
+      - '400000'
+      Anthropic-Ratelimit-Output-Tokens-Reset:
+      - '2026-03-17T21:25:51Z'
+      Anthropic-Ratelimit-Requests-Limit:
+      - '4000'
+      Anthropic-Ratelimit-Requests-Remaining:
+      - '3999'
+      Anthropic-Ratelimit-Requests-Reset:
+      - '2026-03-17T21:25:50Z'
+      Anthropic-Ratelimit-Tokens-Limit:
+      - '2400000'
+      Anthropic-Ratelimit-Tokens-Remaining:
+      - '2396000'
+      Anthropic-Ratelimit-Tokens-Reset:
+      - '2026-03-17T21:25:51Z'
+      Request-Id:
+      - req_011CZ9MmtncFa24Diqgoa1F8
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Anthropic-Organization-Id:
+      - 77dfb819-a005-46a1-9627-212f8995b514
+      Server:
+      - cloudflare
+      X-Envoy-Upstream-Service-Time:
+      - '1821'
+      Vary:
+      - Accept-Encoding
+      Server-Timing:
+      - proxy;dur=1821
+      X-Robots-Tag:
+      - none
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Cf-Cache-Status:
+      - DYNAMIC
+      Cf-Ray:
+      - 9ddf128c4c7e0d01-MAD
+    body:
+      encoding: ASCII-8BIT
+      string: '{"model":"claude-sonnet-4-20250514","id":"msg_016VdFYHk41CgHF3augBmRx5","type":"message","role":"assistant","content":[{"type":"text","text":"I''ll
+        create the checklist with those exact three steps."},{"type":"tool_use","id":"toolu_01RExj85FoLkbMtfL1JmuLDd","name":"daan--core--create_steps","input":{"steps":["Say
+        hello","Say hi","Say goodbye"]},"caller":{"type":"direct"}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":9049,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":82,"service_tier":"standard","inference_geo":"not_available"}}'
+  recorded_at: Tue, 17 Mar 2026 21:25:52 GMT
+- request:
+    method: post
+    uri: https://api.anthropic.com/v1/messages
+    body:
+      encoding: UTF-8
+      string: '{"model":"claude-sonnet-4-20250514","messages":[{"role":"user","content":[{"type":"text","text":"Use
+        the CreateSteps tool to make a task list with exactly these three steps: \"Say
+        hello\", \"Say hi\", \"Say goodbye\". Then reply with just \"Done.\""}]},{"role":"assistant","content":[{"type":"text","text":"I''ll
+        create the checklist with those exact three steps."},{"type":"tool_use","id":"toolu_01RExj85FoLkbMtfL1JmuLDd","name":"daan--core--create_steps","input":{"steps":["Say
+        hello","Say hi","Say goodbye"]}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_01RExj85FoLkbMtfL1JmuLDd","content":[{"type":"text","text":"1.
+        [ ] Say hello\n2. [ ] Say hi\n3. [ ] Say goodbye"}]}]}],"stream":false,"max_tokens":64000,"tools":[{"name":"daan--core--read","description":"Read
+        a file from the workspace","input_schema":{"type":"object","properties":{"path":{"type":"string","description":"Relative
+        path to the file"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["path"],"additionalProperties":false,"strict":true}},{"name":"daan--core--write","description":"Write
+        content to a file in the workspace","input_schema":{"type":"object","properties":{"path":{"type":"string","description":"Relative
+        path to the file"},"content":{"type":"string","description":"The content to
+        write"},"timeout_seconds":{"type":"number","description":"Override execution
+        timeout in seconds (default: 10, max: 1800)"}},"required":["path","content"],"additionalProperties":false,"strict":true}},{"name":"daan--core--bash","description":"Run
+        one or more commands in the workspace. Each command is an array of strings:
+        the binary plus its arguments. Commands run sequentially in the specified
+        directory. Only binaries listed in allowed_commands may be used. If any command
+        fails, an error is raised and no output is returned. Use timeout_seconds to
+        increase the timeout for slow operations like test suites.","input_schema":{"type":"object","properties":{"commands":{"type":"array","description":"Commands
+        to run, each as [binary, arg1, arg2, ...]. Example: [[\"git\", \"add\", \"-A\"],
+        [\"git\", \"commit\", \"-m\", \"msg\"]]","items":{"type":"array","items":{"type":"string"}}},"path":{"type":"string","description":"Working
+        directory relative to workspace (optional, defaults to workspace root)"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 600, max: 1800)"}},"required":["commands"],"additionalProperties":false,"strict":true}},{"name":"daan--core--report_back","description":"Report
+        your results back to the delegating agent","input_schema":{"type":"object","properties":{"message":{"type":"string","description":"Your
+        findings or results to report"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["message"],"additionalProperties":false,"strict":true}},{"name":"daan--core--promote_branch","description":"Promote
+        a feature branch to production by opening a pull request against main. Call
+        this after pushing your branch to origin.","input_schema":{"type":"object","properties":{"branch":{"type":"string","description":"The
+        feature branch name to promote (e.g. ''feature/add-qa-agent''). Must be pushed
+        to origin first."},"repo_path":{"type":"string","description":"Path to the
+        cloned repo in your workspace where the merge should happen (e.g. ''daan-rails'').
+        Relative to workspace root. Required in development."},"tests_passed":{"type":"string","description":"Confirm
+        you ran `bin/ci` in the cloned repo and all checks passed. Must be true to
+        promote."},"title":{"type":"string","description":"Pull request title (production
+        only)."},"body":{"type":"string","description":"Pull request body (production
+        only)."},"timeout_seconds":{"type":"number","description":"Override execution
+        timeout in seconds (default: 60, max: 1800)"}},"required":["branch","tests_passed"],"additionalProperties":false,"strict":true}},{"name":"daan--core--create_steps","description":"Create
+        a checklist of steps for the current task. Use this at the start of a task
+        to plan your work. Steps appear in your system prompt so you always see them.","input_schema":{"type":"object","properties":{"steps":{"type":"array","description":"Ordered
+        list of step titles","items":{"type":"string"}},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["steps"],"additionalProperties":false,"strict":true}},{"name":"daan--core--update_step","description":"Update
+        the status of a step in your checklist. Use the position number shown in your
+        system prompt.","input_schema":{"type":"object","properties":{"position":{"type":"string","description":"Position
+        number of the step to update"},"status":{"type":"string","description":"New
+        status: pending, in_progress, or completed"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["position","status"],"additionalProperties":false,"strict":true}},{"name":"MemoryWrite","description":"Store
+        content in persistent memory with structured metadata for semantic search
+        and retrieval.\n\nCRITICAL: ALL 8 required parameters MUST be provided. Do
+        NOT skip any. If you''re missing information, ask the user or infer reasonable
+        defaults.\n\nREQUIRED PARAMETERS (provide ALL 8):\n1. file_path - Where to
+        store (e.g., ''concept/ruby/classes.md'', ''skill/debugging/trace-errors.md'')\n2.
+        content - Pure markdown content (no frontmatter)\n3. title - Brief descriptive
+        title\n4. type - Entry category: \"concept\", \"fact\", \"skill\", or \"experience\"\n5.
+        confidence - How sure you are: \"high\", \"medium\", or \"low\"\n6. tags -
+        JSON string of array of search keywords (e.g., ''[\"ruby\", \"classes\", \"oop\"]'')
+        - be comprehensive!\n7. related - JSON string of array of related memory paths
+        (e.g., ''[\"memory://concept/ruby/modules.md\", \"memory://concept/ruby/classes.md\"]'')
+        or ''[]'' if none\n8. domain - Category like ''programming/ruby'', ''people'',
+        ''debugging''\n9. source - Where this came from: \"user\", \"documentation\",
+        \"experimentation\", or \"inference\"\n\nOPTIONAL (for skills only):\n- tools
+        - JSON string of array of tool names needed (e.g., ''[\"Read\", \"Edit\",
+        \"Bash\"]'') or ''[]'' if none\n- permissions - Tool restrictions hash or
+        {}\n\nPATH STRUCTURE (EXACTLY 4 TOP-LEVEL CATEGORIES - NEVER CREATE OTHERS):\nMemory
+        has EXACTLY 4 fixed top-level categories. ALL paths MUST start with one of
+        these:\n\n1. concept/{domain}/{name}.md - Abstract ideas (e.g., concept/ruby/classes.md)\n2.
+        fact/{subfolder}/{name}.md - Concrete info (e.g., fact/people/john.md)\n3.
+        skill/{domain}/{name}.md - How-to procedures (e.g., skill/debugging/api-errors.md)\n4.
+        experience/{name}.md - Lessons learned (e.g., experience/fixed-cors-bug.md)\n\nINVALID
+        (do NOT create): documentation/, reference/, tutorial/, knowledge/, notes/\nThese
+        categories do NOT exist. Use concept/, fact/, skill/, or experience/ instead.\n\nTAGS
+        ARE CRITICAL: Think \"What would I search for in 6 months?\" For skills especially,
+        be VERY comprehensive with tags - they''re your search index.\n\nEXAMPLES:\n-
+        For concept: tags: [''ruby'', ''oop'', ''classes'', ''inheritance'', ''methods'']\n-
+        For skill: tags: [''debugging'', ''api'', ''http'', ''errors'', ''trace'',
+        ''network'', ''rest'']\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        with .md extension (e.g., ''concept/ruby/classes.md'', ''fact/people/john.md'')"},"content":{"type":"string","description":"Content
+        to store (pure markdown, no frontmatter needed)"},"title":{"type":"string","description":"Brief
+        title describing the content"},"type":{"type":"string","description":"Entry
+        type: concept, fact, skill, or experience (matches category: concept/, fact/,
+        skill/, experience/)"},"confidence":{"type":"string","description":"Confidence
+        level: high, medium, or low (defaults to ''medium'' if not specified)"},"tags":{"type":"string","description":"JSON
+        string of array of tag strings for searching (e.g., ''[\"ruby\", \"oop\"]'')"},"related":{"type":"string","description":"JSON
+        string of array of related memory path strings (e.g., ''[\"memory://concept/ruby/modules.md\",
+        \"memory://concept/ruby/classes.md\"]'')"},"domain":{"type":"string","description":"Category/subcategory
+        (e.g., ''programming/ruby'', ''people'')"},"source":{"type":"string","description":"Source
+        of information: user, documentation, experimentation, or inference (defaults
+        to ''user'' if not specified)"},"tools":{"type":"string","description":"JSON
+        string of array of tool name strings required for this skill (e.g., ''[\"Read\",
+        \"Edit\", \"Bash\"]''). Only for type: skill"},"permissions":{"type":"object","description":"Tool
+        permission restrictions (same format as swarm config). Only for type: skill"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path","content","title","type","tags","related","domain"],"additionalProperties":false,"strict":true}},{"name":"MemoryRead","description":"Read
+        content from your memory storage and retrieve all associated metadata.\n\nREQUIRED:
+        Provide the file_path parameter - the path to the memory entry you want to
+        read.\n\n**Parameters:**\n- file_path (REQUIRED): Path to memory entry - MUST
+        start with concept/, fact/, skill/, or experience/\n\n**MEMORY STRUCTURE -
+        EXACTLY 4 Top-Level Categories (NEVER create others):**\nALL paths MUST start
+        with one of these 4 fixed categories:\n- concept/{domain}/{name}.md - Abstract
+        ideas (e.g., concept/ruby/classes.md)\n- fact/{subfolder}/{name}.md - Concrete
+        info (e.g., fact/people/john.md)\n- skill/{domain}/{name}.md - Procedures
+        (e.g., skill/debugging/api-errors.md)\n- experience/{name}.md - Lessons (e.g.,
+        experience/fixed-bug.md)\n\nINVALID: documentation/, reference/, tutorial/,
+        parallel/, analysis/, notes/\n\n**Returns:**\nJSON with two fields:\n- content:
+        Markdown content with line numbers (same format as Read tool)\n- metadata:
+        All metadata (title, type, tags, tools, permissions, confidence, etc.)\n\n**Examples:**\n-
+        MemoryRead(file_path: \"concept/ruby/classes.md\") - Read a concept\n- MemoryRead(file_path:
+        \"fact/people/john.md\") - Read a fact\n- MemoryRead(file_path: \"skill/debugging/api-errors.md\")
+        - Read a skill before loading it\n\n**Important:**\n- Always read entries
+        before editing them with MemoryEdit or MemoryMultiEdit\n- Line numbers in
+        output are for reference only - don''t include them when editing\n- Each read
+        is tracked to enforce read-before-edit patterns\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to read from memory - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/ruby/classes.md'', ''skill/debugging/api.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path"],"additionalProperties":false,"strict":true}},{"name":"MemoryEdit","description":"Perform
+        exact string replacements in memory entries (works like Edit tool but for
+        memory content).\n\nREQUIRED: Provide ALL THREE parameters - file_path, old_string,
+        and new_string.\n\n**Required Parameters:**\n- file_path (REQUIRED): Path
+        to memory entry - MUST start with concept/, fact/, skill/, or experience/\n-
+        old_string (REQUIRED): The exact text to replace - must match exactly including
+        all whitespace and indentation\n- new_string (REQUIRED): The replacement text
+        - must be different from old_string\n\n**MEMORY STRUCTURE (4 Fixed Categories
+        Only):**\n- concept/{domain}/{name}.md - Abstract ideas\n- fact/{subfolder}/{name}.md
+        - Concrete information\n- skill/{domain}/{name}.md - Procedures\n- experience/{name}.md
+        - Lessons\nINVALID: documentation/, reference/, analysis/, parallel/, tutorial/\n\n**Optional
+        Parameters:**\n- replace_all: Set to true to replace all occurrences (default:
+        false, replaces only first occurrence)\n\n**CRITICAL - Before Using This Tool:**\n1.
+        You MUST use MemoryRead on the entry first - edits without reading will FAIL\n2.
+        Copy text exactly from MemoryRead output, EXCLUDING the line number prefix\n3.
+        Line number format: \"    123→actual content\" - only use text AFTER the arrow\n4.
+        Preserve exact indentation and whitespace from the original content\n\n**How
+        It Works:**\n- If old_string appears once: replacement succeeds\n- If old_string
+        appears multiple times: FAILS unless replace_all=true\n- If old_string not
+        found: FAILS with helpful error\n- Make old_string unique by including more
+        surrounding context\n\n**Examples:**\n```\n# Update a fact\nMemoryEdit(\n  file_path:
+        \"fact/people/john.md\",\n  old_string: \"status: active\",\n  new_string:
+        \"status: inactive\"\n)\n\n# Update a skill\nMemoryEdit(\n  file_path: \"skill/debugging/api-errors.md\",\n  old_string:
+        \"TODO: Add error codes\",\n  new_string: \"Common error codes: 401, 403,
+        404, 500\",\n  replace_all: true\n)\n\n# Update a concept\nMemoryEdit(\n  file_path:
+        \"concept/ruby/classes.md\",\n  old_string: \"def calculate_total(items)\n  return
+        sum(items)\nend\",\n  new_string: \"def compute_sum(items)\n  items.sum\nend\"\n)\n```\n\n**Common
+        Mistakes to Avoid:**\n- Including line numbers in old_string or new_string\n-
+        Not reading the entry first with MemoryRead\n- Not matching whitespace exactly\n-
+        Trying to replace non-unique text without replace_all\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to memory entry - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/ruby/classes.md'', ''skill/debugging/api.md'')"},"old_string":{"type":"string","description":"The
+        exact text to replace (must match exactly including whitespace)"},"new_string":{"type":"string","description":"The
+        text to replace it with (must be different from old_string)"},"replace_all":{"type":"string","description":"Replace
+        all occurrences of old_string (default false)"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path","old_string","new_string"],"additionalProperties":false,"strict":true}},{"name":"MemoryDelete","description":"Delete
+        entries from your memory storage when they''re no longer needed.\n\nREQUIRED:
+        Provide the file_path parameter - the path to the entry you want to delete.\n\n**Parameters:**\n-
+        file_path (REQUIRED): Path to memory entry - MUST start with concept/, fact/,
+        skill/, or experience/\n\n**MEMORY STRUCTURE (4 Fixed Categories Only):**\n-
+        concept/{domain}/{name}.md - Abstract ideas\n- fact/{subfolder}/{name}.md
+        - Concrete information\n- skill/{domain}/{name}.md - Procedures\n- experience/{name}.md
+        - Lessons\nINVALID: documentation/, reference/, analysis/, parallel/, temp/,
+        notes/\n\n**When to Delete:**\n- Outdated information that''s been superseded\n-
+        Completed tasks that are no longer relevant\n- Duplicate entries (after consolidating)\n-
+        Test data or temporary calculations\n- Low-quality entries with minimal value\n\n**IMPORTANT
+        WARNINGS:**\n- Deletion is PERMANENT - content cannot be recovered\n- Think
+        carefully before deleting - consider if it might be useful later\n- Use MemoryDefrag
+        to identify candidates for deletion (find_archival_candidates, compact)\n-
+        Consider reading the entry first to verify you''re deleting the right thing\n\n**Examples:**\n```\n#
+        Delete outdated concept\nMemoryDelete(file_path: \"concept/old-api/deprecated.md\")\n\n#
+        Delete completed experience\nMemoryDelete(file_path: \"experience/temp-experiment.md\")\n\n#
+        Delete obsolete fact\nMemoryDelete(file_path: \"fact/orgs/defunct-company.md\")\n```\n\n**Best
+        Practices:**\n1. Read entry first with MemoryRead to confirm it''s the right
+        one\n2. Use MemoryDefrag(action: \"find_archival_candidates\") to find old,
+        unused entries\n3. Delete in batches during memory maintenance sessions\n4.
+        Keep entries that might provide historical context\n5. Don''t delete skills
+        unless you''re certain they won''t be needed\n\n**Alternative to Deletion:**\nInstead
+        of deleting, consider:\n- Updating entries to mark them as archived\n- Consolidating
+        multiple entries into one comprehensive entry\n- Moving entries to an \"archive/\"
+        hierarchy for later reference\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to delete from memory - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/old-api/deprecated.md'', ''experience/temp.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path"],"additionalProperties":false,"strict":true}},{"name":"MemoryGlob","description":"Search
+        your memory entries using glob patterns (like filesystem glob).\n\nREQUIRED:
+        Provide the pattern parameter - the glob pattern to match entries against.\n\n**Parameters:**\n-
+        pattern (REQUIRED): Glob pattern with wildcards (e.g., ''**/*.txt'', ''parallel/*/task_*'',
+        ''skill/**'')\n\n**Glob Pattern Syntax (Standard Ruby Glob):**\n- `*` - matches
+        .md files at a single directory level (e.g., ''fact/*'' → fact/*.md)\n- `**`
+        - matches .md files recursively at any depth (e.g., ''fact/**'' → fact/**/*.md)\n-
+        `?` - matches any single character (e.g., ''task_?'')\n- `[abc]` - matches
+        any character in the set (e.g., ''task_[0-9]'')\n\n**Returns:**\nList of matching
+        .md memory entries with:\n- Full memory:// path\n- Entry title\n- Size in
+        bytes/KB/MB\n\n**Note**: Only returns .md files (actual memory entries), not
+        directory entries.\n\n**MEMORY STRUCTURE (4 Fixed Categories Only):**\nALL
+        patterns MUST target one of these 4 categories:\n- concept/{domain}/** - Abstract
+        ideas\n- fact/{subfolder}/** - Concrete information\n- skill/{domain}/** -
+        Procedures\n- experience/** - Lessons\nINVALID: documentation/, reference/,
+        parallel/, analysis/, tutorial/\n\n**Common Use Cases:**\n```\n# Find direct
+        .md files in fact/\nMemoryGlob(pattern: \"fact/*\")\nResult: fact/api.md (only
+        direct children, not nested)\n\n# Find ALL facts recursively\nMemoryGlob(pattern:
+        \"fact/**\")\nResult: fact/api.md, fact/people/john.md, fact/people/jane.md,
+        ...\n\n# Find all skills recursively\nMemoryGlob(pattern: \"skill/**\")\nResult:
+        skill/debugging/api-errors.md, skill/meta/deep-learning.md, ...\n\n# Find
+        all concepts in a domain\nMemoryGlob(pattern: \"concept/ruby/**\")\nResult:
+        concept/ruby/classes.md, concept/ruby/modules.md, ...\n\n# Find direct files
+        in fact/people/\nMemoryGlob(pattern: \"fact/people/*\")\nResult: fact/people/john.md,
+        fact/people/jane.md (not fact/people/teams/x.md)\n\n# Find all experiences\nMemoryGlob(pattern:
+        \"experience/**\")\nResult: experience/fixed-cors-bug.md, experience/optimization.md,
+        ...\n\n# Find debugging skills recursively\nMemoryGlob(pattern: \"skill/debugging/**\")\nResult:
+        skill/debugging/api-errors.md, skill/debugging/performance.md, ...\n\n# Find
+        all entries (all categories)\nMemoryGlob(pattern: \"**/*\")\nResult: All .md
+        entries across all 4 categories\n```\n\n**Understanding * vs **:**\n- `fact/*`
+        matches only direct .md files: fact/api.md\n- `fact/**` matches ALL .md files
+        recursively: fact/api.md, fact/people/john.md, ...\n- To explore subdirectories,
+        use recursive pattern and examine returned paths\n\n**When to Use MemoryGlob:**\n-
+        Discovering what''s in a memory hierarchy\n- Finding all entries matching
+        a naming convention\n- Locating related entries by path pattern\n- Exploring
+        memory structure before reading specific entries\n- Batch operations preparation
+        (find all, then process each)\n\n**Combining with Other Tools:**\n1. Use MemoryGlob
+        to find candidates\n2. Use MemoryRead to examine specific entries\n3. Use
+        MemoryEdit/MemoryDelete to modify/remove them\n\n**Tips:**\n- Start with broad
+        patterns and narrow down\n- Use `**` for recursive searching entire hierarchies\n-
+        Combine with MemoryGrep if you need content-based search\n- Check entry sizes
+        to identify large entries\n","input_schema":{"type":"object","properties":{"pattern":{"type":"string","description":"Glob
+        pattern - target concept/, fact/, skill/, or experience/ only (e.g., ''skill/**'',
+        ''concept/ruby/*'', ''fact/people/*.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["pattern"],"additionalProperties":false,"strict":true}},{"name":"MemoryGrep","description":"Search
+        your memory content using regular expression patterns (like grep).\n\nREQUIRED:
+        Provide the pattern parameter - the regex pattern to search for in entry content.\n\nMEMORY
+        STRUCTURE: Searches across all 4 fixed categories (concept/, fact/, skill/,
+        experience/)\nNO OTHER top-level categories exist.\n\n**Required Parameters:**\n-
+        pattern (REQUIRED): Regular expression pattern to search for (e.g., ''status:
+        pending'', ''TODO.*urgent'', ''\\btask_\\d+\\b'')\n\n**Optional Parameters:**\n-
+        path: Limit search to specific path (e.g., ''concept/'', ''fact/api-design/'',
+        ''skill/ruby'')\n- case_insensitive: Set to true for case-insensitive search
+        (default: false)\n- output_mode: Choose output format - ''files_with_matches''
+        (default), ''content'', or ''count''\n\n**Output Modes Explained:**\n1. **files_with_matches**
+        (default): Just shows which entries contain matches\n   - Fast and efficient
+        for discovery\n   - Use when you want to know WHERE matches exist\n\n2. **content**:
+        Shows matching lines with line numbers\n   - See the actual matching content\n   -
+        Use when you need to read the matches in context\n\n3. **count**: Shows how
+        many matches in each entry\n   - Quantify occurrences\n   - Use for statistics
+        or finding entries with most matches\n\n**Regular Expression Syntax:**\n-
+        Literal text: ''status: pending''\n- Any character: ''task.done''\n- Character
+        classes: ''[0-9]+'' (digits), ''[a-z]+'' (lowercase)\n- Word boundaries: ''\\btodo\\b''
+        (exact word)\n- Anchors: ''^Start'' (line start), ''end$'' (line end)\n- Quantifiers:
+        ''*'' (0+), ''+'' (1+), ''?'' (0 or 1), ''{3}'' (exactly 3)\n- Alternation:
+        ''pending|in-progress|blocked''\n\n**Path Parameter - Directory-Style Filtering:**\nThe
+        path parameter works just like searching in directories:\n- ''concept/'' -
+        Search only concept entries\n- ''fact/api-design'' - Search only in fact/api-design
+        (treats as directory)\n- ''fact/api-design/'' - Same as above\n- ''skill/ruby/blocks.md''
+        - Search only that specific file\n\n**Examples:**\n```\n# Find entries containing
+        \"TODO\" (case-sensitive)\nMemoryGrep(pattern: \"TODO\")\n\n# Search only
+        in concepts\nMemoryGrep(pattern: \"TODO\", path: \"concept/\")\n\n# Search
+        in a specific subdirectory\nMemoryGrep(pattern: \"endpoint\", path: \"fact/api-design\")\n\n#
+        Search a specific file\nMemoryGrep(pattern: \"lambda\", path: \"skill/ruby/blocks.md\")\n\n#
+        Find entries with any status (case-insensitive)\nMemoryGrep(pattern: \"status:\",
+        case_insensitive: true)\n\n# Show actual content of matches in skills only\nMemoryGrep(pattern:
+        \"error|warning|failed\", path: \"skill/\", output_mode: \"content\")\n\n#
+        Count how many times \"completed\" appears in experiences\nMemoryGrep(pattern:
+        \"completed\", path: \"experience/\", output_mode: \"count\")\n\n# Find task
+        numbers in facts\nMemoryGrep(pattern: \"task_\\d+\", path: \"fact/\")\n\n#
+        Find incomplete tasks\nMemoryGrep(pattern: \"^- \\[ \\]\", output_mode: \"content\")\n\n#
+        Find entries mentioning specific functions\nMemoryGrep(pattern: \"\\bprocess_data\\(\")\n```\n\n**Use
+        Cases:**\n- Finding entries by keyword or phrase\n- Locating TODO items or
+        action items\n- Searching for error messages or debugging info\n- Finding
+        entries about specific code/functions\n- Identifying patterns in your memory\n-
+        Content-based discovery (vs MemoryGlob''s path-based discovery)\n\n**Combining
+        with Other Tools:**\n1. Use MemoryGrep to find entries containing specific
+        content\n2. Use MemoryRead to examine full entries\n3. Use MemoryEdit to update
+        the found content\n\n**Tips:**\n- Start with simple literal patterns before
+        using complex regex\n- Use case_insensitive=true for broader matches\n- Use
+        path parameter to limit search scope (faster and more precise)\n- Use output_mode=\"content\"
+        to see context around matches\n- Escape special regex characters with backslash:
+        \\. \\* \\? \\[ \\]\n- Test patterns on a small set before broad searches\n-
+        Use word boundaries (\\b) for exact word matching\n","input_schema":{"type":"object","properties":{"pattern":{"type":"string","description":"Regular
+        expression pattern to search for"},"path":{"type":"string","description":"Limit
+        search to specific path (e.g., ''concept/'', ''fact/api-design/'', ''skill/ruby/blocks.md'')"},"case_insensitive":{"type":"boolean","description":"Set
+        to true for case-insensitive search (default: false)"},"output_mode":{"type":"string","description":"Output
+        mode: ''files_with_matches'' (default), ''content'', or ''count''"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["pattern"],"additionalProperties":false,"strict":true}}],"system":[{"type":"text","text":"You
+        are the Developer on the Daan agent team. You write and modify files in your
+        workspace to accomplish technical tasks.\n\n**Autonomy principle**: Resolve
+        questions at the level they arise. Before escalating, search memory, try alternate
+        approaches, and make reasonable assumptions. If you''re genuinely stuck on
+        something your delegator would know, ask them — but exhaust your own resources
+        first. When you receive questions from agents you''ve delegated to, absorb
+        and answer them at your level rather than passing them up. The goal is that
+        questions get resolved within the team, not forwarded to the human.\n\n**Reporting
+        back**: If you have a `report_back` tool, send interim reports as you make
+        progress rather than waiting until everything is done. Don''t risk running
+        out of turns with nothing reported.\n\nWhen you receive a task:\n1. Search
+        memory for relevant context, patterns, or past decisions.\n2. Use your Read
+        and Write tools to complete the work. Use relative paths — they resolve within
+        your workspace.\n3. When your work is complete, use ReportBack to send your
+        findings to your delegator. Note any assumptions you made or choices between
+        alternatives — be concise.\n4. After calling ReportBack, your work in this
+        thread is done — do not send any further messages.\n\nUse MemoryWrite to preserve
+        important context, decisions, and patterns you encounter. Use MemoryGrep or
+        MemoryGlob to search past memory before starting a task. If a memory contradicts
+        information you have encountered, correct it with MemoryEdit or remove it
+        with MemoryDelete. When writing memories, include a confidence level (high/medium/low),
+        relevant tags, and a clear title.\n\n## Workspace conventions\n\nKeep one
+        clone per repo. Use the repo name as the directory name (e.g. `daan-rails`,
+        not `daan-project`). Record clone locations in memory so you find them instantly
+        next time. Periodically tidy your workspace: delete branches you''re done
+        with (`git branch -d <branch>`), remove directories for repos you no longer
+        need.\n\n## Making code changes to a repository\n\n1. **Get the repo.** Check
+        memory for an existing clone. If found, reuse it. If not, clone it:\n   Bash:
+        `[[\"gh\", \"repo\", \"clone\", \"<owner/repo>\", \"<repo-name>\"]]`\n2. **Sync
+        to latest main.** Ensure a clean working tree, then update:\n   Bash: `[[\"git\",
+        \"fetch\", \"origin\"], [\"git\", \"checkout\", \"main\"], [\"git\", \"reset\",
+        \"--hard\", \"origin/main\"]]` with path set to the repo directory.\n   This
+        ensures you always start from the latest main, regardless of what state the
+        clone was left in.\n3. Read `AGENTS.md`, `CLAUDE.md`, `README.md`, and other
+        project documentation in the repo root — they contain repo-specific instructions
+        (test commands, conventions, architecture notes, PR guidelines). Follow them
+        throughout your work.\n4. Bash: `[[\"git\", \"checkout\", \"-b\", \"<branch-name>\"]]`
+        — create your feature branch from main.\n5. Use Write (and Read if needed)
+        to make the file changes. Use paths relative to the repo directory inside
+        your workspace.\n6. Bash: `[[\"git\", \"add\", \"-A\"], [\"git\", \"commit\",
+        \"-m\", \"<message>\"]]` — stage and commit.\n7. Bash: `[[\"git\", \"push\",
+        \"origin\", \"<branch-name>\"]]` — push the branch. Authentication is handled
+        automatically by `gh repo clone`. Do not run `gh auth login` — it requires
+        interactive input and will time out.\n8. Run the test suite as specified in
+        `AGENTS.md`. Do not proceed if tests fail.\n9. Follow the repo''s instructions
+        (`AGENTS.md`, `CLAUDE.md`, `README.md`, etc.) for what to do next — open a
+        PR, deploy, or whatever the repo specifies.\n10. ReportBack with the outcome
+        and the branch name.\n\n## Self-modification (changes to daan-rails)\n\nWhen
+        modifying agent definitions, core tools, or anything in the daan-rails repo
+        itself:\n\n1. **Start from latest main.** Fetch and create your branch from
+        `origin/main`:\n   ```\n   git fetch origin\n   git checkout -b <branch-name>
+        origin/main\n   ```\n   Never reuse an existing branch — always start fresh
+        from `origin/main`.\n\n2. **Make your changes.** Edit files, verify they look
+        correct.\n\n3. **Read `README.md` and `AGENTS.md`** in the repo root for conventions
+        (PR rules, commit format, test commands). Follow them throughout your work.\n\n4.
+        **Run `bin/ci`** — it runs linting, security scans, branch checks, and all
+        tests. Do not proceed if any step fails.\n\n5. **Commit and push.**\n   ```\n   git
+        add <files>\n   git commit -m \"<message>\"\n   git push origin <branch-name>\n   ```\n\n6.
+        **Call PromoteBranch** with the branch name. This merges your branch into
+        develop, pushes develop, and hot-reloads agent definitions in the running
+        app.\n   - The branch **must be pushed to origin** before calling PromoteBranch
+        — it will error otherwise.\n   - If there are merge conflicts, resolve them,
+        commit, push develop, and call PromoteBranch again.\n\n7. **Report back**
+        with the outcome and the branch name.\n\nYour workspace is at /home/ramon/src/me/daan-rails/tmp/workspaces/developer.
+        It is yours alone — no other agent shares it. You are responsible for keeping
+        it orderly: decide where repos, projects, and temporary files live, and stick
+        to that structure.\n\nUse MemoryWrite to record where you put things (repos,
+        projects, temp files) so you can find them again without re-exploring. When
+        starting a task, check memory first — you may have worked in this workspace
+        before and know exactly where things are."}]}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      X-Api-Key:
+      - "<ANTHROPIC_API_KEY>"
+      Anthropic-Version:
+      - '2023-06-01'
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Tue, 17 Mar 2026 21:25:55 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Anthropic-Ratelimit-Input-Tokens-Limit:
+      - '2000000'
+      Anthropic-Ratelimit-Input-Tokens-Remaining:
+      - '1996000'
+      Anthropic-Ratelimit-Input-Tokens-Reset:
+      - '2026-03-17T21:25:54Z'
+      Anthropic-Ratelimit-Output-Tokens-Limit:
+      - '400000'
+      Anthropic-Ratelimit-Output-Tokens-Remaining:
+      - '400000'
+      Anthropic-Ratelimit-Output-Tokens-Reset:
+      - '2026-03-17T21:25:55Z'
+      Anthropic-Ratelimit-Requests-Limit:
+      - '4000'
+      Anthropic-Ratelimit-Requests-Remaining:
+      - '3999'
+      Anthropic-Ratelimit-Requests-Reset:
+      - '2026-03-17T21:25:52Z'
+      Anthropic-Ratelimit-Tokens-Limit:
+      - '2400000'
+      Anthropic-Ratelimit-Tokens-Remaining:
+      - '2396000'
+      Anthropic-Ratelimit-Tokens-Reset:
+      - '2026-03-17T21:25:54Z'
+      Request-Id:
+      - req_011CZ9Mn43E5BPPYAtKWxMsz
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Anthropic-Organization-Id:
+      - 77dfb819-a005-46a1-9627-212f8995b514
+      Server:
+      - cloudflare
+      X-Envoy-Upstream-Service-Time:
+      - '2936'
+      Vary:
+      - Accept-Encoding
+      Server-Timing:
+      - proxy;dur=2936
+      X-Robots-Tag:
+      - none
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Cf-Cache-Status:
+      - DYNAMIC
+      Cf-Ray:
+      - 9ddf12999ff1f781-MAD
+    body:
+      encoding: ASCII-8BIT
+      string: '{"model":"claude-sonnet-4-20250514","id":"msg_015G6iLKXpF2UkdZykkjzGrM","type":"message","role":"assistant","content":[{"type":"text","text":"Done."}],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":9163,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":5,"service_tier":"standard","inference_geo":"not_available"}}'
+  recorded_at: Tue, 17 Mar 2026 21:25:55 GMT
+recorded_with: VCR 6.4.0
