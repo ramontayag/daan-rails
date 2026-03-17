@@ -50,6 +50,6 @@ class ChatStepTest < ActiveSupport::TestCase
   test "chat has_many steps ordered by position" do
     step_b = ChatStep.create!(chat: @chat, title: "Second", position: 2)
     step_a = ChatStep.create!(chat: @chat, title: "First", position: 1)
-    assert_equal [step_a, step_b], @chat.chat_steps.to_a
+    assert_equal [ step_a, step_b ], @chat.chat_steps.to_a
   end
 end
