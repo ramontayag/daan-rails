@@ -127,6 +127,107 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     msc.remove_method(:__orig_storage__)
   end
 
+  # -- Turn limit warning & parent notification tests --
+
+  test "injects warning when 3 turns remain and chat has parent" do
+    parent_agent = Daan::Agent.new(
+      name: "parent_agent", display_name: "Parent Agent",
+      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_turns: 15
+    )
+    Daan::AgentRegistry.register(parent_agent)
+    parent_chat = Chat.create!(agent_name: "parent_agent")
+    @chat.update!(parent_chat: parent_chat)
+
+    @agent.max_turns = 10
+    @chat.update!(turn_count: 6) # after increment: 7, remaining: 10-7=3
+
+    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+
+    warning = @chat.messages.find_by("content LIKE ?", "%2 turns of work remaining%")
+    assert warning, "expected turn-limit warning message"
+    assert_equal "user", warning.role
+    assert_equal false, warning.visible
+  end
+
+  test "does not inject warning for top-level chat (no parent)" do
+    @agent.max_turns = 10
+    @chat.update!(turn_count: 6)
+
+    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+
+    warning = @chat.messages.find_by("content LIKE ?", "%2 turns of work remaining%")
+    assert_nil warning
+  end
+
+  test "notifies parent when child chat goes blocked" do
+    parent_agent = Daan::Agent.new(
+      name: "parent_agent", display_name: "Parent Agent",
+      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_turns: 15
+    )
+    Daan::AgentRegistry.register(parent_agent)
+    parent_chat = Chat.create!(agent_name: "parent_agent")
+    @chat.update!(parent_chat: parent_chat, turn_count: @agent.max_turns - 1)
+
+    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+
+    assert @chat.reload.blocked?
+    notification = parent_chat.messages.find_by("content LIKE ?", "%thread is now blocked%")
+    assert notification, "expected parent notification"
+    assert_equal "user", notification.role
+    assert_equal false, notification.visible
+    assert_includes notification.content, "Test Agent"
+    assert_includes notification.content, "maximum turn limit"
+    assert_includes notification.content, "Hello human" # from with_stub_complete
+  end
+
+  test "notifies parent when child chat fails" do
+    parent_agent = Daan::Agent.new(
+      name: "parent_agent", display_name: "Parent Agent",
+      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_turns: 15
+    )
+    Daan::AgentRegistry.register(parent_agent)
+    parent_chat = Chat.create!(agent_name: "parent_agent")
+    @chat.update!(parent_chat: parent_chat)
+
+    with_stub_complete(raise_error: RuntimeError.new("LLM down")) do
+      assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
+    end
+
+    assert @chat.reload.failed?
+    notification = parent_chat.messages.find_by("content LIKE ?", "%thread is now failed%")
+    assert notification, "expected parent notification on failure"
+    assert_includes notification.content, "error occurred"
+  end
+
+  test "does not notify parent when top-level chat goes blocked" do
+    @chat.update!(turn_count: @agent.max_turns - 1)
+
+    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+
+    assert @chat.reload.blocked?
+    # No parent, so no notification anywhere. Just verify no crash.
+  end
+
+  test "parent notification uses fallback when last assistant message is nil" do
+    parent_agent = Daan::Agent.new(
+      name: "parent_agent", display_name: "Parent Agent",
+      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_turns: 15
+    )
+    Daan::AgentRegistry.register(parent_agent)
+    parent_chat = Chat.create!(agent_name: "parent_agent")
+    @chat.update!(parent_chat: parent_chat, turn_count: @agent.max_turns - 1)
+
+    # Stub complete to NOT create an assistant message
+    @chat.define_singleton_method(:complete) { |*| }
+    Daan::ConversationRunner.call(@chat)
+
+    notification = parent_chat.messages.find_by("content LIKE ?", "%thread is now blocked%")
+    assert notification, "expected parent notification"
+    assert_includes notification.content, "No response recorded."
+  ensure
+    @chat.singleton_class.remove_method(:complete) if @chat.singleton_class.method_defined?(:complete, false)
+  end
+
   test "enqueues CompactJob when token count exceeds 80% of context window" do
     @chat.messages.where(compacted_message_id: nil).delete_all
     25.times do |i|

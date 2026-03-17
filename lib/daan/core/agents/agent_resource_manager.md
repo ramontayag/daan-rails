@@ -2,7 +2,7 @@
 name: agent_resource_manager
 display_name: Agent Resource Manager
 model: claude-sonnet-4-20250514
-max_turns: 10
+max_turns: 15
 workspace: tmp/workspaces/agent_resource_manager
 delegates_to: []
 tools:

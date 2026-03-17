@@ -89,6 +89,11 @@ module Daan
       chat.fail!
       chat.broadcast_agent_status
       broadcast_typing(chat, false)
+      begin
+        notify_parent_of_termination(chat, :failed)
+      rescue => notify_error
+        Rails.logger.error("Failed to notify parent of child chat failure: #{notify_error.message}")
+      end
       raise
     end
     private_class_method :run_llm
@@ -96,14 +101,52 @@ module Daan
     def self.finish_conversation(chat, agent)
       chat.reload
       chat.increment!(:turn_count)
+      remaining = agent.max_turns - chat.turn_count
+
       if agent.max_turns_reached?(chat.turn_count)
         chat.block!   if chat.may_block?
+        notify_parent_of_termination(chat, :blocked)
       else
+        warn_approaching_turn_limit(chat, remaining)
         chat.finish!  if chat.may_finish?
       end
       chat.broadcast_agent_status
     end
     private_class_method :finish_conversation
+
+    def self.warn_approaching_turn_limit(chat, remaining)
+      return unless remaining == 3 && chat.parent_chat.present?
+
+      chat.messages.create!(
+        role: "user",
+        content: "[System] You have 2 turns of work remaining before this thread is blocked. " \
+                 "Call report_back now with your current findings.",
+        visible: false
+      )
+    end
+    private_class_method :warn_approaching_turn_limit
+
+    def self.notify_parent_of_termination(chat, status)
+      return unless chat.parent_chat.present?
+
+      agent = Daan::AgentRegistry.find(chat.agent_name)
+      last_assistant = chat.messages.where(role: "assistant").last
+      last_content = last_assistant&.content.presence&.truncate(500) || "No response recorded."
+
+      reason = case status
+      when :blocked then "They reached the maximum turn limit of #{agent.max_turns}."
+      when :failed  then "An error occurred during execution."
+      end
+
+      Daan::CreateMessage.call(
+        chat.parent_chat,
+        role: "user",
+        content: "[System] #{agent.display_name}'s thread is now #{status}. " \
+                 "#{reason} Their last message: #{last_content}",
+        visible: false
+      )
+    end
+    private_class_method :notify_parent_of_termination
 
     def self.broadcast_new_messages(chat, since_id)
       messages = chat.messages
