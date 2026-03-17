@@ -6,7 +6,7 @@
       <%= f.text_field :content, name: "message[content]",
           placeholder: "Message...",
           class: "flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500",
-          autofocus: true,
+          autofocus: autofocus,
           required: true,
           data: { testid: "message-input" } %>
       <%= f.submit "Send",
