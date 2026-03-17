@@ -46,4 +46,14 @@ class Daan::Core::CreateStepsTest < ActiveSupport::TestCase
     assert_includes result, "at least one"
     assert_equal 0, @chat.chat_steps.count
   end
+
+  # Regression: steps param must be declared as array type so the LLM receives
+  # a JSON schema with type: "array". Without this, Claude stringifies the array
+  # and execute blows up with NoMethodError on String#each_with_index.
+  test "steps param is declared as array type in the JSON schema" do
+    tool = Daan::Core::CreateSteps.new(chat: @chat)
+    steps_schema = tool.params_schema.dig("properties", "steps")
+    assert_equal "array", steps_schema["type"]
+    assert_equal "string", steps_schema.dig("items", "type")
+  end
 end
