@@ -28,6 +28,8 @@ tools:
   - Daan::Core::Bash
   - Daan::Core::ReportBack
   - Daan::Core::PromoteBranch
+  - Daan::Core::CreateSteps
+  - Daan::Core::UpdateStep
   - SwarmMemory::Tools::MemoryWrite
   - SwarmMemory::Tools::MemoryRead
   - SwarmMemory::Tools::MemoryEdit

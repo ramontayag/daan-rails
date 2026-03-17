@@ -10,6 +10,11 @@
   </div>
   <div class="flex-1 overflow-y-auto p-4" data-controller="scroll-to-bottom">
     <%= helpers.turbo_stream_from "chat_#{chat.id}" %>
+    <% if chat.chat_steps.any? %>
+      <%= render ChatStepListComponent.new(chat: chat) %>
+    <% else %>
+      <div id="chat_step_list"></div>
+    <% end %>
     <div id="messages">
       <% chat_messages.each do |message| %>
         <%= render ChatMessageComponent.new(message: message, results: tool_results,
