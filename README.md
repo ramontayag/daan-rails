@@ -98,6 +98,10 @@ Common scopes include:
 - **config**: Configuration changes
 - **deps**: Dependencies
 
+## Pull Requests
+
+PRs must always be from a feature or fix branch (e.g. `feat/*`, `fix/*`) against `main`. Never open a PR from `develop` to `main`.
+
 ## Clean Commits
 
 PRs should have clean, logical commits. Each commit should represent a single coherent change.

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Skip check if not in a git repo or no remote
+if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+  exit 0
+fi
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+if [ "$branch" = "develop" ]; then
+  echo "ERROR: You are on 'develop'. PRs and commits should come from a feature branch (e.g. feat/*, fix/*)."
+  exit 1
+fi

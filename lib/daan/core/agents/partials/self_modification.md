@@ -11,17 +11,19 @@ When modifying agent definitions, core tools, or anything in the daan-rails repo
 
 2. **Make your changes.** Edit files, verify they look correct.
 
-3. **Run the test suite** as specified in `AGENTS.md`. Do not proceed if tests fail.
+3. **Read `README.md` and `AGENTS.md`** in the repo root for conventions (PR rules, commit format, test commands). Follow them throughout your work.
 
-4. **Commit and push.**
+4. **Run `bin/ci`** — it runs linting, security scans, branch checks, and all tests. Do not proceed if any step fails.
+
+5. **Commit and push.**
    ```
    git add <files>
    git commit -m "<message>"
    git push origin <branch-name>
    ```
 
-5. **Call PromoteBranch** with the branch name. This merges your branch into develop, pushes develop, and hot-reloads agent definitions in the running app.
+6. **Call PromoteBranch** with the branch name. This merges your branch into develop, pushes develop, and hot-reloads agent definitions in the running app.
    - The branch **must be pushed to origin** before calling PromoteBranch — it will error otherwise.
    - If there are merge conflicts, resolve them, commit, push develop, and call PromoteBranch again.
 
-6. **Report back** with the outcome and the branch name.
+7. **Report back** with the outcome and the branch name.
