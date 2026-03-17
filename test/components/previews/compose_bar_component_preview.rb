@@ -1,10 +1,6 @@
 class ComposeBarComponentPreview < ViewComponent::Preview
   def default
-    render ComposeBarComponent.new(action: "/messages", autofocus: false)
-  end
-
-  def with_autofocus
-    render ComposeBarComponent.new(action: "/messages", autofocus: true)
+    render ComposeBarComponent.new(action: "/messages")
   end
 
   def readonly

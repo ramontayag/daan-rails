@@ -17,18 +17,9 @@ class ComposeBarComponentTest < ActiveSupport::TestCase
     assert_includes rendered_content, "read-only"
   end
 
-  test "applies autofocus when autofocus is true" do
-    render_inline(ComposeBarComponent.new(action: "/messages", autofocus: true))
-    assert_includes rendered_content, "autofocus=\"autofocus\""
-  end
-
-  test "does not apply autofocus when autofocus is false" do
-    render_inline(ComposeBarComponent.new(action: "/messages", autofocus: false))
-    assert_not_includes rendered_content, "autofocus=\"autofocus\""
-  end
-
-  test "defaults to no autofocus when autofocus parameter is not provided" do
+  test "wires form-reset controller" do
     render_inline(ComposeBarComponent.new(action: "/messages"))
-    assert_not_includes rendered_content, "autofocus=\"autofocus\""
+    assert_includes rendered_content, "form-reset"
+    assert_includes rendered_content, "turbo:submit-end-&gt;form-reset#reset"
   end
 end

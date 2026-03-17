@@ -3,7 +3,7 @@ class MessagesController < ApplicationController
 
   def create
     Daan::CreateMessage.call(@chat, role: "user", content: message_params[:content])
-    redirect_to chat_thread_path(@chat)
+    head :no_content
   end
 
   private

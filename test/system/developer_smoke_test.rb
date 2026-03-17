@@ -47,12 +47,12 @@ class DeveloperSmokeTest < ActionDispatch::IntegrationTest
       end
     end
 
-    assert_response :redirect
+    assert_response :no_content
     chat.reload
     assert chat.completed?, "expected chat to be completed after read turn"
 
-    # Follow redirect to thread panel — read tool call shows file contents
-    follow_redirect!
+    # GET the thread panel — read tool call shows file contents
+    get chat_thread_path(chat)
     assert_response :success
     assert_select "[data-testid='tool-call']", minimum: 2
     assert_includes response.body, "hello from smoke test"
