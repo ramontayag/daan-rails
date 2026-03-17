@@ -279,5 +279,4 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   ensure
     @chat.singleton_class.remove_method(:complete)
   end
-
 end

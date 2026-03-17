@@ -134,9 +134,9 @@ module Daan
       last_content = last_assistant&.content.presence&.truncate(500) || "No response recorded."
 
       reason = case status
-               when :blocked then "They reached the maximum turn limit of #{agent.max_turns}."
-               when :failed  then "An error occurred during execution."
-               end
+      when :blocked then "They reached the maximum turn limit of #{agent.max_turns}."
+      when :failed  then "An error occurred during execution."
+      end
 
       Daan::CreateMessage.call(
         chat.parent_chat,
