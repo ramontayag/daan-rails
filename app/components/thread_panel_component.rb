@@ -1,13 +1,19 @@
 class ThreadPanelComponent < ViewComponent::Base
-  def initialize(chat:, perspective_name:, hide_tools: false)
+  def initialize(chat:, perspective_name:, hide_tools: false, show_tasks: nil)
     @chat             = chat
     @perspective_name = perspective_name
     @hide_tools       = hide_tools
+    @show_tasks       = show_tasks
   end
 
   private
 
   attr_reader :chat, :hide_tools
+
+  def show_tasks
+    return @show_tasks unless @show_tasks.nil?
+    helpers.params[:show_tasks] == "1"
+  end
 
   def readonly
     @perspective_name != "me"

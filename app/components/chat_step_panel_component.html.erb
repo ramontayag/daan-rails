@@ -1,0 +1,5 @@
+<div id="chat_step_panel" class="<%= show_tasks && steps_exist? ? 'border-b border-gray-200 bg-gray-50 px-4 py-3' : 'hidden' %>">
+  <% if show_tasks && steps_exist? %>
+    <%= render ChatStepListComponent.new(chat: chat) %>
+  <% end %>
+</div>

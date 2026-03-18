@@ -21,22 +21,24 @@ tools:
   # Core delegation and reporting
   - Daan::Core::DelegateTask
   - Daan::Core::ReportBack
-  
+
   # Essential file operations for code review and project exploration
   - Daan::Core::Read
   - Daan::Core::Write
-  
+
   # Command execution for git operations, build verification, and exploration
   - Daan::Core::Bash
-  
+
   # Team management and oversight
   - Daan::Core::ListAgents
   - Daan::Core::CreateAgent
   - Daan::Core::EditAgent
-  
+
   # Development workflow tools
   - Daan::Core::PromoteBranch
-  
+  - Daan::Core::CreateSteps
+  - Daan::Core::UpdateStep
+
   # Complete memory management suite
   - SwarmMemory::Tools::MemoryWrite
   - SwarmMemory::Tools::MemoryRead

@@ -42,4 +42,24 @@ class ThreadsControllerTest < ActionDispatch::IntegrationTest
     get chat_thread_path(sub_chat), params: { perspective: "engineering_manager" }
     assert_response :success
   end
+
+  test "show_tasks param is preserved in response when true" do
+    chat = Chat.create!(agent_name: "chief_of_staff")
+    ChatStep.create!(chat: chat, title: "Do something", position: 1)
+
+    get chat_thread_path(chat, show_tasks: "1")
+
+    assert_response :success
+    assert_select "#chat_step_panel:not(.hidden)"
+  end
+
+  test "step panel is hidden by default (no show_tasks param)" do
+    chat = Chat.create!(agent_name: "chief_of_staff")
+    ChatStep.create!(chat: chat, title: "Do something", position: 1)
+
+    get chat_thread_path(chat)
+
+    assert_response :success
+    assert_select "#chat_step_panel.hidden"
+  end
 end

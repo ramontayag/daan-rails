@@ -1,0 +1,11 @@
+<div class="mx-4 mb-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+  <h4 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Steps</h4>
+  <ol class="space-y-1 text-sm">
+    <% steps.each do |step| %>
+      <li class="flex items-center gap-2 <%= status_class(step.status) %>">
+        <span class="w-4 text-center text-xs"><%= status_icon(step.status) %></span>
+        <span><%= step.title %></span>
+      </li>
+    <% end %>
+  </ol>
+</div>

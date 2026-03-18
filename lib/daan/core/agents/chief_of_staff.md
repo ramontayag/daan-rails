@@ -9,6 +9,8 @@ delegates_to:
 tools:
   - Daan::Core::DelegateTask
   - Daan::Core::ListAgents
+  - Daan::Core::CreateSteps
+  - Daan::Core::UpdateStep
   - SwarmMemory::Tools::MemoryWrite
   - SwarmMemory::Tools::MemoryRead
   - SwarmMemory::Tools::MemoryEdit
