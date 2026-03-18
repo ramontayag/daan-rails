@@ -24,7 +24,7 @@ class ThreadsController < ApplicationController
   end
 
   def default_url_options
-    { show_tools: params[:show_tools], show_tasks: params[:show_tasks] }.compact
+    super.merge({ show_tools: params[:show_tools], show_tasks: params[:show_tasks] }.compact)
   end
 
   private
