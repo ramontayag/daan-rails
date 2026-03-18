@@ -22,19 +22,19 @@ module Daan
         return "No step at position #{position}." unless step
 
         step.update!(status: status)
-        broadcast_step_list
+        broadcast_step_panel
 
         "Step #{position} (#{step.title}) → #{status}"
       end
 
       private
 
-      def broadcast_step_list
+      def broadcast_step_panel
         @chat.reload
         Turbo::StreamsChannel.broadcast_replace_to(
           "chat_#{@chat.id}",
-          target: "chat_step_list",
-          renderable: ChatStepListComponent.new(chat: @chat)
+          target: "chat_step_panel",
+          renderable: ChatStepPanelComponent.new(chat: @chat, show_tasks: true)
         )
       end
     end

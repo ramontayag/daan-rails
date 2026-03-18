@@ -21,19 +21,19 @@ module Daan
           @chat.chat_steps.create!(title: title, position: max_pos + i + 1)
         end
 
-        broadcast_step_list
+        broadcast_step_panel
 
         created.map { |s| "#{s.position}. [ ] #{s.title}" }.join("\n")
       end
 
       private
 
-      def broadcast_step_list
+      def broadcast_step_panel
         @chat.reload
         Turbo::StreamsChannel.broadcast_replace_to(
           "chat_#{@chat.id}",
-          target: "chat_step_list",
-          renderable: ChatStepListComponent.new(chat: @chat)
+          target: "chat_step_panel",
+          renderable: ChatStepPanelComponent.new(chat: @chat, show_tasks: true)
         )
       end
     end
