@@ -13,6 +13,7 @@ class ThreadsController < ApplicationController
       Chat.where(agent_name: @agent.name, parent_chat_id: nil)
     end.order(created_at: :desc).includes(:messages)
     @hide_tools = params[:show_tools] == "0"
+    @show_tasks = params[:show_tasks] == "1"
   end
 
   def create
@@ -20,6 +21,10 @@ class ThreadsController < ApplicationController
     Daan::CreateMessage.call(@chat, role: "user", content: message_params[:content])
 
     redirect_to chat_thread_path(@chat)
+  end
+
+  def default_url_options
+    { show_tools: params[:show_tools], show_tasks: params[:show_tasks] }.compact
   end
 
   private
