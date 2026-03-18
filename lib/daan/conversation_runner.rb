@@ -2,6 +2,7 @@
 module Daan
   class ConversationRunner
     def self.call(chat)
+      tag = "[ConversationRunner] chat_id=#{chat.id} agent=#{chat.agent_name}"
       agent = chat.agent
 
       start_conversation(chat)
@@ -10,7 +11,11 @@ module Daan
       configure_llm(chat, agent)
 
       last_message_id = chat.messages.maximum(:id) || 0
+      Rails.logger.info("#{tag} calling LLM model=#{chat.model_id}")
+      llm_started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       run_llm(chat)
+      llm_elapsed = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - llm_started_at).round(1)
+      Rails.logger.info("#{tag} LLM complete elapsed=#{llm_elapsed}s")
 
       BroadcastMessagesJob.perform_later(chat, last_message_id)
       broadcast_typing(chat, false)
@@ -18,6 +23,7 @@ module Daan
     end
 
     def self.start_conversation(chat)
+      tag = "[ConversationRunner] chat_id=#{chat.id}"
       chat.reload
       # Anthropic rejects empty text content blocks. Empty assistant messages
       # with no tool calls are streaming artifacts (created at start of stream,
@@ -26,9 +32,13 @@ module Daan
       orphaned_ids = chat.messages.where(role: "assistant", content: [ nil, "" ])
                                   .left_joins(:tool_calls).where(tool_calls: { id: nil })
                                   .ids
-      Message.where(id: orphaned_ids).destroy_all if orphaned_ids.any?
+      if orphaned_ids.any?
+        Rails.logger.info("#{tag} cleaning #{orphaned_ids.size} orphaned assistant messages")
+        Message.where(id: orphaned_ids).destroy_all
+      end
       chat.continue! if chat.may_continue?
       chat.start!    if chat.may_start?
+      Rails.logger.info("#{tag} started status=#{chat.task_status} message_count=#{chat.messages.count}")
       chat.broadcast_agent_status
       broadcast_typing(chat, true)
     end
@@ -113,30 +123,36 @@ module Daan
     def self.run_llm(chat)
       chat.complete
     rescue => e
+      tag = "[ConversationRunner] chat_id=#{chat.id}"
+      Rails.logger.error("#{tag} LLM failed error=#{e.class}: #{e.message}")
+      Rails.logger.error("#{tag} #{e.backtrace&.first(10)&.join("\n")}")
       chat.fail!
       chat.broadcast_agent_status
       broadcast_typing(chat, false)
       begin
         notify_parent_of_termination(chat, :failed)
       rescue => notify_error
-        Rails.logger.error("Failed to notify parent of child chat failure: #{notify_error.message}")
+        Rails.logger.error("#{tag} parent notification failed: #{notify_error.class}: #{notify_error.message}")
       end
       raise
     end
     private_class_method :run_llm
 
     def self.finish_conversation(chat, agent)
+      tag = "[ConversationRunner] chat_id=#{chat.id}"
       chat.reload
       chat.increment!(:turn_count)
       remaining = agent.max_turns - chat.turn_count
 
       if agent.max_turns_reached?(chat.turn_count)
+        Rails.logger.info("#{tag} max turns reached (#{agent.max_turns}), blocking")
         chat.block!   if chat.may_block?
         notify_parent_of_termination(chat, :blocked)
       else
         warn_approaching_turn_limit(chat, remaining)
         chat.finish!  if chat.may_finish?
       end
+      Rails.logger.info("#{tag} finished status=#{chat.task_status} turn=#{chat.turn_count}/#{agent.max_turns}")
       chat.broadcast_agent_status
     end
     private_class_method :finish_conversation
