@@ -8,7 +8,7 @@ class ChatBroadcastTest < ActiveSupport::TestCase
     Daan::AgentRegistry.clear
     Daan::AgentRegistry.register(Daan::Agent.new(
       name: "chief_of_staff", display_name: "CoS",
-      model_name: "claude-3-5-haiku-20241022", system_prompt: "p", max_turns: 10
+      model_name: "claude-3-5-haiku-20241022", system_prompt: "p", max_steps: 10
     ))
     @chat = Chat.create!(agent_name: "chief_of_staff")
   end

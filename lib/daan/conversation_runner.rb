@@ -165,7 +165,18 @@ module Daan
 
     def self.finish_or_reenqueue(chat, agent, response)
       if response.tool_call?
-        LlmJob.perform_later(chat)
+        step_count = chat.step_count
+        if agent.max_steps_reached?(step_count)
+          tag = "[ConversationRunner] chat_id=#{chat.id}"
+          Rails.logger.info("#{tag} max steps reached (#{agent.max_steps}), blocking")
+          broadcast_typing(chat, false)
+          chat.block! if chat.may_block?
+          notify_parent_of_termination(chat, :blocked)
+          chat.broadcast_agent_status
+        else
+          warn_approaching_step_limit(chat, agent.max_steps - step_count)
+          LlmJob.perform_later(chat)
+        end
       else
         broadcast_typing(chat, false)
         finish_conversation(chat, agent)
@@ -176,33 +187,23 @@ module Daan
     def self.finish_conversation(chat, agent)
       tag = "[ConversationRunner] chat_id=#{chat.id}"
       chat.reload
-      chat.increment!(:turn_count)
-      remaining = agent.max_turns - chat.turn_count
-
-      if agent.max_turns_reached?(chat.turn_count)
-        Rails.logger.info("#{tag} max turns reached (#{agent.max_turns}), blocking")
-        chat.block!   if chat.may_block?
-        notify_parent_of_termination(chat, :blocked)
-      else
-        warn_approaching_turn_limit(chat, remaining)
-        chat.finish!  if chat.may_finish?
-      end
-      Rails.logger.info("#{tag} finished status=#{chat.task_status} turn=#{chat.turn_count}/#{agent.max_turns}")
+      chat.finish! if chat.may_finish?
+      Rails.logger.info("#{tag} finished status=#{chat.task_status} step=#{chat.step_count}/#{agent.max_steps}")
       chat.broadcast_agent_status
     end
     private_class_method :finish_conversation
 
-    def self.warn_approaching_turn_limit(chat, remaining)
+    def self.warn_approaching_step_limit(chat, remaining)
       return unless remaining == 3 && chat.parent_chat.present?
 
       chat.messages.create!(
         role: "user",
-        content: "[System] You have 2 turns of work remaining before this thread is blocked. " \
+        content: "[System] You have 2 steps of work remaining before this thread is blocked. " \
                  "Call report_back now with your current findings.",
         visible: false
       )
     end
-    private_class_method :warn_approaching_turn_limit
+    private_class_method :warn_approaching_step_limit
 
     def self.notify_parent_of_termination(chat, status)
       return unless chat.parent_chat.present?
@@ -212,7 +213,7 @@ module Daan
       last_content = last_assistant&.content.presence&.truncate(500) || "No response recorded."
 
       reason = case status
-      when :blocked then "They reached the maximum turn limit of #{agent.max_turns}."
+      when :blocked then "They reached the maximum step limit of #{agent.max_steps}."
       when :failed  then "An error occurred during execution."
       end
 

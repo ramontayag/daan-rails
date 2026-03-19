@@ -7,6 +7,8 @@ class Message < ApplicationRecord
                                 inverse_of: :compacted_message, dependent: :nullify
 
   scope :active, -> { where(compacted_message_id: nil) }
+  scope :assistant, -> { where(role: "assistant") }
+  scope :since_id, ->(id) { where(Message.arel_table[:id].gt(id)) }
 
   def summary? = compacted_messages_count > 0
 end

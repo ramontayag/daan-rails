@@ -2,7 +2,7 @@
 name: developer
 display_name: Developer
 model: claude-haiku-4-5-20251001
-max_turns: 8
+max_steps: 8
 workspace: tmp/workspaces/developer
 delegates_to: []
 allowed_commands:

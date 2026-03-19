@@ -2,7 +2,7 @@
 name: engineering_manager
 display_name: Engineering Manager
 model: claude-haiku-4-5-20251001
-max_turns: 8
+max_steps: 8
 workspace: tmp/workspaces/engineering_manager
 delegates_to:
   - developer

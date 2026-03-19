@@ -24,7 +24,7 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     assert_equal "chief_of_staff", definition[:name]
     assert_equal "Chief of Staff", definition[:display_name]
     assert_equal "claude-haiku-4-5-20251001", definition[:model_name]
-    assert_equal 8, definition[:max_turns]
+    assert_equal 8, definition[:max_steps]
     assert definition[:system_prompt].start_with?("You are the Chief of Staff")
   end
 

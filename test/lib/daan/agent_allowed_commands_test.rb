@@ -4,7 +4,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
   test "agent defaults allowed_commands to empty array" do
     agent = Daan::Agent.new(name: "test", display_name: "Test",
                              model_name: "claude-sonnet-4-20250514",
-                             system_prompt: "You help.", max_turns: 5)
+                             system_prompt: "You help.", max_steps: 5)
     assert_equal [], agent.allowed_commands
   end
 
@@ -15,7 +15,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
       name: tester
       display_name: Tester
       model: claude-sonnet-4-20250514
-      max_turns: 5
+      max_steps: 5
       allowed_commands:
         - git
         - gh
@@ -40,7 +40,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
       name: tester
       display_name: Tester
       model: claude-sonnet-4-20250514
-      max_turns: 5
+      max_steps: 5
       tools: []
       delegates_to: []
       ---
@@ -66,7 +66,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
     agent = Daan::Agent.new(
       name: "test", display_name: "Test",
       model_name: "claude-sonnet-4-20250514",
-      system_prompt: "You help.", max_turns: 5,
+      system_prompt: "You help.", max_steps: 5,
       base_tools: [ narrow_tool ],
       allowed_commands: %w[git gh]
     )
@@ -82,7 +82,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
     agent = Daan::Agent.new(
       name: "test", display_name: "Test",
       model_name: "claude-sonnet-4-20250514",
-      system_prompt: "You help.", max_turns: 5,
+      system_prompt: "You help.", max_steps: 5,
       base_tools: [ fake_tool ]
     )
     instance = agent.tools(chat: nil).first
@@ -100,7 +100,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
     agent = Daan::Agent.new(
       name: "test", display_name: "Test",
       model_name: "claude-sonnet-4-20250514",
-      system_prompt: "You help.", max_turns: 5,
+      system_prompt: "You help.", max_steps: 5,
       base_tools: [ fake_tool ],
       allowed_commands: %w[git gh]
     )

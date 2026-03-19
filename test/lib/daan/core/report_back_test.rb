@@ -7,11 +7,11 @@ class Daan::Core::ReportBackTest < ActiveSupport::TestCase
   setup do
     Daan::AgentRegistry.register(
       Daan::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
-                      model_name: "m", system_prompt: "p", max_turns: 10)
+                      model_name: "m", system_prompt: "p", max_steps: 10)
     )
     Daan::AgentRegistry.register(
       Daan::Agent.new(name: "engineering_manager", display_name: "Engineering Manager",
-                      model_name: "m", system_prompt: "p", max_turns: 10)
+                      model_name: "m", system_prompt: "p", max_steps: 10)
     )
     @parent_chat = Chat.create!(agent_name: "chief_of_staff")
     @child_chat  = Chat.create!(agent_name: "engineering_manager", parent_chat: @parent_chat)

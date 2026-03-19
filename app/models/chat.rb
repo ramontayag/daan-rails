@@ -55,6 +55,12 @@ class Chat < ApplicationRecord
     Daan::AgentRegistry.find(agent_name)
   end
 
+  def step_count
+    last_user_msg = messages.where(role: "user", visible: true).order(:id).last
+    return 0 unless last_user_msg
+    messages.assistant.since_id(last_user_msg.id).count
+  end
+
   # Token and cost calculation methods
   def total_input_tokens
     messages.sum(:input_tokens) || 0

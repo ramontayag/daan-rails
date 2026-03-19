@@ -11,7 +11,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
       name: "test_agent", display_name: "Test Agent",
       model_name: "claude-sonnet-4-20250514",
       system_prompt: "You are a test agent.",
-      max_turns: 3
+      max_steps: 3
     )
     Daan::AgentRegistry.register(@agent)
     @chat = Chat.create!(agent_name: "test_agent")
@@ -23,15 +23,24 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert @chat.reload.completed?
   end
 
-  test "increments turn_count" do
+  test "step_count reflects assistant messages since last user message" do
     with_stub_step { Daan::ConversationRunner.call(@chat) }
-    assert_equal 1, @chat.reload.turn_count
+    assert_equal 1, @chat.reload.step_count
   end
 
-  test "transitions to blocked when max_turns reached" do
-    @chat.update!(turn_count: @agent.max_turns - 1)
-    with_stub_step { Daan::ConversationRunner.call(@chat) }
+  test "transitions to blocked when max_steps reached and agent wants to continue" do
+    # Create max_steps - 1 prior assistant messages so this step hits the limit
+    (@agent.max_steps - 1).times { @chat.messages.create!(role: "assistant", content: "prior step") }
+    # Agent returns a tool call (wants to continue), but limit is reached
+    with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
     assert @chat.reload.blocked?
+  end
+
+  test "completes normally when agent finishes on step max_steps" do
+    # If the agent produces a final answer exactly at the limit, it should complete not block
+    (@agent.max_steps - 1).times { @chat.messages.create!(role: "assistant", content: "prior step") }
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
+    assert @chat.reload.completed?
   end
 
   test "re-triggers a completed chat by calling continue! before start!" do
@@ -151,46 +160,49 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
 
   # -- Turn limit warning & parent notification tests --
 
-  test "injects warning when 3 turns remain and chat has parent" do
+  test "injects warning when 3 steps remain and agent wants to continue" do
     parent_agent = Daan::Agent.new(
       name: "parent_agent", display_name: "Parent Agent",
-      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_turns: 15
+      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_steps: 15
     )
     Daan::AgentRegistry.register(parent_agent)
     parent_chat = Chat.create!(agent_name: "parent_agent")
     @chat.update!(parent_chat: parent_chat)
 
-    @agent.max_turns = 10
-    @chat.update!(turn_count: 6) # after increment: 7, remaining: 10-7=3
+    @agent.max_steps = 10
+    # Create 6 prior assistant messages; after this step step_count = 7, remaining = 3
+    6.times { @chat.messages.create!(role: "assistant", content: "prior step") }
 
-    with_stub_step { Daan::ConversationRunner.call(@chat) }
+    # Agent returns a tool call (wants to continue) — triggers warning path
+    with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
 
-    warning = @chat.messages.find_by("content LIKE ?", "%2 turns of work remaining%")
-    assert warning, "expected turn-limit warning message"
+    warning = @chat.messages.find_by("content LIKE ?", "%2 steps of work remaining%")
+    assert warning, "expected step-limit warning message"
     assert_equal "user", warning.role
     assert_equal false, warning.visible
   end
 
   test "does not inject warning for top-level chat (no parent)" do
-    @agent.max_turns = 10
-    @chat.update!(turn_count: 6)
+    @agent.max_steps = 10
+    6.times { @chat.messages.create!(role: "assistant", content: "prior step") }
 
-    with_stub_step { Daan::ConversationRunner.call(@chat) }
+    with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
 
-    warning = @chat.messages.find_by("content LIKE ?", "%2 turns of work remaining%")
+    warning = @chat.messages.find_by("content LIKE ?", "%2 steps of work remaining%")
     assert_nil warning
   end
 
   test "notifies parent when child chat goes blocked" do
     parent_agent = Daan::Agent.new(
       name: "parent_agent", display_name: "Parent Agent",
-      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_turns: 15
+      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_steps: 15
     )
     Daan::AgentRegistry.register(parent_agent)
     parent_chat = Chat.create!(agent_name: "parent_agent")
-    @chat.update!(parent_chat: parent_chat, turn_count: @agent.max_turns - 1)
+    @chat.update!(parent_chat: parent_chat)
+    (@agent.max_steps - 1).times { @chat.messages.create!(role: "assistant", content: "prior step") }
 
-    with_stub_step { Daan::ConversationRunner.call(@chat) }
+    with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
 
     assert @chat.reload.blocked?
     notification = parent_chat.messages.find_by("content LIKE ?", "%thread is now blocked%")
@@ -198,14 +210,14 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert_equal "user", notification.role
     assert_equal false, notification.visible
     assert_includes notification.content, "Test Agent"
-    assert_includes notification.content, "maximum turn limit"
-    assert_includes notification.content, "Hello human" # from with_stub_step
+    assert_includes notification.content, "maximum step limit"
+    assert_includes notification.content, "Hello human" # from with_stub_tool_step
   end
 
   test "notifies parent when child chat fails" do
     parent_agent = Daan::Agent.new(
       name: "parent_agent", display_name: "Parent Agent",
-      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_turns: 15
+      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_steps: 15
     )
     Daan::AgentRegistry.register(parent_agent)
     parent_chat = Chat.create!(agent_name: "parent_agent")
@@ -222,9 +234,9 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   end
 
   test "does not notify parent when top-level chat goes blocked" do
-    @chat.update!(turn_count: @agent.max_turns - 1)
+    (@agent.max_steps - 1).times { @chat.messages.create!(role: "assistant", content: "prior step") }
 
-    with_stub_step { Daan::ConversationRunner.call(@chat) }
+    with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
 
     assert @chat.reload.blocked?
     # No parent, so no notification anywhere. Just verify no crash.
@@ -233,19 +245,18 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   test "parent notification uses fallback when last assistant message is nil" do
     parent_agent = Daan::Agent.new(
       name: "parent_agent", display_name: "Parent Agent",
-      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_turns: 15
+      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_steps: 15
     )
     Daan::AgentRegistry.register(parent_agent)
     parent_chat = Chat.create!(agent_name: "parent_agent")
-    @chat.update!(parent_chat: parent_chat, turn_count: @agent.max_turns - 1)
+    @chat.update!(parent_chat: parent_chat)
 
-    # Stub step to NOT create an assistant message
-    step_response = OpenStruct.new("tool_call?" => false, role: "assistant", tool_calls: nil)
-    @chat.define_singleton_method(:step) { |*| step_response }
-    Daan::ConversationRunner.call(@chat)
+    # Step fails without creating any assistant messages — triggers failed path
+    @chat.define_singleton_method(:step) { |*| raise "LLM down" }
+    assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
 
-    notification = parent_chat.messages.find_by("content LIKE ?", "%thread is now blocked%")
-    assert notification, "expected parent notification"
+    notification = parent_chat.messages.find_by("content LIKE ?", "%thread is now failed%")
+    assert notification, "expected parent notification on failure"
     assert_includes notification.content, "No response recorded."
   ensure
     @chat.singleton_class.remove_method(:step) if @chat.singleton_class.method_defined?(:step, false)
@@ -288,6 +299,16 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   ensure
     sc.alias_method(:retrieve_memories, :__orig_retrieve_memories__)
     sc.remove_method(:__orig_retrieve_memories__)
+  end
+
+  def with_stub_tool_step(&block)
+    @chat.define_singleton_method(:step) do |*|
+      messages.create!(role: "assistant", content: "Hello human")
+      OpenStruct.new("tool_call?" => true, role: "assistant", tool_calls: {})
+    end
+    block.call
+  ensure
+    @chat.singleton_class.remove_method(:step) if @chat.singleton_class.method_defined?(:step, false)
   end
 
   def with_stub_step(raise_error: nil, &block)

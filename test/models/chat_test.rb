@@ -5,7 +5,7 @@ class ChatTest < ActiveSupport::TestCase
   setup do
     @agent = Daan::Agent.new(name: "chief_of_staff", display_name: "CoS",
                              model_name: "claude-sonnet-4-20250514",
-                             system_prompt: "You are CoS.", max_turns: 10)
+                             system_prompt: "You are CoS.", max_steps: 10)
     Daan::AgentRegistry.register(@agent)
   end
 
@@ -36,8 +36,9 @@ class ChatTest < ActiveSupport::TestCase
     assert_raises(AASM::InvalidTransition) { chat.finish! }
   end
 
-  test "turn_count defaults to 0" do
-    assert_equal 0, Chat.new.turn_count
+  test "step_count returns 0 with no messages" do
+    chat = Chat.new(agent_name: "chief_of_staff")
+    assert_equal 0, chat.step_count
   end
 
 

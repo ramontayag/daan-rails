@@ -17,7 +17,7 @@ class ThreadsController < ApplicationController
   end
 
   def create
-    @chat = Chat.create!(agent_name: @agent.name)
+    @chat = Chat.create!(agent_name: @agent.name, model: @agent.model_name)
     Daan::CreateMessage.call(@chat, role: "user", content: message_params[:content])
 
     redirect_to chat_thread_path(@chat)

@@ -16,7 +16,7 @@ class LlmJobTest < ActiveSupport::TestCase
 
     @chat.reload
     assert @chat.completed?
-    assert_equal 1, @chat.turn_count
+    assert_equal 1, @chat.step_count
     assert @chat.messages.where(role: "assistant").exists?
   end
 

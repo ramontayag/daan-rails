@@ -6,7 +6,7 @@ class Daan::ConversationRunnerStepInjectionTest < ActiveSupport::TestCase
       Daan::Agent.new(
         name: "developer", display_name: "Developer",
         model_name: "claude-sonnet-4-20250514",
-        system_prompt: "You are a developer.", max_turns: 10
+        system_prompt: "You are a developer.", max_steps: 10
       )
     )
     @chat = Chat.create!(agent_name: "developer")

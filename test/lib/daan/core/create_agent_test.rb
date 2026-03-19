@@ -32,7 +32,7 @@ class Daan::Core::CreateAgentTest < ActiveSupport::TestCase
     assert_includes content, "name: test_agent"
     assert_includes content, "display_name: Test Agent"
     assert_includes content, "model: claude-sonnet-4-20250514"
-    assert_includes content, "max_turns: 10"
+    assert_includes content, "max_steps: 10"
     assert_includes content, "A test agent for unit testing"
   end
 
@@ -45,7 +45,7 @@ class Daan::Core::CreateAgentTest < ActiveSupport::TestCase
       delegates_to: [ "developer" ],
       workspace: "tmp/workspaces/full_agent",
       model: "claude-haiku",
-      max_turns: 5
+      max_steps: 5
     )
 
     assert_includes result, "Successfully created agent 'full_agent'"
@@ -53,7 +53,7 @@ class Daan::Core::CreateAgentTest < ActiveSupport::TestCase
     content = @test_agents_dir.join("full_agent.md").read
     assert_includes content, "workspace: tmp/workspaces/full_agent"
     assert_includes content, "model: claude-haiku"
-    assert_includes content, "max_turns: 5"
+    assert_includes content, "max_steps: 5"
     assert_includes content, "- Daan::Core::Read"
     assert_includes content, "- Daan::Core::Write"
     assert_includes content, "- developer"
