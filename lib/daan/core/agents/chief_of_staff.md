@@ -1,8 +1,8 @@
 ---
 name: chief_of_staff
 display_name: Chief of Staff
-model: claude-sonnet-4-20250514
-max_turns: 15
+model: claude-haiku-4-5-20251001
+max_turns: 8
 delegates_to:
   - engineering_manager
   - agent_resource_manager

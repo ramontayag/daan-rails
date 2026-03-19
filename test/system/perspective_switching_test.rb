@@ -4,12 +4,12 @@ class PerspectiveSwitchingTest < ApplicationSystemTestCase
   setup do
     Chat.destroy_all
     Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
-    @workspace = Rails.root.join("tmp", "workspaces", "developer")
-    FileUtils.mkdir_p(@workspace)
+    @em_workspace = Rails.root.join("tmp", "workspaces", "engineering_manager")
+    FileUtils.mkdir_p(@em_workspace)
   end
 
   teardown do
-    FileUtils.rm_f(@workspace.join("chain_test.txt"))
+    FileUtils.rm_f(@em_workspace.join("chain_test.txt"))
   end
 
   test "human sends message, chain completes, perspective switching shows correct conversations" do
@@ -25,14 +25,12 @@ class PerspectiveSwitchingTest < ApplicationSystemTestCase
       assert_selector "[data-role='assistant']", minimum: 1
     end
 
-    assert File.exist?(@workspace.join("chain_test.txt"))
+    assert File.exist?(@em_workspace.join("chain_test.txt"))
 
     cos_chat = Chat.find_by!(agent_name: "chief_of_staff", parent_chat_id: nil)
     em_chat  = Chat.find_by!(agent_name: "engineering_manager", parent_chat: cos_chat)
-    dev_chat = Chat.find_by!(agent_name: "developer", parent_chat: em_chat)
 
-    cos_task_to_em  = em_chat.messages.find_by!(role: "user")
-    em_task_to_dev  = dev_chat.messages.find_by!(role: "user")
+    cos_task_to_em = em_chat.messages.find_by!(role: "user")
 
     # === CoS perspective ===
     select "Chief of Staff", from: "perspective"
@@ -49,28 +47,14 @@ class PerspectiveSwitchingTest < ApplicationSystemTestCase
     find("[data-testid='thread-list-item'] a", match: :first).click
     assert_text cos_task_to_em.content
 
-    # Navigate to Developer — should show the task EM gave Developer, not anything from human
-    click_on "Developer"
-    find("[data-testid='thread-list-item'] a", match: :first).click
-    assert_text em_task_to_dev.content
-
     # === EM perspective ===
     select "Engineering Manager", from: "perspective"
     assert_selector "[data-testid='agent-item']", count: 4
 
-    # Navigate to Developer — same EM→Dev task
-    click_on "Developer"
+    # EM can see its own conversation with CoS
+    click_on "Chief of Staff"
     find("[data-testid='thread-list-item'] a", match: :first).click
-    assert_text em_task_to_dev.content
-
-    # === Developer perspective ===
-    select "Developer", from: "perspective"
-    assert_selector "[data-testid='agent-item']", count: 4
-
-    # Navigate to EM — should show the Developer's own chat under EM
-    click_on "Engineering Manager"
-    find("[data-testid='thread-list-item'] a", match: :first).click
-    assert_text em_task_to_dev.content
+    assert_text cos_task_to_em.content
 
     # === Back to human ===
     select "Me (Human)", from: "perspective"

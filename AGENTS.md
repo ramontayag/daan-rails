@@ -129,6 +129,25 @@ errors on repeated renders.
 - Never symlink `config/` paths into `lib/`
 - Agent partials under `lib/daan/core/agents/partials/` are gem internals
 
+## Scopes use Arel
+
+Prefer Arel over SQL strings in scopes. This keeps queries composable and
+avoids raw string interpolation:
+
+```ruby
+# Good — hash syntax is fine for equality
+scope :visible, -> { where(visible: true) }
+
+# Good — use Arel for operators hash syntax can't express
+scope :since_id, ->(id) { where(arel_table[:id].gt(id)) }
+
+# Avoid — SQL strings
+scope :since_id, ->(id) { where("id > ?", id) }
+```
+
+Use `ModelName.arel_table[:column]` to reference columns. For associations,
+call `.arel_table` on the associated model class.
+
 ## Jobs are thin wrappers around services
 
 Jobs call a service and nothing else. The service holds all logic.
