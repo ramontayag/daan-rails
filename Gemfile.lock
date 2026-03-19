@@ -1,3 +1,19 @@
+GIT
+  remote: https://github.com/ramontayag/ruby_llm.git
+  revision: d8da15573371c80c58adc0a9fa1cd615415af36c
+  branch: feat/chat-step
+  specs:
+    ruby_llm (1.14.0)
+      base64
+      event_stream_parser (~> 1)
+      faraday (>= 1.10.0)
+      faraday-multipart (>= 1)
+      faraday-net_http (>= 1)
+      faraday-retry (>= 1)
+      marcel (~> 1)
+      ruby_llm-schema (~> 0)
+      zeitwerk (~> 2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -401,16 +417,6 @@ GEM
     ruby-vips (2.3.0)
       ffi (~> 1.12)
       logger
-    ruby_llm (1.13.2)
-      base64
-      event_stream_parser (~> 1)
-      faraday (>= 2.0)
-      faraday-multipart (>= 1)
-      faraday-net_http (>= 1)
-      faraday-retry (>= 2.0)
-      marcel (~> 1)
-      ruby_llm-schema (~> 0)
-      zeitwerk (~> 2)
     ruby_llm-schema (0.3.0)
     ruby_llm_swarm-mcp (0.8.2)
       httpx (~> 1.4)
@@ -541,7 +547,7 @@ DEPENDENCIES
   rails (~> 8.1.2)
   redcarpet
   rubocop-rails-omakase
-  ruby_llm
+  ruby_llm!
   selenium-webdriver
   solid_cable
   solid_cache

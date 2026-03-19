@@ -40,7 +40,7 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
-gem "ruby_llm"
+gem "ruby_llm", github: "ramontayag/ruby_llm", branch: "feat/chat-step"
 gem "redcarpet"
 gem "tailwindcss-rails", "~> 4.0"
 gem "view_component"

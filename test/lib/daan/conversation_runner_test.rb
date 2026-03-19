@@ -19,56 +19,78 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   end
 
   test "transitions to completed" do
-    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
     assert @chat.reload.completed?
   end
 
   test "increments turn_count" do
-    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
     assert_equal 1, @chat.reload.turn_count
   end
 
   test "transitions to blocked when max_turns reached" do
     @chat.update!(turn_count: @agent.max_turns - 1)
-    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
     assert @chat.reload.blocked?
   end
 
   test "re-triggers a completed chat by calling continue! before start!" do
     @chat.start!
     @chat.finish!
-    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
     assert @chat.reload.completed?
   end
 
   test "re-triggers a blocked chat by calling continue! before start!" do
     @chat.start!
     @chat.block!
-    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
     assert @chat.reload.completed?
   end
 
   test "re-triggers a failed chat by calling continue! before start!" do
     @chat.fail!
-    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
     assert @chat.reload.completed?
   end
 
   test "transitions to failed and reraises on exception" do
-    with_stub_complete(raise_error: RuntimeError.new("LLM down")) do
+    with_stub_step(raise_error: RuntimeError.new("LLM down")) do
       assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
     end
     assert @chat.reload.failed?
   end
 
-  test "broadcasts typing on and off, and enqueues BroadcastMessagesJob" do
-    with_stub_complete do
-      assert_broadcasts("chat_#{@chat.id}", 2) do
-        assert_enqueued_with(job: BroadcastMessagesJob) do
-          Daan::ConversationRunner.call(@chat)
-        end
+  test "broadcasts typing indicator on start, appends step message, and turns typing off on finish" do
+    with_stub_step do
+      assert_broadcasts("chat_#{@chat.id}", 3) do
+        Daan::ConversationRunner.call(@chat)
       end
     end
+  end
+
+  test "BroadcastMessagesJob is gone" do
+    refute defined?(BroadcastMessagesJob), "BroadcastMessagesJob should be deleted"
+  end
+
+  test "re-enqueues LlmJob when response has tool calls" do
+    @chat.start!
+    agent = Daan::AgentRegistry.find(@chat.agent_name)
+    tool_response = OpenStruct.new("tool_call?" => true, role: "assistant", tool_calls: {})
+
+    assert_enqueued_with(job: LlmJob, args: [ @chat ]) do
+      Daan::ConversationRunner.send(:finish_or_reenqueue, @chat, agent, tool_response)
+    end
+  end
+
+  test "calls finish_conversation when response has no tool calls" do
+    @chat.start!
+    agent = Daan::AgentRegistry.find(@chat.agent_name)
+    final_response = OpenStruct.new("tool_call?" => false, role: "assistant", tool_calls: {})
+
+    Daan::ConversationRunner.send(:finish_or_reenqueue, @chat, agent, final_response)
+
+    assert @chat.reload.completed?
   end
 
   test "injects relevant memories into system prompt when memories exist" do
@@ -84,7 +106,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     end
 
     with_stub_memories(fake_results) do
-      with_stub_complete { Daan::ConversationRunner.call(@chat) }
+      with_stub_step { Daan::ConversationRunner.call(@chat) }
     end
 
     assert_includes captured_prompt, "Rails uses SQLite"
@@ -104,7 +126,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     end
 
     with_stub_memories([]) do
-      with_stub_complete { Daan::ConversationRunner.call(@chat) }
+      with_stub_step { Daan::ConversationRunner.call(@chat) }
     end
 
     assert_equal "You are a test agent.", captured_prompt
@@ -120,7 +142,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     msc = Daan::Memory.singleton_class
     msc.alias_method(:__orig_storage__, :storage)
     msc.define_method(:storage) { storage_stub }
-    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
     assert @chat.reload.completed?
   ensure
     msc.alias_method(:storage, :__orig_storage__)
@@ -141,7 +163,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     @agent.max_turns = 10
     @chat.update!(turn_count: 6) # after increment: 7, remaining: 10-7=3
 
-    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
 
     warning = @chat.messages.find_by("content LIKE ?", "%2 turns of work remaining%")
     assert warning, "expected turn-limit warning message"
@@ -153,7 +175,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     @agent.max_turns = 10
     @chat.update!(turn_count: 6)
 
-    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
 
     warning = @chat.messages.find_by("content LIKE ?", "%2 turns of work remaining%")
     assert_nil warning
@@ -168,7 +190,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     parent_chat = Chat.create!(agent_name: "parent_agent")
     @chat.update!(parent_chat: parent_chat, turn_count: @agent.max_turns - 1)
 
-    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
 
     assert @chat.reload.blocked?
     notification = parent_chat.messages.find_by("content LIKE ?", "%thread is now blocked%")
@@ -177,7 +199,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert_equal false, notification.visible
     assert_includes notification.content, "Test Agent"
     assert_includes notification.content, "maximum turn limit"
-    assert_includes notification.content, "Hello human" # from with_stub_complete
+    assert_includes notification.content, "Hello human" # from with_stub_step
   end
 
   test "notifies parent when child chat fails" do
@@ -189,7 +211,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     parent_chat = Chat.create!(agent_name: "parent_agent")
     @chat.update!(parent_chat: parent_chat)
 
-    with_stub_complete(raise_error: RuntimeError.new("LLM down")) do
+    with_stub_step(raise_error: RuntimeError.new("LLM down")) do
       assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
     end
 
@@ -202,7 +224,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   test "does not notify parent when top-level chat goes blocked" do
     @chat.update!(turn_count: @agent.max_turns - 1)
 
-    with_stub_complete { Daan::ConversationRunner.call(@chat) }
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
 
     assert @chat.reload.blocked?
     # No parent, so no notification anywhere. Just verify no crash.
@@ -217,15 +239,16 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     parent_chat = Chat.create!(agent_name: "parent_agent")
     @chat.update!(parent_chat: parent_chat, turn_count: @agent.max_turns - 1)
 
-    # Stub complete to NOT create an assistant message
-    @chat.define_singleton_method(:complete) { |*| }
+    # Stub step to NOT create an assistant message
+    step_response = OpenStruct.new("tool_call?" => false, role: "assistant", tool_calls: nil)
+    @chat.define_singleton_method(:step) { |*| step_response }
     Daan::ConversationRunner.call(@chat)
 
     notification = parent_chat.messages.find_by("content LIKE ?", "%thread is now blocked%")
     assert notification, "expected parent notification"
     assert_includes notification.content, "No response recorded."
   ensure
-    @chat.singleton_class.remove_method(:complete) if @chat.singleton_class.method_defined?(:complete, false)
+    @chat.singleton_class.remove_method(:step) if @chat.singleton_class.method_defined?(:step, false)
   end
 
   test "enqueues CompactJob when token count exceeds 80% of context window" do
@@ -267,16 +290,18 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     sc.remove_method(:__orig_retrieve_memories__)
   end
 
-  def with_stub_complete(raise_error: nil, &block)
+  def with_stub_step(raise_error: nil, &block)
     called = false
-    @chat.define_singleton_method(:complete) do |*|
+    step_response = OpenStruct.new("tool_call?" => false, role: "assistant", tool_calls: nil)
+    @chat.define_singleton_method(:step) do |*|
       called = true
       raise raise_error if raise_error
       messages.create!(role: "assistant", content: "Hello human")
+      step_response
     end
     block.call
-    assert called, "expected complete to be called" unless raise_error
+    assert called, "expected step to be called" unless raise_error
   ensure
-    @chat.singleton_class.remove_method(:complete)
+    @chat.singleton_class.remove_method(:step) if @chat.singleton_class.method_defined?(:step, false)
   end
 end

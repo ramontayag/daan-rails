@@ -2,6 +2,7 @@
 require "test_helper"
 
 class LlmJobTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
   setup do
     Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
     @chat = Chat.create!(agent_name: "chief_of_staff")
@@ -27,7 +28,8 @@ class LlmJobTest < ActiveSupport::TestCase
     chat.messages.create!(role: "user", content: 'Write "test content" to test.txt')
 
     VCR.use_cassette("llm_job/developer_write_file") do
-      LlmJob.perform_now(chat)
+      # step re-enqueues when tool calls are returned; run all enqueued jobs
+      perform_enqueued_jobs { LlmJob.perform_now(chat) }
     end
 
     chat.reload
