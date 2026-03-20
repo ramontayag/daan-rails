@@ -15,7 +15,9 @@ module Daan
       def execute(message:)
         parent_chat = @chat.parent_chat
         unless parent_chat
-          return "You are the top-level agent in this conversation — there is no delegator to report to. Respond directly to the user in your next message."
+          current_agent = Daan::AgentRegistry.find(@chat.agent_name)
+          Daan::CreateMessage.call(@chat, role: "assistant", content: "#{current_agent.display_name}: #{message}", broadcast_action: :append)
+          return "Message displayed to the user directly."
         end
 
         current_agent = Daan::AgentRegistry.find(@chat.agent_name)
