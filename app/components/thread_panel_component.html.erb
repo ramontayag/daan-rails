@@ -31,10 +31,7 @@
     <%= helpers.turbo_stream_from "chat_#{chat.id}" %>
     <div id="messages">
       <% chat_messages.each do |message| %>
-        <%= render ChatMessageComponent.new(message: message, results: tool_results,
-                                            hide_tools: hide_tools,
-                                            agent_display_name: agent_display_name,
-                                            user_display_name: user_display_name) %>
+        <%= render ChatMessageComponent.new(message: message, results: tool_results, hide_tools: hide_tools) %>
       <% end %>
     </div>
     <div id="typing_indicator"></div>

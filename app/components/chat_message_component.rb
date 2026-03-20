@@ -1,6 +1,7 @@
 class ChatMessageComponent < ViewComponent::Base
-  def initialize(message:, results: {}, hide_tools: false, agent_display_name: nil, user_display_name: nil)
+  def initialize(message:, chat: nil, results: {}, hide_tools: false, agent_display_name: nil, user_display_name: nil)
     @message            = message
+    @chat               = chat
     @results            = results
     @hide_tools         = hide_tools
     @agent_display_name = agent_display_name
@@ -9,7 +10,19 @@ class ChatMessageComponent < ViewComponent::Base
 
   private
 
-  attr_reader :message, :results, :hide_tools, :agent_display_name, :user_display_name
+  attr_reader :message, :results, :hide_tools
+
+  def chat
+    @chat ||= message.chat
+  end
+
+  def agent_display_name
+    @agent_display_name ||= chat.agent.display_name
+  end
+
+  def user_display_name
+    @user_display_name ||= chat.parent_chat&.agent&.display_name || "User"
+  end
 
   def render?
     return false if message.role == "tool" || message.role == "system"

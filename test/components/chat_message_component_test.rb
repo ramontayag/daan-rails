@@ -5,11 +5,12 @@ class ChatMessageComponentTest < ActiveSupport::TestCase
 
   setup do
     @chat = Chat.create!(agent_name: "chief_of_staff")
+    @agent_display_name = "Chief of Staff"
   end
 
   test "renders an assistant message" do
     message = @chat.messages.create!(role: "assistant", content: "Hello there")
-    render_inline(ChatMessageComponent.new(message: message))
+    render_inline(ChatMessageComponent.new(message: message, agent_display_name: @agent_display_name))
     assert_includes rendered_content, "Hello there"
     assert_includes rendered_content, "data-role=\"assistant\""
   end
@@ -39,7 +40,7 @@ class ChatMessageComponentTest < ActiveSupport::TestCase
     message = @chat.messages.create!(role: "assistant", content: nil)
     ToolCall.create!(message: message, tool_call_id: "tc_001", name: "read_file",
                      arguments: { "path" => "foo.txt" })
-    render_inline(ChatMessageComponent.new(message: message))
+    render_inline(ChatMessageComponent.new(message: message, agent_display_name: @agent_display_name))
     assert_includes rendered_content, "read_file"
     assert_includes rendered_content, "data-testid=\"tool-call\""
   end
@@ -49,7 +50,7 @@ class ChatMessageComponentTest < ActiveSupport::TestCase
     tool_call = ToolCall.create!(message: message, tool_call_id: "tc_002", name: "write_file",
                                  arguments: { "path" => "out.txt" })
     results = { tool_call.id => "file written" }
-    render_inline(ChatMessageComponent.new(message: message, results: results))
+    render_inline(ChatMessageComponent.new(message: message, results: results, agent_display_name: @agent_display_name))
     assert_includes rendered_content, "file written"
   end
 
@@ -63,14 +64,14 @@ class ChatMessageComponentTest < ActiveSupport::TestCase
   test "shows tool calls by default" do
     message = @chat.messages.create!(role: "assistant", content: nil)
     ToolCall.create!(message: message, tool_call_id: "tc_show_01", name: "read", arguments: {})
-    render_inline(ChatMessageComponent.new(message: message))
+    render_inline(ChatMessageComponent.new(message: message, agent_display_name: @agent_display_name))
     assert_includes rendered_content, "data-testid=\"tool-call\""
   end
 
   test "still renders text content when hide_tools is true and message has both tool calls and content" do
     message = @chat.messages.create!(role: "assistant", content: "Here is the result.")
     ToolCall.create!(message: message, tool_call_id: "tc_mixed_01", name: "read", arguments: {})
-    render_inline(ChatMessageComponent.new(message: message, hide_tools: true))
+    render_inline(ChatMessageComponent.new(message: message, hide_tools: true, agent_display_name: @agent_display_name))
     assert_not_includes rendered_content, "data-testid=\"tool-call\""
     assert_includes rendered_content, "Here is the result."
   end
