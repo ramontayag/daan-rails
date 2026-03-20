@@ -19,14 +19,6 @@ class ThreadPanelComponent < ViewComponent::Base
     @perspective_name != "me"
   end
 
-  def agent_display_name
-    chat.agent.display_name
-  end
-
-  def user_display_name
-    chat.parent_chat ? chat.parent_chat.agent.display_name : "User"
-  end
-
   def chat_messages
     @chat_messages ||= chat.messages.active.where(visible: true).includes(:tool_calls)
                            .order(Arel.sql("compacted_messages_count > 0 DESC"), :created_at)

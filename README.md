@@ -29,6 +29,25 @@ Things you may want to cover:
 
 Tools (`lib/daan/core/*.rb`) need unit tests — they contain logic. Agent `.md` files are just configuration (YAML frontmatter + system prompt) and don't need their own tests. Writing to the real `lib/daan/core/agents/` directory in tests causes race conditions with parallel test runs.
 
+## Seam injection
+
+Constructor parameters that have smart defaults derived from other passed objects, but can be overridden by callers. The component (or service) resolves what it needs from available context; tests and Lookbook can inject substitutes without changing production call sites.
+
+Example in a ViewComponent:
+
+```ruby
+def initialize(message:, chat: nil, agent_display_name: nil)
+  @message            = message
+  @chat               = chat
+  @agent_display_name = agent_display_name
+end
+
+def chat = @chat ||= message.chat
+def agent_display_name = @agent_display_name ||= chat.agent.display_name
+```
+
+Production callers just pass `message:`. Tests and Lookbook pass whatever they need to override.
+
 ## Name time constants with their unit
 
 Constants that represent durations must include the unit in the name: `DEFAULT_TIMEOUT_SECONDS`, `POLL_INTERVAL_MS`, etc. Bare names like `DEFAULT_TIMEOUT` are ambiguous.
