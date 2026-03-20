@@ -40,13 +40,20 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
-gem "ruby_llm"
+gem "ruby_llm", github: "ramontayag/ruby_llm", branch: "feat/chat-step"
 gem "redcarpet"
 gem "tailwindcss-rails", "~> 4.0"
 gem "view_component"
 gem "front_matter_parser"
 gem "aasm"
-gem "swarm_memory"
+# swarm_sdk 2.7.x patches RubyLLM::Chat#initialize to set @on = nil, but
+# ruby_llm 1.14.0 (upstream and our fork) still uses @on[:new_message] etc.
+# internally. Keep these pinned until ruby_llm drops @on and swarm_sdk 2.7.x
+# becomes compatible. Also pin ruby_llm-mcp because swarm_sdk 2.0.7 monkey-
+# patches notifications/initialize which was restructured in ruby_llm-mcp 1.0.
+gem "swarm_memory", "2.1.0"
+gem "swarm_sdk", "2.0.7"
+gem "ruby_llm-mcp", "0.5.1"
 
 gem "dotenv-rails", groups: %i[development test]
 

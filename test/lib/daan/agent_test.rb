@@ -8,7 +8,7 @@ class Daan::AgentTest < ActiveSupport::TestCase
       display_name: "Chief of Staff",
       model_name: "claude-sonnet-4-20250514",
       system_prompt: "You are the Chief of Staff.",
-      max_turns: 10
+      max_steps: 10
     )
   end
 
@@ -16,7 +16,7 @@ class Daan::AgentTest < ActiveSupport::TestCase
     assert_equal "chief_of_staff", @agent.name
     assert_equal "Chief of Staff", @agent.display_name
     assert_equal "claude-sonnet-4-20250514", @agent.model_name
-    assert_equal 10, @agent.max_turns
+    assert_equal 10, @agent.max_steps
   end
 
   test "to_param returns name for URL routing" do
@@ -32,15 +32,15 @@ class Daan::AgentTest < ActiveSupport::TestCase
     assert @agent.busy?
   end
 
-  test "max_turns_reached? at the limit" do
-    assert @agent.max_turns_reached?(10)
-    assert_not @agent.max_turns_reached?(9)
+  test "max_steps_reached? at the limit" do
+    assert @agent.max_steps_reached?(10)
+    assert_not @agent.max_steps_reached?(9)
   end
 
   test "workspace defaults to nil when not provided" do
     agent = Daan::Agent.new(
       name: "test", display_name: "Test", model_name: "m",
-      system_prompt: "p", max_turns: 5
+      system_prompt: "p", max_steps: 5
     )
     assert_nil agent.workspace
   end
@@ -48,7 +48,7 @@ class Daan::AgentTest < ActiveSupport::TestCase
   test "tools returns empty array when no base_tools" do
     agent = Daan::Agent.new(
       name: "test", display_name: "Test", model_name: "m",
-      system_prompt: "p", max_turns: 5
+      system_prompt: "p", max_steps: 5
     )
     assert_equal [], agent.tools
   end
@@ -62,7 +62,7 @@ class Daan::AgentTest < ActiveSupport::TestCase
     end
     agent = Daan::Agent.new(
       name: "test", display_name: "Test", model_name: "m",
-      system_prompt: "p", max_turns: 5,
+      system_prompt: "p", max_steps: 5,
       workspace: workspace, base_tools: [ tool_class ]
     )
     bound = agent.tools
@@ -75,7 +75,7 @@ class Daan::AgentTest < ActiveSupport::TestCase
   test "delegates_to defaults to empty array" do
     agent = Daan::Agent.new(
       name: "test", display_name: "Test", model_name: "m",
-      system_prompt: "p", max_turns: 5
+      system_prompt: "p", max_steps: 5
     )
     assert_equal [], agent.delegates_to
   end
@@ -83,7 +83,7 @@ class Daan::AgentTest < ActiveSupport::TestCase
   test "delegates_to is set from constructor" do
     agent = Daan::Agent.new(
       name: "cos", display_name: "CoS", model_name: "m",
-      system_prompt: "p", max_turns: 10,
+      system_prompt: "p", max_steps: 10,
       delegates_to: [ "engineering_manager" ]
     )
     assert_equal [ "engineering_manager" ], agent.delegates_to
@@ -101,7 +101,7 @@ class Daan::AgentTest < ActiveSupport::TestCase
 
     agent = Daan::Agent.new(
       name: "test", display_name: "Test", model_name: "claude-sonnet-4-20250514",
-      system_prompt: "test", max_turns: 5, base_tools: [ spy_tool ]
+      system_prompt: "test", max_steps: 5, base_tools: [ spy_tool ]
     )
     chat = Chat.create!(agent_name: "test")
     agent.tools(chat: chat)

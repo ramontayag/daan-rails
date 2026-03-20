@@ -7,7 +7,7 @@ class Daan::CreateMessageTest < ActiveSupport::TestCase
   setup do
     Daan::AgentRegistry.register(Daan::Agent.new(
       name: "test_agent", display_name: "TA", model_name: "claude-3-5-haiku-20241022",
-      system_prompt: "p", max_turns: 10
+      system_prompt: "p", max_steps: 10
     ))
     @chat = Chat.create!(agent_name: "test_agent")
   end

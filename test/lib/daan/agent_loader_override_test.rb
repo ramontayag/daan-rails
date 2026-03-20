@@ -11,7 +11,7 @@ class AgentLoaderOverrideTest < ActiveSupport::TestCase
       name: tester
       display_name: Tester Base
       model: claude-sonnet-4-20250514
-      max_turns: 5
+      max_steps: 5
       ---
       Base prompt.
     MD
@@ -21,7 +21,7 @@ class AgentLoaderOverrideTest < ActiveSupport::TestCase
       name: tester
       display_name: Tester Override
       model: claude-sonnet-4-20250514
-      max_turns: 5
+      max_steps: 5
       ---
       Override prompt.
     MD

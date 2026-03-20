@@ -7,12 +7,12 @@ class Daan::Core::DelegateTaskTest < ActiveSupport::TestCase
   setup do
     Daan::AgentRegistry.register(
       Daan::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
-                      model_name: "m", system_prompt: "p", max_turns: 10,
+                      model_name: "m", system_prompt: "p", max_steps: 10,
                       delegates_to: [ "engineering_manager" ])
     )
     Daan::AgentRegistry.register(
       Daan::Agent.new(name: "engineering_manager", display_name: "Engineering Manager",
-                      model_name: "m", system_prompt: "p", max_turns: 10)
+                      model_name: "m", system_prompt: "p", max_steps: 10)
     )
     @parent_chat = Chat.create!(agent_name: "chief_of_staff")
     @tool = Daan::Core::DelegateTask.new(chat: @parent_chat)
@@ -87,7 +87,7 @@ class Daan::Core::DelegateTaskTest < ActiveSupport::TestCase
   test "raises when target agent is in delegates_to but absent from registry" do
     Daan::AgentRegistry.register(
       Daan::Agent.new(name: "ghost_delegator", display_name: "Ghost",
-                      model_name: "m", system_prompt: "p", max_turns: 5,
+                      model_name: "m", system_prompt: "p", max_steps: 5,
                       delegates_to: [ "phantom_agent" ])
     )
     ghost_chat = Chat.create!(agent_name: "ghost_delegator")

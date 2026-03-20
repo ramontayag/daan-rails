@@ -1,6 +1,6 @@
 # lib/daan/agent.rb
 module Daan
-  Agent = Struct.new(:name, :display_name, :model_name, :system_prompt, :max_turns,
+  Agent = Struct.new(:name, :display_name, :model_name, :system_prompt, :max_steps,
                      :workspace, :base_tools, :delegates_to, :allowed_commands,
                      keyword_init: true) do
     def initialize(**)
@@ -29,8 +29,8 @@ module Daan
       Chat.in_progress.exists?(agent_name: name)
     end
 
-    def max_turns_reached?(turn_count)
-      turn_count >= max_turns
+    def max_steps_reached?(step_count)
+      step_count >= max_steps
     end
   end
 end

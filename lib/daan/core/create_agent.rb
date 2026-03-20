@@ -13,14 +13,14 @@ module Daan
       param :delegates_to, desc: "Array of agent names this agent can delegate to (optional)", required: false
       param :workspace, desc: "Relative workspace path for the agent (optional)", required: false
       param :model, desc: "AI model to use (optional, defaults to claude-sonnet-4-20250514)", required: false
-      param :max_turns, desc: "Maximum conversation turns (optional, defaults to 10)", required: false
+      param :max_steps, desc: "Maximum conversation turns (optional, defaults to 10)", required: false
 
       def initialize(workspace: nil, chat: nil, agents_dir: nil)
         @chat = chat
         @agents_dir = agents_dir || Rails.root.join("lib/daan/core/agents")
       end
 
-      def execute(agent_name:, display_name:, description:, tools: nil, delegates_to: nil, workspace: nil, model: nil, max_turns: nil)
+      def execute(agent_name:, display_name:, description:, tools: nil, delegates_to: nil, workspace: nil, model: nil, max_steps: nil)
         # Validate agent_name format
         unless agent_name.match?(/\A[a-z][a-z0-9_]*\z/)
           return "Error: agent_name must start with a lowercase letter and contain only lowercase letters, numbers, and underscores"
@@ -36,7 +36,7 @@ module Daan
 
         # Set defaults
         model ||= "claude-sonnet-4-20250514"
-        max_turns ||= 10
+        max_steps ||= 10
         tools ||= []
         delegates_to ||= []
 
@@ -64,7 +64,7 @@ module Daan
           "name" => agent_name,
           "display_name" => display_name,
           "model" => model,
-          "max_turns" => max_turns
+          "max_steps" => max_steps
         }
 
         frontmatter["workspace"] = workspace if workspace

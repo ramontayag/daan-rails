@@ -10,16 +10,13 @@ module Daan
       enqueue_compaction_if_needed(chat)
       configure_llm(chat, agent)
 
-      last_message_id = chat.messages.maximum(:id) || 0
-      Rails.logger.info("#{tag} calling LLM model=#{chat.model_id}")
+        Rails.logger.info("#{tag} calling LLM model=#{chat.model_id}")
       llm_started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      run_llm(chat)
+      response = run_step(chat)
       llm_elapsed = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - llm_started_at).round(1)
-      Rails.logger.info("#{tag} LLM complete elapsed=#{llm_elapsed}s")
+      Rails.logger.info("#{tag} LLM step complete elapsed=#{llm_elapsed}s tool_call=#{response.tool_call?}")
 
-      BroadcastMessagesJob.perform_later(chat, last_message_id)
-      broadcast_typing(chat, false)
-      finish_conversation(chat, agent)
+      finish_or_reenqueue(chat, agent, response)
     end
 
     def self.start_conversation(chat)
@@ -120,8 +117,10 @@ module Daan
     end
     private_class_method :retrieve_memories
 
-    def self.run_llm(chat)
-      chat.complete
+    def self.run_step(chat)
+      response = chat.step
+      broadcast_step(chat, response)
+      response
     rescue => e
       tag = "[ConversationRunner] chat_id=#{chat.id}"
       Rails.logger.error("#{tag} LLM failed error=#{e.class}: #{e.message}")
@@ -136,38 +135,75 @@ module Daan
       end
       raise
     end
-    private_class_method :run_llm
+    private_class_method :run_step
+
+    def self.broadcast_step(chat, response)
+      return unless response.role.to_s == "assistant"
+
+      tool_call_ids = response.tool_calls&.keys&.map(&:to_s) || []
+      results = if tool_call_ids.any?
+        Message.where(role: "tool", tool_call_id: tool_call_ids)
+               .index_by(&:tool_call_id)
+               .transform_values(&:content)
+      else
+        {}
+      end
+
+      ar_message = response.is_a?(Message) ? response : chat.messages
+                     .where(role: "assistant")
+                     .order(:id)
+                     .last
+      return unless ar_message
+
+      Turbo::StreamsChannel.broadcast_append_to(
+        "chat_#{chat.id}",
+        target: "messages",
+        renderable: ChatMessageComponent.new(message: ar_message, results: results)
+      )
+    end
+    private_class_method :broadcast_step
+
+    def self.finish_or_reenqueue(chat, agent, response)
+      if response.tool_call?
+        step_count = chat.step_count
+        if agent.max_steps_reached?(step_count)
+          tag = "[ConversationRunner] chat_id=#{chat.id}"
+          Rails.logger.info("#{tag} max steps reached (#{agent.max_steps}), blocking")
+          broadcast_typing(chat, false)
+          chat.block! if chat.may_block?
+          notify_parent_of_termination(chat, :blocked)
+          chat.broadcast_agent_status
+        else
+          warn_approaching_step_limit(chat, agent.max_steps - step_count)
+          LlmJob.perform_later(chat)
+        end
+      else
+        broadcast_typing(chat, false)
+        finish_conversation(chat, agent)
+      end
+    end
+    private_class_method :finish_or_reenqueue
 
     def self.finish_conversation(chat, agent)
       tag = "[ConversationRunner] chat_id=#{chat.id}"
       chat.reload
-      chat.increment!(:turn_count)
-      remaining = agent.max_turns - chat.turn_count
-
-      if agent.max_turns_reached?(chat.turn_count)
-        Rails.logger.info("#{tag} max turns reached (#{agent.max_turns}), blocking")
-        chat.block!   if chat.may_block?
-        notify_parent_of_termination(chat, :blocked)
-      else
-        warn_approaching_turn_limit(chat, remaining)
-        chat.finish!  if chat.may_finish?
-      end
-      Rails.logger.info("#{tag} finished status=#{chat.task_status} turn=#{chat.turn_count}/#{agent.max_turns}")
+      chat.finish! if chat.may_finish?
+      Rails.logger.info("#{tag} finished status=#{chat.task_status} step=#{chat.step_count}/#{agent.max_steps}")
       chat.broadcast_agent_status
     end
     private_class_method :finish_conversation
 
-    def self.warn_approaching_turn_limit(chat, remaining)
+    def self.warn_approaching_step_limit(chat, remaining)
       return unless remaining == 3 && chat.parent_chat.present?
 
       chat.messages.create!(
         role: "user",
-        content: "[System] You have 2 turns of work remaining before this thread is blocked. " \
+        content: "[System] You have 2 steps of work remaining before this thread is blocked. " \
                  "Call report_back now with your current findings.",
         visible: false
       )
     end
-    private_class_method :warn_approaching_turn_limit
+    private_class_method :warn_approaching_step_limit
 
     def self.notify_parent_of_termination(chat, status)
       return unless chat.parent_chat.present?
@@ -177,7 +213,7 @@ module Daan
       last_content = last_assistant&.content.presence&.truncate(500) || "No response recorded."
 
       reason = case status
-      when :blocked then "They reached the maximum turn limit of #{agent.max_turns}."
+      when :blocked then "They reached the maximum step limit of #{agent.max_steps}."
       when :failed  then "An error occurred during execution."
       end
 
@@ -190,28 +226,6 @@ module Daan
       )
     end
     private_class_method :notify_parent_of_termination
-
-    def self.broadcast_new_messages(chat, since_id)
-      messages = chat.messages
-                     .includes(:tool_calls)
-                     .where("messages.id > ?", since_id)
-                     .order(:id)
-
-      results_by_tool_call_id = messages
-        .select { |m| m.role == "tool" }
-        .index_by(&:tool_call_id)
-        .transform_values(&:content)
-
-      messages.each do |message|
-        next if message.role == "tool" || message.role == "user"
-
-        Turbo::StreamsChannel.broadcast_append_to(
-          "chat_#{chat.id}",
-          target: "messages",
-          renderable: ChatMessageComponent.new(message: message, results: results_by_tool_call_id)
-        )
-      end
-    end
 
     def self.broadcast_typing(chat, typing)
       Turbo::StreamsChannel.broadcast_replace_to(

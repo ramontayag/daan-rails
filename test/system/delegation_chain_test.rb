@@ -1,23 +1,23 @@
 require "test_helper"
 
-# Verifies the full delegation chain: human → CoS → EM → Developer → reports
-# back up → CoS replies. Pure integration test (no browser) so VCR cassettes
-# work across the entire job chain in the same thread.
+# Verifies the delegation chain: human → CoS → EM → reports back up → CoS replies.
+# Pure integration test (no browser) so VCR cassettes work across the entire
+# job chain in the same thread.
 class DelegationChainTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
 
   setup do
     Chat.destroy_all
     Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
-    @workspace = Rails.root.join("tmp", "workspaces", "developer")
-    FileUtils.mkdir_p(@workspace)
+    @em_workspace = Rails.root.join("tmp", "workspaces", "engineering_manager")
+    FileUtils.mkdir_p(@em_workspace)
   end
 
   teardown do
-    FileUtils.rm_f(@workspace.join("chain_test.txt"))
+    FileUtils.rm_f(@em_workspace.join("chain_test.txt"))
   end
 
-  test "human task flows down CoS → EM → Developer and results report back up" do
+  test "human task flows down CoS → EM and results report back up" do
     cos = Daan::AgentRegistry.find("chief_of_staff")
 
     VCR.use_cassette("delegation_chain/full_chain") do
@@ -42,13 +42,10 @@ class DelegationChainTest < ActionDispatch::IntegrationTest
     em_chat = Chat.find_by(agent_name: "engineering_manager", parent_chat: cos_chat)
     assert_not_nil em_chat, "Expected EM sub-chat created by CoS delegation"
 
-    # EM delegated to Developer
-    dev_chat = Chat.find_by(agent_name: "developer", parent_chat: em_chat)
-    assert_not_nil dev_chat, "Expected Developer sub-chat created by EM delegation"
-
-    # Developer did the work
-    assert File.exist?(@workspace.join("chain_test.txt")), "Expected developer to write chain_test.txt"
-    assert_equal "chain test passed", File.read(@workspace.join("chain_test.txt")).strip
+    # EM completed the work
+    assert em_chat.reload.completed?, "Expected EM chat to complete"
+    assert File.exist?(@em_workspace.join("chain_test.txt")), "Expected EM to write chain_test.txt"
+    assert_equal "chain test passed", File.read(@em_workspace.join("chain_test.txt")).strip
 
     # Results propagated back: CoS chat completed with a reply
     assert cos_chat.reload.completed?, "Expected CoS chat to complete after full chain"

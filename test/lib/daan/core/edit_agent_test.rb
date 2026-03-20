@@ -11,7 +11,7 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
       name: test_agent
       display_name: Test Agent
       model: claude-sonnet-4-20250514
-      max_turns: 10
+      max_steps: 10
       workspace: tmp/workspaces/test_agent
       tools:
         - Daan::Core::Read
@@ -118,16 +118,16 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
     assert_includes content, "workspace: tmp/workspaces/updated_agent"
   end
 
-  test "updates model and max_turns" do
-    result = @tool.execute(agent_name: "test_agent", model: "claude-haiku", max_turns: 5)
+  test "updates model and max_steps" do
+    result = @tool.execute(agent_name: "test_agent", model: "claude-haiku", max_steps: 5)
 
     assert_includes result, "Successfully updated agent 'test_agent'"
     assert_includes result, "model"
-    assert_includes result, "max_turns"
+    assert_includes result, "max_steps"
 
     content = @agent_file.read
     assert_includes content, "model: claude-haiku"
-    assert_includes content, "max_turns: 5"
+    assert_includes content, "max_steps: 5"
   end
 
   test "validates tool class existence" do
@@ -158,7 +158,7 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
     content = @agent_file.read
     assert_includes content, "display_name: Updated Name Only"
     assert_includes content, "model: claude-sonnet-4-20250514"
-    assert_includes content, "max_turns: 10"
+    assert_includes content, "max_steps: 10"
     assert_includes content, "workspace: tmp/workspaces/test_agent"
     assert_includes content, "- Daan::Core::Read"
     assert_includes content, "- developer"
@@ -201,7 +201,7 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
       name: registry_edit_test
       display_name: Registry Edit Test
       model: claude-sonnet-4-20250514
-      max_turns: 10
+      max_steps: 10
       ---
       Test agent for registry editing
     AGENT

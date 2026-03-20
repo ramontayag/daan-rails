@@ -1,5 +1,4 @@
 hello_cos:
   agent_name: chief_of_staff
   task_status: pending
-  turn_count: 0
   model_id:

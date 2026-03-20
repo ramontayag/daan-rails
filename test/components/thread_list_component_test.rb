@@ -6,7 +6,7 @@ class ThreadListComponentTest < ActiveSupport::TestCase
   setup do
     @agent = Daan::AgentRegistry.register(
       Daan::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
-                      model_name: "claude-3-5-haiku-20241022", system_prompt: "p", max_turns: 10)
+                      model_name: "claude-3-5-haiku-20241022", system_prompt: "p", max_steps: 10)
     )
     @agent.define_singleton_method(:busy?) { false }
   end

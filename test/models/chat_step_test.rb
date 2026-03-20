@@ -6,7 +6,7 @@ class ChatStepTest < ActiveSupport::TestCase
       Daan::Agent.new(
         name: "chief_of_staff", display_name: "CoS",
         model_name: "claude-sonnet-4-20250514",
-        system_prompt: "You are the CoS.", max_turns: 10
+        system_prompt: "You are the CoS.", max_steps: 10
       )
     )
     @chat = Chat.create!(agent_name: "chief_of_staff")

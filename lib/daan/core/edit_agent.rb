@@ -13,14 +13,14 @@ module Daan
       param :delegates_to, desc: "New delegates_to array (optional - replaces existing delegates)"
       param :workspace, desc: "New workspace path (optional)"
       param :model, desc: "New AI model (optional)"
-      param :max_turns, desc: "New max turns (optional)"
+      param :max_steps, desc: "New max turns (optional)"
 
       def initialize(workspace: nil, chat: nil, agents_dir: nil)
         @workspace = workspace
         @agents_dir = agents_dir || Rails.root.join("lib/daan/core/agents")
       end
 
-      def execute(agent_name:, display_name: nil, description: nil, tools: nil, delegates_to: nil, workspace: nil, model: nil, max_turns: nil)
+      def execute(agent_name:, display_name: nil, description: nil, tools: nil, delegates_to: nil, workspace: nil, model: nil, max_steps: nil)
         agent_file_path = @agents_dir.join("#{agent_name}.md")
 
         # Check if agent exists
@@ -44,7 +44,7 @@ module Daan
         updated_fm = existing_fm.dup
         updated_fm["display_name"] = display_name if display_name
         updated_fm["model"] = model if model
-        updated_fm["max_turns"] = max_turns if max_turns
+        updated_fm["max_steps"] = max_steps if max_steps
         if workspace
           workspace.empty? ? updated_fm.delete("workspace") : updated_fm["workspace"] = workspace
         end
@@ -126,7 +126,7 @@ module Daan
         changes << "delegates_to" if delegates_to
         changes << "workspace" if workspace
         changes << "model" if model
-        changes << "max_turns" if max_turns
+        changes << "max_steps" if max_steps
 
         "Successfully updated agent '#{agent_name}' (changed: #{changes.join(', ')})"
       end

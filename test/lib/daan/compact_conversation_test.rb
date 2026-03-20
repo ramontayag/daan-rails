@@ -8,7 +8,7 @@ class Daan::CompactConversationTest < ActiveSupport::TestCase
     @agent = Daan::Agent.new(
       name: "test", display_name: "Test",
       model_name: "claude-haiku-4-5-20251001",
-      system_prompt: "You help.", max_turns: 5
+      system_prompt: "You help.", max_steps: 5
     )
     # 25 active messages — 5 will be compacted, 20 kept
     25.times do |i|

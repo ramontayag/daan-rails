@@ -21,7 +21,7 @@ module Daan
         name:          fm.fetch("name"),
         display_name:  fm.fetch("display_name"),
         model_name:    fm.fetch("model"),
-        max_turns:     fm.fetch("max_turns"),
+        max_steps:     fm.fetch("max_steps"),
         system_prompt: system_prompt,
         base_tools:    base_tools,
         workspace:     workspace,

@@ -6,7 +6,7 @@ class AgentItemComponentTest < ActiveSupport::TestCase
   def idle_agent
     Daan::AgentRegistry.register(
       Daan::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
-                      model_name: "claude-3-5-haiku-20241022", system_prompt: "p", max_turns: 10)
+                      model_name: "claude-3-5-haiku-20241022", system_prompt: "p", max_steps: 10)
     )
     Daan::AgentRegistry.find("chief_of_staff")
   end
