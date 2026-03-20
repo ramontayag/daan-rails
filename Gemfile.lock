@@ -102,22 +102,6 @@ GEM
       io-event (~> 1.11)
       metrics (~> 0.12)
       traces (~> 0.18)
-    async-http (0.94.2)
-      async (>= 2.10.2)
-      async-pool (~> 0.11)
-      io-endpoint (~> 0.14)
-      io-stream (~> 0.6)
-      metrics (~> 0.12)
-      protocol-http (~> 0.58)
-      protocol-http1 (~> 0.36)
-      protocol-http2 (~> 0.22)
-      protocol-url (~> 0.2)
-      traces (~> 0.10)
-    async-http-faraday (0.22.1)
-      async-http (~> 0.42)
-      faraday
-    async-pool (0.11.2)
-      async (>= 2.0)
     base64 (0.3.0)
     bcrypt_pbkdf (1.1.2)
     bcrypt_pbkdf (1.1.2-arm64-darwin)
@@ -172,8 +156,6 @@ GEM
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
-    faraday-follow_redirects (0.5.0)
-      faraday (>= 1, < 3)
     faraday-multipart (1.2.0)
       multipart-post (~> 2.0)
     faraday-net_http (3.4.2)
@@ -212,9 +194,7 @@ GEM
       onnxruntime (>= 0.9)
       tokenizers (>= 0.5.3)
     io-console (0.8.2)
-    io-endpoint (0.17.2)
     io-event (1.11.2)
-    io-stream (0.11.1)
     irb (1.17.0)
       pp (>= 0.6.0)
       prism (>= 1.3.0)
@@ -317,14 +297,6 @@ GEM
       actionpack (>= 7.0.0)
       activesupport (>= 7.0.0)
       rack
-    protocol-hpack (1.5.1)
-    protocol-http (0.59.0)
-    protocol-http1 (0.37.0)
-      protocol-http (~> 0.58)
-    protocol-http2 (0.24.0)
-      protocol-hpack (~> 1.4)
-      protocol-http (~> 0.47)
-    protocol-url (0.4.0)
     psych (5.3.1)
       date
       stringio
@@ -417,11 +389,11 @@ GEM
     ruby-vips (2.3.0)
       ffi (~> 1.12)
       logger
-    ruby_llm-schema (0.3.0)
-    ruby_llm_swarm-mcp (0.8.2)
+    ruby_llm-mcp (0.5.1)
       httpx (~> 1.4)
-      json-schema (~> 5.0)
+      ruby_llm (~> 1.3)
       zeitwerk (~> 2)
+    ruby_llm-schema (0.3.0)
     rubyzip (3.2.2)
     securerandom (0.4.1)
     selenium-webdriver (4.41.0)
@@ -459,19 +431,17 @@ GEM
     stimulus-rails (1.3.4)
       railties (>= 6.0.0)
     stringio (3.2.0)
-    swarm_memory (2.3.2)
+    swarm_memory (2.1.0)
       async (~> 2.0)
       informers (~> 1.2.1)
       rice (~> 4.6.0)
-      ruby_llm (~> 1.11)
-      swarm_sdk (~> 2.7)
+      ruby_llm (~> 1.8)
+      swarm_sdk (~> 2.0)
       zeitwerk (~> 2.6)
-    swarm_sdk (2.7.15)
+    swarm_sdk (2.0.7)
       async (~> 2.0)
-      async-http-faraday (~> 0.22)
-      faraday-follow_redirects (~> 0.4)
-      ruby_llm (~> 1.11)
-      ruby_llm_swarm-mcp (~> 0.8.2)
+      ruby_llm (~> 1.8)
+      ruby_llm-mcp
       zeitwerk (~> 2.6)
     tailwindcss-rails (4.4.0)
       railties (>= 7.0.0)
@@ -548,13 +518,15 @@ DEPENDENCIES
   redcarpet
   rubocop-rails-omakase
   ruby_llm!
+  ruby_llm-mcp (= 0.5.1)
   selenium-webdriver
   solid_cable
   solid_cache
   solid_queue
   sqlite3 (>= 2.1)
   stimulus-rails
-  swarm_memory
+  swarm_memory (= 2.1.0)
+  swarm_sdk (= 2.0.7)
   tailwindcss-rails (~> 4.0)
   thruster
   turbo-rails

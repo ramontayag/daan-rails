@@ -46,7 +46,9 @@ gem "tailwindcss-rails", "~> 4.0"
 gem "view_component"
 gem "front_matter_parser"
 gem "aasm"
-gem "swarm_memory"
+gem "swarm_memory", "2.1.0"
+gem "swarm_sdk", "2.0.7"
+gem "ruby_llm-mcp", "0.5.1"
 
 gem "dotenv-rails", groups: %i[development test]
 
