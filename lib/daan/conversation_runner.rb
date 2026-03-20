@@ -211,6 +211,13 @@ module Daan
           renderable: ChatMessageComponent.new(message: message, results: results_by_tool_call_id)
         )
       end
+
+      # Broadcast header stats update after all messages have been processed
+      Turbo::StreamsChannel.broadcast_replace_to(
+        "chat_#{chat.id}",
+        target: "chat_header_stats",
+        renderable: ChatHeaderStatsComponent.new(chat: chat)
+      )
     end
 
     def self.broadcast_typing(chat, typing)
