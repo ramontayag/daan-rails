@@ -42,11 +42,28 @@ class Daan::Core::ReportBackTest < ActiveSupport::TestCase
     assert_includes result, "Chief of Staff"
   end
 
-  test "returns guidance when chat has no parent" do
+  test "creates a visible assistant message in the current chat when there is no parent" do
     orphan_chat = Chat.create!(agent_name: "engineering_manager")
     tool = Daan::Core::ReportBack.new(chat: orphan_chat)
-    result = tool.execute(message: "oops")
-    assert_match(/top-level/, result)
-    assert_match(/[Rr]espond directly/, result)
+    assert_difference -> { orphan_chat.messages.where(role: "assistant", visible: true).count }, 1 do
+      tool.execute(message: "Here are my findings.")
+    end
+  end
+
+  test "visible message includes agent display name and report content when there is no parent" do
+    orphan_chat = Chat.create!(agent_name: "engineering_manager")
+    tool = Daan::Core::ReportBack.new(chat: orphan_chat)
+    tool.execute(message: "Here are my findings.")
+    msg = orphan_chat.messages.where(role: "assistant", visible: true).last
+    assert_includes msg.content, "Engineering Manager"
+    assert_includes msg.content, "Here are my findings."
+  end
+
+  test "does not enqueue LlmJob when there is no parent" do
+    orphan_chat = Chat.create!(agent_name: "engineering_manager")
+    tool = Daan::Core::ReportBack.new(chat: orphan_chat)
+    assert_no_enqueued_jobs(only: LlmJob) do
+      tool.execute(message: "Here are my findings.")
+    end
   end
 end
