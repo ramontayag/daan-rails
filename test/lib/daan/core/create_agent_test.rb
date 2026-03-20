@@ -104,10 +104,7 @@ class Daan::Core::CreateAgentTest < ActiveSupport::TestCase
   end
 
   test "registers agent in registry after creation" do
-    real_agents_dir = Rails.root.join("lib/daan/core/agents")
-    tool = Daan::Core::CreateAgent.new(chat: @chat, agents_dir: real_agents_dir)
-
-    result = tool.execute(
+    result = @tool.execute(
       agent_name: "registry_test",
       display_name: "Registry Test",
       description: "Testing registry integration"
@@ -115,8 +112,6 @@ class Daan::Core::CreateAgentTest < ActiveSupport::TestCase
 
     assert_includes result, "Successfully created agent 'registry_test'"
     assert_equal "Registry Test", Daan::AgentRegistry.find("registry_test").display_name
-  ensure
-    real_agents_dir.join("registry_test.md").delete rescue nil
   end
 
   test "handles empty arrays correctly" do
