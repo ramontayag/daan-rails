@@ -1,13 +1,13 @@
 <% if message.tool_calls.any? %>
-  <% unless hide_tools %>
-    <% message.tool_calls.each do |tool_call| %>
-      <%= render ToolCallComponent.new(tool_call: tool_call, result: results[tool_call.id], agent_display_name: agent_display_name) %>
-    <% end %>
-  <% end %>
   <% if message.content.present? %>
     <%= render MessageComponent.new(role: "assistant", body: message.content,
                                    dom_id: "message_#{message.id}",
                                    sender_name: sender_name) %>
+  <% end %>
+  <% unless hide_tools %>
+    <% message.tool_calls.each do |tool_call| %>
+      <%= render ToolCallComponent.new(tool_call: tool_call, result: results[tool_call.id], agent_display_name: agent_display_name) %>
+    <% end %>
   <% end %>
 <% else %>
   <%= render MessageComponent.new(role: message.role, body: message.content,
