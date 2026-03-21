@@ -52,7 +52,7 @@ gem "aasm"
 # becomes compatible. Also pin ruby_llm-mcp because swarm_sdk 2.0.7 monkey-
 # patches notifications/initialize which was restructured in ruby_llm-mcp 1.0.
 gem "swarm_memory", "2.1.0"
-gem "swarm_sdk", "2.0.7"
+gem "swarm_sdk", "2.7.15"
 gem "ruby_llm-mcp", "0.5.1"
 
 gem "dotenv-rails", groups: %i[development test]
