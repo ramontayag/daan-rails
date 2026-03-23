@@ -6,6 +6,7 @@
       <%= form_with url: action, method: :post, class: "flex gap-2 items-end",
             data: { action: "turbo:submit-end->form-reset#reset" } do |f| %>
         <%= f.text_area :content, name: "message[content]",
+            id: input_id,
             placeholder: "Message...",
             class: "flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-y-auto",
             rows: 1,
