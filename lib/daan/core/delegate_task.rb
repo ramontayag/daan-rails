@@ -23,7 +23,11 @@ module Daan
         target_agent = Daan::AgentRegistry.find(agent_name)
 
         existing = @chat.sub_chats.exists?(agent_name: agent_name)
-        sub_chat = @chat.sub_chats.find_or_create_by!(agent_name: agent_name)
+        sub_chat = @chat.sub_chats.find_or_initialize_by(agent_name: agent_name)
+        if sub_chat.new_record?
+          sub_chat.model = target_agent.model_name
+          sub_chat.save!
+        end
         sub_chat.continue! if sub_chat.completed? || sub_chat.failed? || sub_chat.blocked?
         Daan::CreateMessage.call(sub_chat, role: "user", content: task)
 
