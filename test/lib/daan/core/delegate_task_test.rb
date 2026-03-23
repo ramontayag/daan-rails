@@ -5,14 +5,15 @@ class Daan::Core::DelegateTaskTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
   setup do
+    RubyLLM::Models.instance.load_from_json!
     Daan::AgentRegistry.register(
       Daan::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
-                      model_name: "m", system_prompt: "p", max_steps: 10,
+                      model_name: "gpt-5.4", system_prompt: "p", max_steps: 10,
                       delegates_to: [ "engineering_manager" ])
     )
     Daan::AgentRegistry.register(
       Daan::Agent.new(name: "engineering_manager", display_name: "Engineering Manager",
-                      model_name: "m", system_prompt: "p", max_steps: 10)
+                      model_name: "gpt-5.4", system_prompt: "p", max_steps: 10)
     )
     @parent_chat = Chat.create!(agent_name: "chief_of_staff")
     @tool = Daan::Core::DelegateTask.new(chat: @parent_chat)
@@ -82,6 +83,25 @@ class Daan::Core::DelegateTaskTest < ActiveSupport::TestCase
     @tool.execute(agent_name: "engineering_manager", task: "Follow up")
 
     assert sub_chat.reload.pending?
+  end
+
+  test "assigns the target agent's model to the new sub-chat" do
+    Daan::AgentRegistry.register(
+      Daan::Agent.new(name: "developer", display_name: "Developer",
+                      model_name: "claude-haiku-4-5-20251001", system_prompt: "p", max_steps: 10)
+    )
+    Daan::AgentRegistry.register(
+      Daan::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
+                      model_name: "claude-haiku-4-5-20251001", system_prompt: "p", max_steps: 10,
+                      delegates_to: [ "engineering_manager", "developer" ])
+    )
+    parent_chat = Chat.create!(agent_name: "chief_of_staff")
+    tool = Daan::Core::DelegateTask.new(chat: parent_chat)
+
+    tool.execute(agent_name: "developer", task: "Build something")
+
+    sub_chat = parent_chat.sub_chats.find_by!(agent_name: "developer")
+    assert_equal "claude-haiku-4-5-20251001", sub_chat.model&.model_id
   end
 
   test "raises when target agent is in delegates_to but absent from registry" do
