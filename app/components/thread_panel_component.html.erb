@@ -36,5 +36,5 @@
     </div>
     <div id="typing_indicator"></div>
   </div>
-  <%= render ComposeBarComponent.new(action: chat_thread_messages_path(chat), readonly: readonly) %>
+  <%= render ComposeBarComponent.new(action: chat_thread_messages_path(chat), readonly: readonly, input_id: "thread-panel-message-input") %>
 </div>
