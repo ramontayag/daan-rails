@@ -2,7 +2,7 @@
 name: chief_of_staff
 display_name: Chief of Staff
 model: claude-haiku-4-5-20251001
-max_steps: 8
+max_steps: 16
 delegates_to:
   - engineering_manager
   - agent_resource_manager
