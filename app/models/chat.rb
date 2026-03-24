@@ -145,12 +145,21 @@ class Chat < ApplicationRecord
   end
 
   def broadcast_chat_cost
-    broadcast_replace_to(
-      "chat_#{id}",
-      target: "chat_cost_#{id}",
-      renderable: ChatCostComponent.new(chat: self)
-    )
+    if sub_chats.any?
+      broadcast_replace_to("chat_#{id}", target: "chat_#{id}_cost_totals",
+        partial: "chats/cost_totals", locals: { chat: self })
+      broadcast_replace_to("chat_#{id}", target: "chat_#{id}_cost_rows",
+        partial: "chats/cost_rows", locals: { chat: self })
+    else
+      broadcast_replace_to("chat_#{id}", target: "chat_cost_#{id}",
+        renderable: ChatCostComponent.new(chat: self))
+    end
     parent_chat&.broadcast_chat_cost
+  end
+
+  def broadcast_chat_cost_initial
+    broadcast_replace_to("chat_#{id}", target: "chat_cost_#{id}",
+      renderable: ChatCostComponent.new(chat: self))
   end
 
   private
