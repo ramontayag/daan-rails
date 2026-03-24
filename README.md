@@ -29,6 +29,22 @@ Things you may want to cover:
 
 Tools (`lib/daan/core/*.rb`) need unit tests — they contain logic. Agent `.md` files are just configuration (YAML frontmatter + system prompt) and don't need their own tests. Writing to the real `lib/daan/core/agents/` directory in tests causes race conditions with parallel test runs.
 
+## Scopes use Arel, not SQL strings
+
+Scopes must use Arel node methods rather than raw SQL strings. This keeps them composable and mergeable, and avoids SQL injection risk.
+
+```ruby
+scope :since_id,            ->(id)      { where(arel_table[:id].gt(id)) }
+scope :where_created_at_gt, ->(time)    { where(arel_table[:created_at].gt(time)) }
+scope :where_content_like,  ->(pattern) { where(arel_table[:content].matches(pattern)) }
+```
+
+Not:
+
+```ruby
+scope :since_id, ->(id) { where("id > ?", id) }
+```
+
 ## Seam injection
 
 Constructor parameters that have smart defaults derived from other passed objects, but can be overridden by callers. The component (or service) resolves what it needs from available context; tests and Lookbook can inject substitutes without changing production call sites.

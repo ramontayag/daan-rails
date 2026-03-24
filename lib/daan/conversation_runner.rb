@@ -193,8 +193,42 @@ module Daan
       Rails.logger.info("#{tag} finished status=#{chat.task_status} step=#{chat.step_count}/#{agent.max_steps}")
       chat.broadcast_agent_status
       chat.broadcast_chat_cost
+      notify_parent_of_completion(chat)
     end
     private_class_method :finish_conversation
+
+    def self.notify_parent_of_completion(chat)
+      return unless chat.parent_chat.present?
+
+      agent = Daan::AgentRegistry.find(chat.agent_name)
+
+      unless agent_reported_back?(chat)
+        last_content = chat.messages.where(role: "assistant").last.content.truncate(500)
+        Daan::CreateMessage.call(
+          chat.parent_chat,
+          role: "user",
+          content: "[System] #{agent.display_name} completed their task without calling report_back. " \
+                   "Their last message: #{last_content}",
+          visible: false
+        )
+      end
+
+      LlmJob.perform_later(chat.parent_chat)
+    end
+    private_class_method :notify_parent_of_completion
+
+    def self.agent_reported_back?(chat)
+      agent = Daan::AgentRegistry.find(chat.agent_name)
+      last_task_message = chat.messages.where(role: "user").last
+      return false unless last_task_message
+
+      chat.parent_chat.messages
+          .where(role: "user")
+          .where_created_at_gt(last_task_message.created_at)
+          .where_content_like("#{agent.display_name}: %")
+          .exists?
+    end
+    private_class_method :agent_reported_back?
 
     def self.warn_approaching_step_limit(chat, remaining)
       return unless remaining == 3 && chat.parent_chat.present?
@@ -227,6 +261,8 @@ module Daan
                  "#{reason} Their last message: #{last_content}",
         visible: false
       )
+
+      LlmJob.perform_later(chat.parent_chat)
     end
     private_class_method :notify_parent_of_termination
 

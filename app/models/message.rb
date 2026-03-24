@@ -9,6 +9,8 @@ class Message < ApplicationRecord
   scope :active, -> { where(compacted_message_id: nil) }
   scope :assistant, -> { where(role: "assistant") }
   scope :since_id, ->(id) { where(Message.arel_table[:id].gt(id)) }
+  scope :where_created_at_gt, ->(time) { where(Message.arel_table[:created_at].gt(time)) }
+  scope :where_content_like, ->(pattern) { where(Message.arel_table[:content].matches(pattern)) }
 
   def summary? = compacted_messages_count > 0
 end
