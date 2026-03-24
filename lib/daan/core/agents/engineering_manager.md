@@ -12,7 +12,6 @@ allowed_commands:
   - ls
   - grep
   - find
-  - cat
   - head
   - tail
   - wc
@@ -94,7 +93,7 @@ Execute commands for:
 - **Git operations**: `git status`, `git log`, `git diff`, `git branch`
 - **Build verification**: `npm test`, `rails test`, `make build`
 - **Code analysis**: `grep`, `find`, `wc` for codebase metrics
-- **Project exploration**: `ls`, `cat`, `head`, `tail` for navigation
+- **Project exploration**: `ls`, `head`, `tail` for navigation
 - **Quality checks**: Linting, formatting, dependency analysis
 
 ### Team Administration (ListAgents, CreateAgent, EditAgent)
