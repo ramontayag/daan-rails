@@ -36,21 +36,27 @@ class ChatBroadcastTest < ActiveSupport::TestCase
   end
 
   test "ConversationRunner broadcasts after start! and after finish!" do
-    assert_broadcasts("agents", 2) do
-      @chat.define_singleton_method(:with_model) { |_| self }
-      @chat.define_singleton_method(:with_instructions) { |_| self }
-      step_response = OpenStruct.new("tool_call?" => false, role: "assistant", tool_calls: nil)
-      @chat.define_singleton_method(:step) { step_response }
-      Daan::ConversationRunner.call(@chat)
+    step_response = OpenStruct.new("tool_call?" => false, role: "assistant", tool_calls: nil)
+    @chat.stub(:with_model, @chat) do
+      @chat.stub(:with_instructions, @chat) do
+        @chat.stub(:step, step_response) do
+          assert_broadcasts("agents", 2) do
+            Daan::ConversationRunner.call(@chat)
+          end
+        end
+      end
     end
   end
 
   test "ConversationRunner broadcasts after start! and after fail! when step raises" do
-    assert_broadcasts("agents", 2) do
-      @chat.define_singleton_method(:with_model) { |_| self }
-      @chat.define_singleton_method(:with_instructions) { |_| self }
-      @chat.define_singleton_method(:step) { raise "LLM error" }
-      assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
+    @chat.stub(:with_model, @chat) do
+      @chat.stub(:with_instructions, @chat) do
+        @chat.stub(:step, ->(*) { raise "LLM error" }) do
+          assert_broadcasts("agents", 2) do
+            assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
+          end
+        end
+      end
     end
   end
 end
