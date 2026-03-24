@@ -72,19 +72,13 @@ class Daan::CompactConversationTest < ActiveSupport::TestCase
       OpenStruct.new(content: "Summary.")
     end
 
-    sc = RubyLLM.singleton_class
-    sc.alias_method(:__orig_chat_nil__, :chat)
-    sc.define_method(:chat) { fake_chat }
-    begin
+    RubyLLM.stub(:chat, fake_chat) do
       Daan::CompactConversation.call(@chat, @agent)
       assert captured_ask_arg, "ask should have been called"
       # message 0 has nil content — it must not appear in the prompt
       assert_not_includes captured_ask_arg, "message 0"
       # messages with real content are present
       assert_includes captured_ask_arg, "message 1"
-    ensure
-      sc.alias_method(:chat, :__orig_chat_nil__)
-      sc.remove_method(:__orig_chat_nil__)
     end
   end
 
@@ -96,13 +90,6 @@ class Daan::CompactConversationTest < ActiveSupport::TestCase
     fake_chat.define_singleton_method(:with_instructions) { |_| fake_chat }
     fake_chat.define_singleton_method(:with_tools) { |*_| fake_chat }
     fake_chat.define_singleton_method(:ask) { |_| OpenStruct.new(content: summary_text) }
-
-    sc = RubyLLM.singleton_class
-    sc.alias_method(:__orig_chat__, :chat)
-    sc.define_method(:chat) { fake_chat }
-    yield
-  ensure
-    sc.alias_method(:chat, :__orig_chat__)
-    sc.remove_method(:__orig_chat__)
+    RubyLLM.stub(:chat, fake_chat) { yield }
   end
 end

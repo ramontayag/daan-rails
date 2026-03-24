@@ -123,12 +123,9 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
       [ "def456\n", "", fake_status(true) ],
       [ "abc123\n", "", fake_status(true) ]
     ]
-    Open3.singleton_class.define_method(:capture3) do |*|
-      responses[call_count].tap { call_count += 1 }
+    Open3.stub(:capture3, ->(*) { responses[call_count].tap { call_count += 1 } }) do
+      assert @tool.send(:branch_already_merged?, "merged", @app_root)
     end
-    assert @tool.send(:branch_already_merged?, "merged", @app_root)
-  ensure
-    Open3.singleton_class.remove_method(:capture3)
   end
 
   test "branch_already_merged? returns false when branch commit differs from merge-base" do
@@ -138,12 +135,9 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
       [ "def456\n", "", fake_status(true) ],
       [ "def456\n", "", fake_status(true) ]
     ]
-    Open3.singleton_class.define_method(:capture3) do |*|
-      responses[call_count].tap { call_count += 1 }
+    Open3.stub(:capture3, ->(*) { responses[call_count].tap { call_count += 1 } }) do
+      refute @tool.send(:branch_already_merged?, "unmerged", @app_root)
     end
-    refute @tool.send(:branch_already_merged?, "unmerged", @app_root)
-  ensure
-    Open3.singleton_class.remove_method(:capture3)
   end
 
   private
@@ -151,21 +145,16 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
   def with_dev_tool
     workspace = Struct.new(:root).new(Pathname("/tmp/fake-workspace"))
     tool = Daan::Core::PromoteBranch.new(workspace: workspace)
-    tool.define_singleton_method(:development?) { true }
-    yield tool
+    tool.stub(:development?, true) { yield tool }
   end
 
   def with_prod_tool
     tool = Daan::Core::PromoteBranch.new
-    tool.define_singleton_method(:development?) { false }
-    yield tool
+    tool.stub(:development?, false) { yield tool }
   end
 
   def with_open3(response)
-    Open3.singleton_class.define_method(:capture3) { |*| response }
-    yield
-  ensure
-    Open3.singleton_class.remove_method(:capture3)
+    Open3.stub(:capture3, response) { yield }
   end
 
   def fake_status(success)
@@ -176,12 +165,6 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
   end
 
   def with_stub_agent_loader_sync
-    sc = Daan::AgentLoader.singleton_class
-    sc.alias_method(:__orig_sync__, :sync!)
-    sc.define_method(:sync!) { |*| nil }
-    yield
-  ensure
-    sc.alias_method(:sync!, :__orig_sync__)
-    sc.remove_method(:__orig_sync__)
+    Daan::AgentLoader.stub(:sync!, nil) { yield }
   end
 end
