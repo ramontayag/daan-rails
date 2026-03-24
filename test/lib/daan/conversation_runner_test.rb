@@ -90,13 +90,10 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
                            context_user_message_id: last_user_message.id)
 
     step_called = false
-    @chat.define_singleton_method(:step) { |*| step_called = true }
-
-    Daan::ConversationRunner.call(@chat)
-
+    @chat.stub(:step, ->(*) { step_called = true }) do
+      Daan::ConversationRunner.call(@chat)
+    end
     assert_not step_called, "expected step NOT to be called when response already recorded"
-  ensure
-    @chat.singleton_class.remove_method(:step) if @chat.singleton_class.method_defined?(:step, false)
   end
 
   test "does not change chat state when assistant response covers the last user message" do
@@ -106,13 +103,11 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     @chat.messages.create!(role: "assistant", content: "Already handled",
                            context_user_message_id: last_user_message.id)
 
-    @chat.define_singleton_method(:step) { |*| OpenStruct.new("tool_call?" => false, role: "assistant") }
-
-    Daan::ConversationRunner.call(@chat)
-
+    step_response = OpenStruct.new("tool_call?" => false, role: "assistant")
+    @chat.stub(:step, step_response) do
+      Daan::ConversationRunner.call(@chat)
+    end
     assert @chat.reload.completed?, "expected chat to remain completed"
-  ensure
-    @chat.singleton_class.remove_method(:step) if @chat.singleton_class.method_defined?(:step, false)
   end
 
   test "calls step when assistant context_user_message_id predates a newer user message (race condition)" do
@@ -235,24 +230,21 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     @chat.update!(parent_chat: parent_chat)
 
     # Step fails without creating any assistant messages — triggers failed path
-    @chat.define_singleton_method(:step) { |*| raise "LLM down" }
-    assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
-
+    @chat.stub(:step, ->(*) { raise "LLM down" }) do
+      assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
+    end
     notification = parent_chat.messages.find_by("content LIKE ?", "%thread is now failed%")
     assert notification, "expected parent notification on failure"
     assert_includes notification.content, "No response recorded."
-  ensure
-    @chat.singleton_class.remove_method(:step) if @chat.singleton_class.method_defined?(:step, false)
   end
 
-  def with_stub_tool_step(&block)
-    @chat.define_singleton_method(:step) do |*|
-      messages.create!(role: "assistant", content: "Hello human")
+  def with_stub_tool_step
+    chat = @chat
+    step_callable = ->(*) {
+      chat.messages.create!(role: "assistant", content: "Hello human")
       OpenStruct.new("tool_call?" => true, role: "assistant", tool_calls: {})
-    end
-    block.call
-  ensure
-    @chat.singleton_class.remove_method(:step) if @chat.singleton_class.method_defined?(:step, false)
+    }
+    @chat.stub(:step, step_callable) { yield }
   end
 
   # Simulate n completed tool-call steps. Each step produces an assistant message
@@ -267,18 +259,19 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     end
   end
 
-  def with_stub_step(raise_error: nil, &block)
+  def with_stub_step(raise_error: nil)
     called = false
+    chat = @chat
     step_response = OpenStruct.new("tool_call?" => false, role: "assistant", tool_calls: nil)
-    @chat.define_singleton_method(:step) do |*|
+    step_callable = ->(*) {
       called = true
       raise raise_error if raise_error
-      messages.create!(role: "assistant", content: "Hello human")
+      chat.messages.create!(role: "assistant", content: "Hello human")
       step_response
+    }
+    @chat.stub(:step, step_callable) do
+      yield
+      assert called, "expected step to be called" unless raise_error
     end
-    block.call
-    assert called, "expected step to be called" unless raise_error
-  ensure
-    @chat.singleton_class.remove_method(:step) if @chat.singleton_class.method_defined?(:step, false)
   end
 end
