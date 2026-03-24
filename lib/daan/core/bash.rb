@@ -66,12 +66,9 @@ module Daan
         stdin_io.close
 
         drain = ->(io, buf) do
-          loop do
-            break unless IO.select([ io ], nil, nil, 0.05)
-            buf << io.read_nonblock(65536)
-          end
-        rescue EOFError, IOError, Errno::EBADF
-          # pipe closed or killed — we're done
+          buf << io.read
+        rescue IOError, Errno::EBADF
+          # pipe closed by timeout handler — we're done
         end
 
         out_thread = Thread.new { drain.call(stdout_io, stdout_str) }
