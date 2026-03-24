@@ -59,27 +59,44 @@ module Daan
         env = { "GIT_TERMINAL_PROMPT" => "0" }
         stdout_str = +""; stderr_str = +""
 
-        Open3.popen3(env, *cmd, chdir: dir.to_s) do |stdin, stdout, stderr, wait_thr|
-          stdin.close
-          out_thread = Thread.new { stdout_str = stdout.read rescue "" }
-          err_thread = Thread.new { stderr_str = stderr.read rescue "" }
+        # Non-block form so we control cleanup; the block form's ensure calls
+        # wait_thr.join unconditionally, which would re-introduce the hang.
+        stdin_io, stdout_io, stderr_io, wait_thr =
+          Open3.popen3(env, *cmd, chdir: dir.to_s, pgroup: true)
+        stdin_io.close
 
-          begin
-            out_thread.join; err_thread.join
-            wait_thr.join
-          rescue Timeout::Error
-            Process.kill("KILL", wait_thr.pid) rescue nil
-            wait_thr.join
-            out_thread.join; err_thread.join
-            raise "#{cmd.join(' ')} timed out"
+        drain = ->(io, buf) do
+          loop do
+            break unless IO.select([ io ], nil, nil, 0.05)
+            buf << io.read_nonblock(65536)
           end
+        rescue EOFError, IOError, Errno::EBADF
+          # pipe closed or killed — we're done
+        end
 
-          status = wait_thr.value
+        out_thread = Thread.new { drain.call(stdout_io, stdout_str) }
+        err_thread = Thread.new { drain.call(stderr_io, stderr_str) }
 
-          unless status.success?
-            output = [ stdout_str, stderr_str ].reject(&:empty?).join("\n")
-            raise "#{cmd.join(' ')} failed (exit #{status.exitstatus}): #{output}"
-          end
+        begin
+          out_thread.join; err_thread.join
+          wait_thr.join
+        rescue Timeout::Error
+          pid = wait_thr.pid
+          Process.kill("KILL", pid) rescue nil   # kill the direct child
+          Process.kill("KILL", -pid) rescue nil  # kill its process group
+          stdout_io.close rescue nil             # unblock drain threads via IOError
+          stderr_io.close rescue nil
+          raise "#{cmd.join(' ')} timed out"
+        ensure
+          stdout_io.close rescue nil
+          stderr_io.close rescue nil
+        end
+
+        status = wait_thr.value
+
+        unless status.success?
+          output = [ stdout_str, stderr_str ].reject(&:empty?).join("\n")
+          raise "#{cmd.join(' ')} failed (exit #{status.exitstatus}): #{output}"
         end
 
         combined = [ stdout_str, stderr_str ].reject(&:empty?).join("\n")
