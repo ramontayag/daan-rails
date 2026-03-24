@@ -1,7 +1,13 @@
 <div data-testid="thread-panel" class="flex flex-col h-full">
   <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200">
-    <div class="md:hidden">
-      <%= link_to "← Back", chat_agent_path(chat.agent), class: "text-sm text-blue-600" %>
+    <div class="flex items-center gap-2 md:hidden">
+      <button data-action="click->sidebar#toggle"
+              class="p-1 rounded hover:bg-gray-100 text-gray-500">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+      <%= link_to "← Back", chat_agent_path(chat.agent), class: "text-sm text-blue-600", data: { turbo_frame: "_top" } %>
     </div>
     <div class="flex items-center gap-3 ml-auto">
       <%= render ChatCostComponent.new(chat: chat) %>
