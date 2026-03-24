@@ -61,28 +61,17 @@ class Daan::Chats::BuildSystemPromptTest < ActiveSupport::TestCase
   test "memory retrieval failure does not crash and returns base prompt" do
     storage_stub = Object.new
     storage_stub.define_singleton_method(:semantic_index) { raise "embed error" }
-    msc = Daan::Memory.singleton_class
-    msc.alias_method(:__orig_storage__, :storage)
-    msc.define_method(:storage) { storage_stub }
 
-    @chat.messages.create!(role: "user", content: "hello")
-    prompt = Daan::Chats::BuildSystemPrompt.call(@chat, @agent)
-
-    assert_includes prompt, "You are a developer."
-  ensure
-    msc.alias_method(:storage, :__orig_storage__)
-    msc.remove_method(:__orig_storage__)
+    Daan::Memory.stub(:storage, storage_stub) do
+      @chat.messages.create!(role: "user", content: "hello")
+      prompt = Daan::Chats::BuildSystemPrompt.call(@chat, @agent)
+      assert_includes prompt, "You are a developer."
+    end
   end
 
   private
 
   def with_stub_memories(results)
-    sc = Daan::Chats::BuildSystemPrompt.singleton_class
-    sc.alias_method(:__orig_retrieve_memories__, :retrieve_memories)
-    sc.define_method(:retrieve_memories) { |_chat| results }
-    yield
-  ensure
-    sc.alias_method(:retrieve_memories, :__orig_retrieve_memories__)
-    sc.remove_method(:__orig_retrieve_memories__)
+    Daan::Chats::BuildSystemPrompt.stub(:retrieve_memories, results) { yield }
   end
 end
