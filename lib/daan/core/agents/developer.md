@@ -11,7 +11,6 @@ allowed_commands:
   - ls
   - grep
   - find
-  - cat
   - head
   - tail
   - wc
