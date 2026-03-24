@@ -182,6 +182,64 @@ class ChatTest < ActiveSupport::TestCase
     assert_in_delta expected_cost, chat.estimated_cost_usd, 0.000001
   end
 
+  test "total_cost_usd returns own cost when no sub_chats" do
+    model = Model.create!(
+      name: "Test Model", model_id: "test-model", provider: "test",
+      pricing: { "data" => { "text_tokens" => { "standard" => { "values" => {
+        "input_per_million" => 1.0, "output_per_million" => 2.0, "cached_input_per_million" => 0.1
+      } } } } }
+    )
+    chat = chats(:hello_cos)
+    chat.update!(model: model)
+    chat.messages.create!(role: "user", content: "Hello", input_tokens: 1_000_000)
+
+    assert_in_delta 1.0, chat.total_cost_usd, 0.000001
+  end
+
+  test "total_cost_usd includes direct sub_chat costs" do
+    model = Model.create!(
+      name: "Test Model", model_id: "test-model", provider: "test",
+      pricing: { "data" => { "text_tokens" => { "standard" => { "values" => {
+        "input_per_million" => 1.0, "output_per_million" => 0.0, "cached_input_per_million" => 0.0
+      } } } } }
+    )
+    parent = Chat.create!(agent_name: "chief_of_staff", model: model)
+    child  = Chat.create!(agent_name: "chief_of_staff", model: model, parent_chat: parent)
+
+    parent.messages.create!(role: "user", content: "a", input_tokens: 1_000_000)
+    child.messages.create!(role: "user", content: "b", input_tokens: 2_000_000)
+
+    assert_in_delta 3.0, parent.total_cost_usd, 0.000001
+  end
+
+  test "total_cost_usd is recursive through grandchildren" do
+    model = Model.create!(
+      name: "Test Model", model_id: "test-model", provider: "test",
+      pricing: { "data" => { "text_tokens" => { "standard" => { "values" => {
+        "input_per_million" => 1.0, "output_per_million" => 0.0, "cached_input_per_million" => 0.0
+      } } } } }
+    )
+    grandparent = Chat.create!(agent_name: "chief_of_staff", model: model)
+    parent      = Chat.create!(agent_name: "chief_of_staff", model: model, parent_chat: grandparent)
+    child       = Chat.create!(agent_name: "chief_of_staff", model: model, parent_chat: parent)
+
+    grandparent.messages.create!(role: "user", content: "a", input_tokens: 1_000_000)
+    parent.messages.create!(role: "user", content: "b", input_tokens: 1_000_000)
+    child.messages.create!(role: "user", content: "c", input_tokens: 1_000_000)
+
+    assert_in_delta 3.0, grandparent.total_cost_usd, 0.000001
+  end
+
+  test "total_tokens_including_sub_chats includes own and all descendant tokens" do
+    parent = Chat.create!(agent_name: "chief_of_staff")
+    child  = Chat.create!(agent_name: "chief_of_staff", parent_chat: parent)
+
+    parent.messages.create!(role: "user", content: "a", input_tokens: 100, output_tokens: 0, thinking_tokens: 0)
+    child.messages.create!(role: "user", content: "b", input_tokens: 200, output_tokens: 0, thinking_tokens: 0)
+
+    assert_equal 300, parent.total_tokens_including_sub_chats
+  end
+
   test "formatted_cost displays correctly for different amounts" do
     model = Model.create!(
       name: "Test Model",

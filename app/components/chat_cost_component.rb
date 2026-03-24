@@ -7,4 +7,12 @@ class ChatCostComponent < ViewComponent::Base
   private
 
   attr_reader :chat
+
+  def sub_chats
+    @sub_chats ||= chat.sub_chats.to_a
+  end
+
+  def has_sub_chats?
+    sub_chats.any?
+  end
 end

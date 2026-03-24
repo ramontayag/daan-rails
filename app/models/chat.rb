@@ -115,6 +115,25 @@ class Chat < ApplicationRecord
     end
   end
 
+  def total_cost_usd
+    estimated_cost_usd + sub_chats.sum(&:total_cost_usd)
+  end
+
+  def formatted_total_cost
+    cost = total_cost_usd
+    if cost >= 1.0
+      "$%.2f" % cost
+    elsif cost >= 0.01
+      "$%.3f" % cost
+    else
+      "$%.4f" % cost
+    end
+  end
+
+  def total_tokens_including_sub_chats
+    total_tokens + sub_chats.sum(&:total_tokens_including_sub_chats)
+  end
+
   # Called explicitly by ConversationRunner after each AASM transition — not a callback.
   # See CLAUDE.md: broadcasts that render components belong in the caller.
   def broadcast_agent_status
@@ -131,6 +150,7 @@ class Chat < ApplicationRecord
       target: "chat_cost_#{id}",
       renderable: ChatCostComponent.new(chat: self)
     )
+    parent_chat&.broadcast_chat_cost
   end
 
   private
