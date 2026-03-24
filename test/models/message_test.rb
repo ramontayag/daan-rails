@@ -5,6 +5,16 @@ class MessageTest < ActiveSupport::TestCase
     @chat = chats(:hello_cos)
   end
 
+  test "since_id excludes messages at or before the given id" do
+    older = @chat.messages.create!(role: "user", content: "older")
+    newer = @chat.messages.create!(role: "user", content: "newer")
+
+    results = @chat.messages.since_id(older.id)
+
+    assert_includes results, newer
+    assert_not_includes results, older
+  end
+
   test "where_created_at_gt excludes messages at or before the cutoff" do
     old = @chat.messages.create!(role: "user", content: "old message")
     travel 1.second
