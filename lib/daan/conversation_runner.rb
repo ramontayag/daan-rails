@@ -5,6 +5,14 @@ module Daan
       tag = "[ConversationRunner] chat_id=#{chat.id} agent=#{chat.agent_name}"
       agent = chat.agent
 
+      chat.reload
+      if already_responded?(chat)
+        Rails.logger.info("#{tag} skipping — last user message already has a response")
+        return
+      end
+
+      context_user_message_id = chat.messages.where(role: "user").maximum(:id)
+
       start_conversation(chat)
       prepare_workspace(agent)
       enqueue_compaction_if_needed(chat)
@@ -12,7 +20,7 @@ module Daan
 
         Rails.logger.info("#{tag} calling LLM model=#{chat.model_id}")
       llm_started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      response = run_step(chat)
+      response = run_step(chat, context_user_message_id)
       llm_elapsed = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - llm_started_at).round(1)
       Rails.logger.info("#{tag} LLM step complete elapsed=#{llm_elapsed}s tool_call=#{response.tool_call?}")
 
@@ -21,7 +29,6 @@ module Daan
 
     def self.start_conversation(chat)
       tag = "[ConversationRunner] chat_id=#{chat.id}"
-      chat.reload
       # Anthropic rejects empty text content blocks. Empty assistant messages
       # with no tool calls are streaming artifacts (created at start of stream,
       # content never written because the model only used tools or an error
@@ -117,8 +124,10 @@ module Daan
     end
     private_class_method :retrieve_memories
 
-    def self.run_step(chat)
+    def self.run_step(chat, context_user_message_id)
       response = chat.step
+      chat.messages.where(role: "assistant").order(:id).last
+          &.update_columns(context_user_message_id: context_user_message_id)
       broadcast_step(chat, response)
       chat.broadcast_chat_cost
       response
@@ -265,6 +274,19 @@ module Daan
       LlmJob.perform_later(chat.parent_chat)
     end
     private_class_method :notify_parent_of_termination
+
+    def self.already_responded?(chat)
+      last_user_message      = chat.messages.where(role: "user").last
+      last_assistant_message = chat.messages.where(role: "assistant").last
+      return false unless last_user_message && last_assistant_message
+      return false if last_assistant_message.context_user_message_id.nil?
+      return false unless last_assistant_message.context_user_message_id >= last_user_message.id
+
+      # If there's a tool result after the last assistant message, the conversation
+      # is mid-flight (tool was called, result received, next step pending) — not done.
+      !chat.messages.where(role: "tool").since_id(last_assistant_message.id).exists?
+    end
+    private_class_method :already_responded?
 
     def self.broadcast_typing(chat, typing)
       Turbo::StreamsChannel.broadcast_replace_to(

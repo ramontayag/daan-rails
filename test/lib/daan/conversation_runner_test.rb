@@ -29,8 +29,8 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   end
 
   test "transitions to blocked when max_steps reached and agent wants to continue" do
-    # Create max_steps - 1 prior assistant messages so this step hits the limit
-    (@agent.max_steps - 1).times { @chat.messages.create!(role: "assistant", content: "prior step") }
+    # Simulate max_steps - 1 prior tool-call steps (each produces assistant + tool result)
+    prior_steps(@agent.max_steps - 1)
     # Agent returns a tool call (wants to continue), but limit is reached
     with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
     assert @chat.reload.blocked?
@@ -38,7 +38,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
 
   test "completes normally when agent finishes on step max_steps" do
     # If the agent produces a final answer exactly at the limit, it should complete not block
-    (@agent.max_steps - 1).times { @chat.messages.create!(role: "assistant", content: "prior step") }
+    prior_steps(@agent.max_steps - 1)
     with_stub_step { Daan::ConversationRunner.call(@chat) }
     assert @chat.reload.completed?
   end
@@ -158,6 +158,68 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     msc.remove_method(:__orig_storage__)
   end
 
+  # -- Already-responded guard tests --
+
+  test "does not call step when assistant response covers the last user message" do
+    last_user_message = @chat.messages.where(role: "user").last
+    @chat.messages.create!(role: "assistant", content: "Already handled",
+                           context_user_message_id: last_user_message.id)
+
+    step_called = false
+    @chat.define_singleton_method(:step) { |*| step_called = true }
+
+    Daan::ConversationRunner.call(@chat)
+
+    assert_not step_called, "expected step NOT to be called when response already recorded"
+  ensure
+    @chat.singleton_class.remove_method(:step) if @chat.singleton_class.method_defined?(:step, false)
+  end
+
+  test "does not change chat state when assistant response covers the last user message" do
+    @chat.start!
+    @chat.finish!
+    last_user_message = @chat.messages.where(role: "user").last
+    @chat.messages.create!(role: "assistant", content: "Already handled",
+                           context_user_message_id: last_user_message.id)
+
+    @chat.define_singleton_method(:step) { |*| OpenStruct.new("tool_call?" => false, role: "assistant") }
+
+    Daan::ConversationRunner.call(@chat)
+
+    assert @chat.reload.completed?, "expected chat to remain completed"
+  ensure
+    @chat.singleton_class.remove_method(:step) if @chat.singleton_class.method_defined?(:step, false)
+  end
+
+  test "calls step when assistant context_user_message_id predates a newer user message (race condition)" do
+    # Simulates: Job1 ran and wrote a response with context_user_message_id pointing at
+    # notification1, but notification2 arrived *during* that run (higher id). Job2 must
+    # not be skipped — it needs to process notification2.
+    notification1 = @chat.messages.where(role: "user").last
+    @chat.messages.create!(role: "assistant", content: "Handled notification 1",
+                           context_user_message_id: notification1.id)
+    @chat.messages.create!(role: "user", content: "[System] notification 2")
+
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
+
+    assert @chat.reload.completed?
+  end
+
+  test "calls step normally when last user message has no assistant response" do
+    # Default setup: chat has only a user message — normal flow should proceed
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
+    assert @chat.reload.completed?
+  end
+
+  test "sets context_user_message_id on the assistant message it creates" do
+    last_user_message = @chat.messages.where(role: "user").last
+
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
+
+    assistant_message = @chat.messages.where(role: "assistant").last
+    assert_equal last_user_message.id, assistant_message.context_user_message_id
+  end
+
   # -- Turn limit warning & parent notification tests --
 
   test "injects warning when 3 steps remain and agent wants to continue" do
@@ -170,8 +232,8 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     @chat.update!(parent_chat: parent_chat)
 
     @agent.max_steps = 10
-    # Create 6 prior assistant messages; after this step step_count = 7, remaining = 3
-    6.times { @chat.messages.create!(role: "assistant", content: "prior step") }
+    # Simulate 6 prior tool-call steps; after this step step_count = 7, remaining = 3
+    prior_steps(6)
 
     # Agent returns a tool call (wants to continue) — triggers warning path
     with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
@@ -184,7 +246,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
 
   test "does not inject warning for top-level chat (no parent)" do
     @agent.max_steps = 10
-    6.times { @chat.messages.create!(role: "assistant", content: "prior step") }
+    prior_steps(6)
 
     with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
 
@@ -200,7 +262,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     Daan::AgentRegistry.register(parent_agent)
     parent_chat = Chat.create!(agent_name: "parent_agent")
     @chat.update!(parent_chat: parent_chat)
-    (@agent.max_steps - 1).times { @chat.messages.create!(role: "assistant", content: "prior step") }
+    prior_steps(@agent.max_steps - 1)
 
     with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
 
@@ -234,7 +296,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   end
 
   test "does not notify parent when top-level chat goes blocked" do
-    (@agent.max_steps - 1).times { @chat.messages.create!(role: "assistant", content: "prior step") }
+    prior_steps(@agent.max_steps - 1)
 
     with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
 
@@ -309,6 +371,18 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     block.call
   ensure
     @chat.singleton_class.remove_method(:step) if @chat.singleton_class.method_defined?(:step, false)
+  end
+
+  # Simulate n completed tool-call steps. Each step produces an assistant message
+  # (the tool call) followed by a tool result — matching real conversation state.
+  # After n steps the last message is a tool result, so already_responded? stays false.
+  def prior_steps(n)
+    n.times do
+      assistant_msg = @chat.messages.create!(role: "assistant", content: "prior step")
+      tool_call = ToolCall.create!(message: assistant_msg, name: "some_tool",
+                                   tool_call_id: SecureRandom.hex(8))
+      @chat.messages.create!(role: "tool", tool_call_id: tool_call.id, content: "result")
+    end
   end
 
   def with_stub_step(raise_error: nil, &block)
