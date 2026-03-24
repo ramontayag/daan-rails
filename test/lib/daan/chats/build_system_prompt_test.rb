@@ -1,0 +1,88 @@
+# test/lib/daan/chats/build_system_prompt_test.rb
+require "test_helper"
+
+class Daan::Chats::BuildSystemPromptTest < ActiveSupport::TestCase
+  setup do
+    Daan::AgentRegistry.register(
+      Daan::Agent.new(
+        name: "developer", display_name: "Developer",
+        model_name: "claude-sonnet-4-20250514",
+        system_prompt: "You are a developer.", max_steps: 10
+      )
+    )
+    @chat = Chat.create!(agent_name: "developer")
+    @agent = @chat.agent
+  end
+
+  # -- Steps --
+
+  test "appends steps to system prompt when steps exist" do
+    ChatStep.create!(chat: @chat, title: "Clone repo", position: 1, status: "completed")
+    ChatStep.create!(chat: @chat, title: "Write tests", position: 2, status: "in_progress")
+    ChatStep.create!(chat: @chat, title: "Implement", position: 3)
+
+    prompt = with_stub_memories([]) { Daan::Chats::BuildSystemPrompt.call(@chat, @agent) }
+
+    assert_includes prompt, "You are a developer."
+    assert_includes prompt, "## Your Current Steps"
+    assert_includes prompt, "1. [x] Clone repo"
+    assert_includes prompt, "2. [in progress] Write tests"
+    assert_includes prompt, "3. [ ] Implement"
+  end
+
+  test "does not append steps section when no steps exist" do
+    prompt = with_stub_memories([]) { Daan::Chats::BuildSystemPrompt.call(@chat, @agent) }
+
+    assert_includes prompt, "You are a developer."
+    assert_not_includes prompt, "Your Current Steps"
+  end
+
+  # -- Memories --
+
+  test "injects relevant memories into system prompt when memories exist" do
+    fake_results = [
+      { file_path: "fact/rails/db.md", title: "Rails uses SQLite", score: 0.9,
+        metadata: { "type" => "fact", "confidence" => "high" } }
+    ]
+
+    prompt = with_stub_memories(fake_results) { Daan::Chats::BuildSystemPrompt.call(@chat, @agent) }
+
+    assert_includes prompt, "Rails uses SQLite"
+    assert_includes prompt, "## Relevant memories"
+    assert_includes prompt, "fact/rails/db.md"
+  end
+
+  test "does not alter system prompt when no memories exist" do
+    prompt = with_stub_memories([]) { Daan::Chats::BuildSystemPrompt.call(@chat, @agent) }
+
+    assert_equal "You are a developer.", prompt
+  end
+
+  test "memory retrieval failure does not crash and returns base prompt" do
+    storage_stub = Object.new
+    storage_stub.define_singleton_method(:semantic_index) { raise "embed error" }
+    msc = Daan::Memory.singleton_class
+    msc.alias_method(:__orig_storage__, :storage)
+    msc.define_method(:storage) { storage_stub }
+
+    @chat.messages.create!(role: "user", content: "hello")
+    prompt = Daan::Chats::BuildSystemPrompt.call(@chat, @agent)
+
+    assert_includes prompt, "You are a developer."
+  ensure
+    msc.alias_method(:storage, :__orig_storage__)
+    msc.remove_method(:__orig_storage__)
+  end
+
+  private
+
+  def with_stub_memories(results)
+    sc = Daan::Chats::BuildSystemPrompt.singleton_class
+    sc.alias_method(:__orig_retrieve_memories__, :retrieve_memories)
+    sc.define_method(:retrieve_memories) { |_chat| results }
+    yield
+  ensure
+    sc.alias_method(:retrieve_memories, :__orig_retrieve_memories__)
+    sc.remove_method(:__orig_retrieve_memories__)
+  end
+end

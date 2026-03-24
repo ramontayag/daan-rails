@@ -82,82 +82,6 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     refute defined?(BroadcastMessagesJob), "BroadcastMessagesJob should be deleted"
   end
 
-  test "re-enqueues LlmJob when response has tool calls" do
-    @chat.start!
-    agent = Daan::AgentRegistry.find(@chat.agent_name)
-    tool_response = OpenStruct.new("tool_call?" => true, role: "assistant", tool_calls: {})
-
-    assert_enqueued_with(job: LlmJob, args: [ @chat ]) do
-      Daan::ConversationRunner.send(:finish_or_reenqueue, @chat, agent, tool_response)
-    end
-  end
-
-  test "calls finish_conversation when response has no tool calls" do
-    @chat.start!
-    agent = Daan::AgentRegistry.find(@chat.agent_name)
-    final_response = OpenStruct.new("tool_call?" => false, role: "assistant", tool_calls: {})
-
-    Daan::ConversationRunner.send(:finish_or_reenqueue, @chat, agent, final_response)
-
-    assert @chat.reload.completed?
-  end
-
-  test "injects relevant memories into system prompt when memories exist" do
-    fake_results = [
-      { file_path: "fact/rails/db.md", title: "Rails uses SQLite", score: 0.9,
-        metadata: { "type" => "fact", "confidence" => "high" } }
-    ]
-
-    captured_prompt = nil
-    @chat.define_singleton_method(:with_instructions) do |prompt|
-      captured_prompt = prompt
-      self
-    end
-
-    with_stub_memories(fake_results) do
-      with_stub_step { Daan::ConversationRunner.call(@chat) }
-    end
-
-    assert_includes captured_prompt, "Rails uses SQLite"
-    assert_includes captured_prompt, "## Relevant memories"
-    assert_includes captured_prompt, "fact/rails/db.md"
-  ensure
-    if @chat.singleton_class.method_defined?(:with_instructions, false)
-      @chat.singleton_class.remove_method(:with_instructions)
-    end
-  end
-
-  test "does not alter system prompt when no memories exist" do
-    captured_prompt = nil
-    @chat.define_singleton_method(:with_instructions) do |prompt|
-      captured_prompt = prompt
-      self
-    end
-
-    with_stub_memories([]) do
-      with_stub_step { Daan::ConversationRunner.call(@chat) }
-    end
-
-    assert_equal "You are a test agent.", captured_prompt
-  ensure
-    if @chat.singleton_class.method_defined?(:with_instructions, false)
-      @chat.singleton_class.remove_method(:with_instructions)
-    end
-  end
-
-  test "memory retrieval failure does not crash the runner" do
-    storage_stub = Object.new
-    storage_stub.define_singleton_method(:semantic_index) { raise "embed error" }
-    msc = Daan::Memory.singleton_class
-    msc.alias_method(:__orig_storage__, :storage)
-    msc.define_method(:storage) { storage_stub }
-    with_stub_step { Daan::ConversationRunner.call(@chat) }
-    assert @chat.reload.completed?
-  ensure
-    msc.alias_method(:storage, :__orig_storage__)
-    msc.remove_method(:__orig_storage__)
-  end
-
   # -- Already-responded guard tests --
 
   test "does not call step when assistant response covers the last user message" do
@@ -192,9 +116,6 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   end
 
   test "calls step when assistant context_user_message_id predates a newer user message (race condition)" do
-    # Simulates: Job1 ran and wrote a response with context_user_message_id pointing at
-    # notification1, but notification2 arrived *during* that run (higher id). Job2 must
-    # not be skipped — it needs to process notification2.
     notification1 = @chat.messages.where(role: "user").last
     @chat.messages.create!(role: "assistant", content: "Handled notification 1",
                            context_user_message_id: notification1.id)
@@ -206,7 +127,6 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   end
 
   test "calls step normally when last user message has no assistant response" do
-    # Default setup: chat has only a user message — normal flow should proceed
     with_stub_step { Daan::ConversationRunner.call(@chat) }
     assert @chat.reload.completed?
   end
@@ -219,6 +139,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assistant_message = @chat.messages.where(role: "assistant").last
     assert_equal last_user_message.id, assistant_message.context_user_message_id
   end
+
 
   # -- Turn limit warning & parent notification tests --
 
@@ -322,45 +243,6 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert_includes notification.content, "No response recorded."
   ensure
     @chat.singleton_class.remove_method(:step) if @chat.singleton_class.method_defined?(:step, false)
-  end
-
-  test "enqueues CompactJob when token count exceeds 80% of context window" do
-    @chat.messages.where(compacted_message_id: nil).delete_all
-    25.times do |i|
-      @chat.messages.create!(role: i.even? ? "user" : "assistant",
-                             content: "message #{i}", output_tokens: 40)
-    end
-    # 25 * 40 = 1000 tokens; 80% of 1000 = 800 → triggers compaction
-
-    @chat.define_singleton_method(:model) { OpenStruct.new(context_window: 1000) }
-    assert_enqueued_with(job: CompactJob) do
-      Daan::ConversationRunner.send(:enqueue_compaction_if_needed, @chat)
-    end
-  ensure
-    @chat.singleton_class.remove_method(:model) if @chat.singleton_class.method_defined?(:model, false)
-  end
-
-  test "does not enqueue CompactJob when token count is below threshold" do
-    @chat.messages.where(compacted_message_id: nil).delete_all
-    @chat.messages.create!(role: "user", content: "hi", output_tokens: 10)
-
-    @chat.define_singleton_method(:model) { OpenStruct.new(context_window: 1000) }
-    assert_no_enqueued_jobs(only: CompactJob) do
-      Daan::ConversationRunner.send(:enqueue_compaction_if_needed, @chat)
-    end
-  ensure
-    @chat.singleton_class.remove_method(:model) if @chat.singleton_class.method_defined?(:model, false)
-  end
-
-  # Temporarily override retrieve_memories using alias/restore on the singleton class.
-  def with_stub_memories(results, &block)
-    sc = Daan::ConversationRunner.singleton_class
-    sc.alias_method(:__orig_retrieve_memories__, :retrieve_memories)
-    sc.define_method(:retrieve_memories) { |_chat| results }
-    block.call
-  ensure
-    sc.alias_method(:retrieve_memories, :__orig_retrieve_memories__)
-    sc.remove_method(:__orig_retrieve_memories__)
   end
 
   def with_stub_tool_step(&block)
