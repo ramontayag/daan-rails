@@ -1,0 +1,8 @@
+<span id="chat_<%= chat.id %>_cost_totals" class="inline-flex items-center gap-1">
+  <span class="font-medium"><%= number_with_delimiter(chat.total_tokens_including_sub_chats) %></span>
+  <span>tokens</span>
+  <% if chat.total_cost_usd > 0 %>
+    <span>•</span>
+    <span class="font-medium"><%= chat.formatted_total_cost %></span>
+  <% end %>
+</span>

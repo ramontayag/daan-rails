@@ -4,12 +4,14 @@
       <button type="button"
               data-action="cost-breakdown#toggle"
               class="inline-flex items-center gap-1 hover:text-gray-700 cursor-pointer">
-        <span class="font-medium"><%= number_with_delimiter(chat.total_tokens_including_sub_chats) %></span>
-        <span>tokens</span>
-        <% if chat.total_cost_usd > 0 %>
-          <span>•</span>
-          <span class="font-medium"><%= chat.formatted_total_cost %></span>
-        <% end %>
+        <span id="chat_<%= chat.id %>_cost_totals" class="inline-flex items-center gap-1">
+          <span class="font-medium"><%= number_with_delimiter(chat.total_tokens_including_sub_chats) %></span>
+          <span>tokens</span>
+          <% if chat.total_cost_usd > 0 %>
+            <span>•</span>
+            <span class="font-medium"><%= chat.formatted_total_cost %></span>
+          <% end %>
+        </span>
         <svg data-cost-breakdown-target="chevron"
              xmlns="http://www.w3.org/2000/svg"
              class="h-3 w-3 transition-transform"
@@ -20,16 +22,18 @@
       </button>
       <div data-cost-breakdown-target="panel"
            class="hidden absolute top-full right-0 mt-1 w-52 py-1 bg-white border border-gray-200 rounded shadow-lg z-50 text-gray-700">
-        <div class="px-3 py-1 border-b border-gray-100 flex justify-between gap-4">
-          <span><%= chat.agent.display_name %></span>
-          <span class="font-medium shrink-0"><%= chat.estimated_cost_usd > 0 ? chat.formatted_cost : "—" %></span>
-        </div>
-        <% sub_chats.each do |sub_chat| %>
-          <div class="px-3 py-1 flex justify-between gap-4">
-            <span><%= sub_chat.agent.display_name %></span>
-            <span class="font-medium shrink-0"><%= sub_chat.total_cost_usd > 0 ? sub_chat.formatted_total_cost : "—" %></span>
+        <div id="chat_<%= chat.id %>_cost_rows">
+          <div class="px-3 py-1 border-b border-gray-100 flex justify-between gap-4">
+            <span><%= chat.agent.display_name %></span>
+            <span class="font-medium shrink-0"><%= chat.estimated_cost_usd > 0 ? chat.formatted_cost : "—" %></span>
           </div>
-        <% end %>
+          <% sub_chats.each do |sub_chat| %>
+            <div class="px-3 py-1 flex justify-between gap-4">
+              <span><%= sub_chat.agent.display_name %></span>
+              <span class="font-medium shrink-0"><%= sub_chat.total_cost_usd > 0 ? sub_chat.formatted_total_cost : "—" %></span>
+            </div>
+          <% end %>
+        </div>
       </div>
     </div>
   <% else %>

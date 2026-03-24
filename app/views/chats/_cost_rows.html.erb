@@ -1,0 +1,12 @@
+<div id="chat_<%= chat.id %>_cost_rows">
+  <div class="px-3 py-1 border-b border-gray-100 flex justify-between gap-4">
+    <span><%= chat.agent.display_name %></span>
+    <span class="font-medium shrink-0"><%= chat.estimated_cost_usd > 0 ? chat.formatted_cost : "—" %></span>
+  </div>
+  <% chat.sub_chats.each do |sub_chat| %>
+    <div class="px-3 py-1 flex justify-between gap-4">
+      <span><%= sub_chat.agent.display_name %></span>
+      <span class="font-medium shrink-0"><%= sub_chat.total_cost_usd > 0 ? sub_chat.formatted_total_cost : "—" %></span>
+    </div>
+  <% end %>
+</div>

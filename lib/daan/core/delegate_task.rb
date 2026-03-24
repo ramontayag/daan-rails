@@ -27,6 +27,7 @@ module Daan
         if sub_chat.new_record?
           sub_chat.model = target_agent.model_name
           sub_chat.save!
+          @chat.broadcast_chat_cost_initial
         end
         sub_chat.continue! if sub_chat.completed? || sub_chat.failed? || sub_chat.blocked?
         Daan::CreateMessage.call(sub_chat, role: "user", content: task)

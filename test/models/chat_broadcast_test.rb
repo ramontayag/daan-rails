@@ -29,7 +29,8 @@ class ChatBroadcastTest < ActiveSupport::TestCase
     parent = Chat.create!(agent_name: "chief_of_staff")
     child  = Chat.create!(agent_name: "chief_of_staff", parent_chat: parent)
 
-    assert_broadcasts("chat_#{parent.id}", 1) do
+    # parent has sub_chats, so 2 targeted broadcasts (totals + rows) are sent
+    assert_broadcasts("chat_#{parent.id}", 2) do
       child.broadcast_chat_cost
     end
   end
