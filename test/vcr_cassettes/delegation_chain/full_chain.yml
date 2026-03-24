@@ -311,7 +311,7 @@ http_interactions:
       message: OK
     headers:
       Date:
-      - Fri, 20 Mar 2026 10:38:19 GMT
+      - Tue, 24 Mar 2026 13:59:29 GMT
       Content-Type:
       - application/json
       Transfer-Encoding:
@@ -323,27 +323,27 @@ http_interactions:
       Anthropic-Ratelimit-Input-Tokens-Remaining:
       - '3996000'
       Anthropic-Ratelimit-Input-Tokens-Reset:
-      - '2026-03-20T10:38:18Z'
+      - '2026-03-24T13:59:28Z'
       Anthropic-Ratelimit-Output-Tokens-Limit:
       - '800000'
       Anthropic-Ratelimit-Output-Tokens-Remaining:
       - '800000'
       Anthropic-Ratelimit-Output-Tokens-Reset:
-      - '2026-03-20T10:38:19Z'
+      - '2026-03-24T13:59:29Z'
       Anthropic-Ratelimit-Requests-Limit:
       - '4000'
       Anthropic-Ratelimit-Requests-Remaining:
       - '3999'
       Anthropic-Ratelimit-Requests-Reset:
-      - '2026-03-20T10:38:18Z'
+      - '2026-03-24T13:59:28Z'
       Anthropic-Ratelimit-Tokens-Limit:
       - '4800000'
       Anthropic-Ratelimit-Tokens-Remaining:
       - '4796000'
       Anthropic-Ratelimit-Tokens-Reset:
-      - '2026-03-20T10:38:18Z'
+      - '2026-03-24T13:59:28Z'
       Request-Id:
-      - req_011CZEBph6au4qSLKrAR5AnY
+      - req_011CZN2Q4z1EswiRH78LyGc5
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Anthropic-Organization-Id:
@@ -351,29 +351,29 @@ http_interactions:
       Server:
       - cloudflare
       X-Envoy-Upstream-Service-Time:
-      - '1236'
+      - '1344'
       Vary:
       - Accept-Encoding
       Server-Timing:
-      - x-originResponse;dur=1236
-      Cf-Cache-Status:
-      - DYNAMIC
+      - x-originResponse;dur=1346
       Set-Cookie:
-      - _cfuvid=hM05m01zNP6PZwU1JJWV_J_0zUp0fxSUOuIWySBcYRc-1774003098.1196506-1.0.1.1-lspJwsz2x9RaJRkXUh0pe02I64GymV4wX8KNvLOKUPw;
+      - _cfuvid=J1_QkWEYKwIyR900dugX8q7c1wWjPqwOgD2tt4XbZAQ-1774360767.8863842-1.0.1.1-4_vkwAxbao4eDeZ.Vo7zEFrhYu2KtcD3z3627ECyn0Q;
         HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
       X-Robots-Tag:
       - none
+      Cf-Cache-Status:
+      - DYNAMIC
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
       Cf-Ray:
-      - 9df416233c34334a-MAD
+      - 9e16324f48e58038-MAD
     body:
       encoding: ASCII-8BIT
-      string: '{"model":"claude-haiku-4-5-20251001","id":"msg_01QNrDuZ256Q7zyivbW7Bdww","type":"message","role":"assistant","content":[{"type":"text","text":"I
-        don''t have a tool to directly write files to your system. However, I can
-        help you by delegating this task to a team member who has file system access.\n\nLet
-        me check which agents are available:"},{"type":"tool_use","id":"toolu_016Zvx1CwuaJm1VtuQ8qZAK9","name":"daan--core--list_agents","input":{},"caller":{"type":"direct"}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":7870,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":86,"service_tier":"standard","inference_geo":"not_available"}}'
-  recorded_at: Fri, 20 Mar 2026 10:38:19 GMT
+      string: '{"model":"claude-haiku-4-5-20251001","id":"msg_01KxawbG9RqBV3SYSPMppBgE","type":"message","role":"assistant","content":[{"type":"text","text":"I
+        don''t have a direct file writing tool available in my current toolset. Let
+        me check what agents are available who might be able to help with this file
+        operation."},{"type":"tool_use","id":"toolu_019SnXT5MyAjpzjs98ucmAUR","name":"daan--core--list_agents","input":{},"caller":{"type":"direct"}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":7870,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":76,"service_tier":"standard","inference_geo":"not_available"}}'
+  recorded_at: Tue, 24 Mar 2026 13:59:29 GMT
 - request:
     method: post
     uri: https://api.anthropic.com/v1/messages
@@ -381,9 +381,9 @@ http_interactions:
       encoding: UTF-8
       string: '{"model":"claude-haiku-4-5-20251001","messages":[{"role":"user","content":[{"type":"text","text":"Write
         \"chain test passed\" to chain_test.txt and summarise it for me"}]},{"role":"assistant","content":[{"type":"text","text":"I
-        don''t have a tool to directly write files to your system. However, I can
-        help you by delegating this task to a team member who has file system access.\n\nLet
-        me check which agents are available:"},{"type":"tool_use","id":"toolu_016Zvx1CwuaJm1VtuQ8qZAK9","name":"daan--core--list_agents","input":{}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_016Zvx1CwuaJm1VtuQ8qZAK9","content":[{"type":"text","text":"Agent
+        don''t have a direct file writing tool available in my current toolset. Let
+        me check what agents are available who might be able to help with this file
+        operation."},{"type":"tool_use","id":"toolu_019SnXT5MyAjpzjs98ucmAUR","name":"daan--core--list_agents","input":{}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_019SnXT5MyAjpzjs98ucmAUR","content":[{"type":"text","text":"Agent
         Resource Manager (agent_resource_manager)\n  Tools: Daan::Core::CreateAgent,
         Daan::Core::EditAgent, Daan::Core::Read, Daan::Core::Write, Daan::Core::ReportBack,
         Daan::Core::CreateSteps, Daan::Core::UpdateStep\n\nChief of Staff (chief_of_staff)\n  Tools:
@@ -705,7 +705,7 @@ http_interactions:
       message: OK
     headers:
       Date:
-      - Fri, 20 Mar 2026 10:38:22 GMT
+      - Tue, 24 Mar 2026 13:59:30 GMT
       Content-Type:
       - application/json
       Transfer-Encoding:
@@ -717,27 +717,27 @@ http_interactions:
       Anthropic-Ratelimit-Input-Tokens-Remaining:
       - '3996000'
       Anthropic-Ratelimit-Input-Tokens-Reset:
-      - '2026-03-20T10:38:21Z'
+      - '2026-03-24T13:59:30Z'
       Anthropic-Ratelimit-Output-Tokens-Limit:
       - '800000'
       Anthropic-Ratelimit-Output-Tokens-Remaining:
       - '800000'
       Anthropic-Ratelimit-Output-Tokens-Reset:
-      - '2026-03-20T10:38:22Z'
+      - '2026-03-24T13:59:30Z'
       Anthropic-Ratelimit-Requests-Limit:
       - '4000'
       Anthropic-Ratelimit-Requests-Remaining:
       - '3999'
       Anthropic-Ratelimit-Requests-Reset:
-      - '2026-03-20T10:38:20Z'
+      - '2026-03-24T13:59:29Z'
       Anthropic-Ratelimit-Tokens-Limit:
       - '4800000'
       Anthropic-Ratelimit-Tokens-Remaining:
       - '4796000'
       Anthropic-Ratelimit-Tokens-Reset:
-      - '2026-03-20T10:38:21Z'
+      - '2026-03-24T13:59:30Z'
       Request-Id:
-      - req_011CZEBpoVJWQhcaEY1AJqj2
+      - req_011CZN2QBURakuc4NtmYE7yU
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Anthropic-Organization-Id:
@@ -745,28 +745,29 @@ http_interactions:
       Server:
       - cloudflare
       X-Envoy-Upstream-Service-Time:
-      - '2535'
+      - '1247'
       Vary:
       - Accept-Encoding
       Server-Timing:
-      - x-originResponse;dur=2536
-      Cf-Cache-Status:
-      - DYNAMIC
+      - x-originResponse;dur=1257
       Set-Cookie:
-      - _cfuvid=4RngYeMcRWkwV6uAChgHMIKZdZEa6h1M858clof8Bv4-1774003099.6007774-1.0.1.1-3VtfF3qvKBuoyB5WCaDiVOBC_GSGIb3k6DdjviGJe7I;
+      - _cfuvid=dW79bxraEbo0TuciBUNy.HCYcHAI9aQhNCv_qLLpEXw-1774360769.404931-1.0.1.1-5x7ikelWXNxTaSlHXfGQjCuTBGEKGH8t_2Zj3Fy7ry8;
         HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
       X-Robots-Tag:
       - none
+      Cf-Cache-Status:
+      - DYNAMIC
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
       Cf-Ray:
-      - 9df4162c7a43dd43-MAD
+      - 9e163258cf92cc00-MAD
     body:
       encoding: ASCII-8BIT
-      string: '{"model":"claude-haiku-4-5-20251001","id":"msg_01U342eS3QneEgprnx4x68dd","type":"message","role":"assistant","content":[{"type":"text","text":"Perfect!
-        I''ll delegate this to the Developer who has Write access:"},{"type":"tool_use","id":"toolu_01GchwZrSEgjN7CN73EafYcQ","name":"daan--core--delegate_task","input":{"agent_name":"developer","task":"Write
-        the text \"chain test passed\" to a file called chain_test.txt"},"caller":{"type":"direct"}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":8515,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":108,"service_tier":"standard","inference_geo":"not_available"}}'
-  recorded_at: Fri, 20 Mar 2026 10:38:22 GMT
+      string: '{"model":"claude-haiku-4-5-20251001","id":"msg_01QoZbi9RzLSzVy57tywkZEJ","type":"message","role":"assistant","content":[{"type":"text","text":"Perfect!
+        I''ll delegate this to the developer who has Write capability."},{"type":"tool_use","id":"toolu_011UpiCLDcW2KgtWaPzYjHgW","name":"daan--core--delegate_task","input":{"agent_name":"developer","task":"Write
+        \"chain test passed\" to a file named chain_test.txt in the current working
+        directory."},"caller":{"type":"direct"}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":8505,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":111,"service_tier":"standard","inference_geo":"not_available"}}'
+  recorded_at: Tue, 24 Mar 2026 13:59:30 GMT
 - request:
     method: post
     uri: https://api.anthropic.com/v1/messages
@@ -774,9 +775,9 @@ http_interactions:
       encoding: UTF-8
       string: '{"model":"claude-haiku-4-5-20251001","messages":[{"role":"user","content":[{"type":"text","text":"Write
         \"chain test passed\" to chain_test.txt and summarise it for me"}]},{"role":"assistant","content":[{"type":"text","text":"I
-        don''t have a tool to directly write files to your system. However, I can
-        help you by delegating this task to a team member who has file system access.\n\nLet
-        me check which agents are available:"},{"type":"tool_use","id":"toolu_016Zvx1CwuaJm1VtuQ8qZAK9","name":"daan--core--list_agents","input":{}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_016Zvx1CwuaJm1VtuQ8qZAK9","content":[{"type":"text","text":"Agent
+        don''t have a direct file writing tool available in my current toolset. Let
+        me check what agents are available who might be able to help with this file
+        operation."},{"type":"tool_use","id":"toolu_019SnXT5MyAjpzjs98ucmAUR","name":"daan--core--list_agents","input":{}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_019SnXT5MyAjpzjs98ucmAUR","content":[{"type":"text","text":"Agent
         Resource Manager (agent_resource_manager)\n  Tools: Daan::Core::CreateAgent,
         Daan::Core::EditAgent, Daan::Core::Read, Daan::Core::Write, Daan::Core::ReportBack,
         Daan::Core::CreateSteps, Daan::Core::UpdateStep\n\nChief of Staff (chief_of_staff)\n  Tools:
@@ -794,8 +795,9 @@ http_interactions:
         Daan::Core::CreateSteps, Daan::Core::UpdateStep, SwarmMemory::Tools::MemoryWrite,
         SwarmMemory::Tools::MemoryRead, SwarmMemory::Tools::MemoryEdit, SwarmMemory::Tools::MemoryDelete,
         SwarmMemory::Tools::MemoryGlob, SwarmMemory::Tools::MemoryGrep"}]}]},{"role":"assistant","content":[{"type":"text","text":"Perfect!
-        I''ll delegate this to the Developer who has Write access:"},{"type":"tool_use","id":"toolu_01GchwZrSEgjN7CN73EafYcQ","name":"daan--core--delegate_task","input":{"agent_name":"developer","task":"Write
-        the text \"chain test passed\" to a file called chain_test.txt"}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_01GchwZrSEgjN7CN73EafYcQ","content":[{"type":"text","text":"Error:
+        I''ll delegate this to the developer who has Write capability."},{"type":"tool_use","id":"toolu_011UpiCLDcW2KgtWaPzYjHgW","name":"daan--core--delegate_task","input":{"agent_name":"developer","task":"Write
+        \"chain test passed\" to a file named chain_test.txt in the current working
+        directory."}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_011UpiCLDcW2KgtWaPzYjHgW","content":[{"type":"text","text":"Error:
         chief_of_staff cannot delegate to developer. Allowed: engineering_manager,
         agent_resource_manager"}]}]}],"stream":false,"max_tokens":64000,"tools":[{"name":"daan--core--delegate_task","description":"Delegate
         a task or follow-up message to a sub-agent. Each agent has one persistent
@@ -1102,7 +1104,7 @@ http_interactions:
       message: OK
     headers:
       Date:
-      - Fri, 20 Mar 2026 10:38:23 GMT
+      - Tue, 24 Mar 2026 13:59:32 GMT
       Content-Type:
       - application/json
       Transfer-Encoding:
@@ -1114,27 +1116,27 @@ http_interactions:
       Anthropic-Ratelimit-Input-Tokens-Remaining:
       - '3996000'
       Anthropic-Ratelimit-Input-Tokens-Reset:
-      - '2026-03-20T10:38:22Z'
+      - '2026-03-24T13:59:31Z'
       Anthropic-Ratelimit-Output-Tokens-Limit:
       - '800000'
       Anthropic-Ratelimit-Output-Tokens-Remaining:
       - '800000'
       Anthropic-Ratelimit-Output-Tokens-Reset:
-      - '2026-03-20T10:38:23Z'
+      - '2026-03-24T13:59:31Z'
       Anthropic-Ratelimit-Requests-Limit:
       - '4000'
       Anthropic-Ratelimit-Requests-Remaining:
       - '3999'
       Anthropic-Ratelimit-Requests-Reset:
-      - '2026-03-20T10:38:22Z'
+      - '2026-03-24T13:59:30Z'
       Anthropic-Ratelimit-Tokens-Limit:
       - '4800000'
       Anthropic-Ratelimit-Tokens-Remaining:
       - '4796000'
       Anthropic-Ratelimit-Tokens-Reset:
-      - '2026-03-20T10:38:22Z'
+      - '2026-03-24T13:59:31Z'
       Request-Id:
-      - req_011CZEBq1HxuJDbMUPzt8r9t
+      - req_011CZN2QHbmqtb2hYNVVtxLx
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Anthropic-Organization-Id:
@@ -1142,36 +1144,34 @@ http_interactions:
       Server:
       - cloudflare
       X-Envoy-Upstream-Service-Time:
-      - '960'
+      - '1099'
       Vary:
       - Accept-Encoding
       Server-Timing:
-      - x-originResponse;dur=972
-      Cf-Cache-Status:
-      - DYNAMIC
+      - x-originResponse;dur=1104
       Set-Cookie:
-      - _cfuvid=aq73eHDmguWninTU9TOfXghTEy5of8IaXjAaMqjsq5Q-1774003102.326159-1.0.1.1-pqzJidxuN5GrFwA.0kQNDSrAyQRMtf7wvXRCE1k6gWY;
+      - _cfuvid=qPzPEQONFkzR0ITYJlQLFLfzf_E_np1WT0da11xewyM-1774360770.8394587-1.0.1.1-5XBLCeasBXIFl3fU7AAoX2E_PXFLiqxeXApfzqqPq1o;
         HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
       X-Robots-Tag:
       - none
+      Cf-Cache-Status:
+      - DYNAMIC
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
       Cf-Ray:
-      - 9df4163d8af886f7-MAD
+      - 9e163261bb32014c-MAD
     body:
       encoding: ASCII-8BIT
-      string: '{"model":"claude-haiku-4-5-20251001","id":"msg_01E4vmu8Uq3gRyLFxWchbZsZ","type":"message","role":"assistant","content":[{"type":"text","text":"Let
-        me delegate this to the Engineering Manager instead:"},{"type":"tool_use","id":"toolu_01DCdfoAGecycohoMtxrjKTa","name":"daan--core--delegate_task","input":{"agent_name":"engineering_manager","task":"Write
-        the text \"chain test passed\" to a file called chain_test.txt in the current
-        directory."},"caller":{"type":"direct"}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":8659,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":110,"service_tier":"standard","inference_geo":"not_available"}}'
-  recorded_at: Fri, 20 Mar 2026 10:38:23 GMT
+      string: !binary |-
+        eyJtb2RlbCI6ImNsYXVkZS1oYWlrdS00LTUtMjAyNTEwMDEiLCJpZCI6Im1zZ18wMVg2SGFDcnRaQm5qUDdMWDlXQ3RFQUoiLCJ0eXBlIjoibWVzc2FnZSIsInJvbGUiOiJhc3Npc3RhbnQiLCJjb250ZW50IjpbeyJ0eXBlIjoidGV4dCIsInRleHQiOiJJIHNlZSDigJQgSSBjYW4gb25seSBkZWxlZ2F0ZSB0byB0aGUgZW5naW5lZXJpbmdfbWFuYWdlciBvciBhZ2VudF9yZXNvdXJjZV9tYW5hZ2VyLiBMZXQgbWUgdXNlIHRoZSBlbmdpbmVlcmluZ19tYW5hZ2VyIGZvciB0aGlzIHRhc2suIn0seyJ0eXBlIjoidG9vbF91c2UiLCJpZCI6InRvb2x1XzAxQnJLOE1VaXo5ek5Fc1RDdHRrOGFwNSIsIm5hbWUiOiJkYWFuLS1jb3JlLS1kZWxlZ2F0ZV90YXNrIiwiaW5wdXQiOnsiYWdlbnRfbmFtZSI6ImVuZ2luZWVyaW5nX21hbmFnZXIiLCJ0YXNrIjoiV3JpdGUgXCJjaGFpbiB0ZXN0IHBhc3NlZFwiIHRvIGEgZmlsZSBuYW1lZCBjaGFpbl90ZXN0LnR4dCBpbiB0aGUgY3VycmVudCB3b3JraW5nIGRpcmVjdG9yeS4ifSwiY2FsbGVyIjp7InR5cGUiOiJkaXJlY3QifX1dLCJzdG9wX3JlYXNvbiI6InRvb2xfdXNlIiwic3RvcF9zZXF1ZW5jZSI6bnVsbCwidXNhZ2UiOnsiaW5wdXRfdG9rZW5zIjo4NjUyLCJjYWNoZV9jcmVhdGlvbl9pbnB1dF90b2tlbnMiOjAsImNhY2hlX3JlYWRfaW5wdXRfdG9rZW5zIjowLCJjYWNoZV9jcmVhdGlvbiI6eyJlcGhlbWVyYWxfNW1faW5wdXRfdG9rZW5zIjowLCJlcGhlbWVyYWxfMWhfaW5wdXRfdG9rZW5zIjowfSwib3V0cHV0X3Rva2VucyI6MTI5LCJzZXJ2aWNlX3RpZXIiOiJzdGFuZGFyZCIsImluZmVyZW5jZV9nZW8iOiJub3RfYXZhaWxhYmxlIn19
+  recorded_at: Tue, 24 Mar 2026 13:59:32 GMT
 - request:
     method: post
     uri: https://api.anthropic.com/v1/messages
     body:
       encoding: UTF-8
       string: '{"model":"claude-haiku-4-5-20251001","messages":[{"role":"user","content":[{"type":"text","text":"Write
-        the text \"chain test passed\" to a file called chain_test.txt in the current
+        \"chain test passed\" to a file named chain_test.txt in the current working
         directory."}]}],"stream":false,"max_tokens":64000,"tools":[{"name":"daan--core--delegate_task","description":"Delegate
         a task or follow-up message to a sub-agent. Each agent has one persistent
         thread — if a thread already exists, your message is added to it and the agent
@@ -1475,84 +1475,90 @@ http_interactions:
         execution timeout in seconds (default: 10, max: 1800)"}},"required":["pattern"],"additionalProperties":false,"strict":true}}],"system":[{"type":"text","text":"You
         are the Engineering Manager for the Daan agent team. You oversee development
         work, review code, verify implementations, and manage both technical direction
-        and team composition.\n\n## Core Responsibilities\n\n### Technical Oversight\n-
-        **Code Review**: Use Read to examine code changes, verify implementations
-        match requirements\n- **Architecture**: Ensure consistency with established
-        patterns and architectural decisions\n- **Quality Assurance**: Verify tests
-        pass, builds succeed, and code follows team standards\n- **Project Structure**:
-        Understand and navigate project hierarchies using Read and Bash tools\n\n###
-        Team Management  \n- **Agent Oversight**: Use ListAgents to understand current
-        team composition\n- **Capability Management**: Use CreateAgent/EditAgent to
-        adjust team skills as needs evolve\n- **Work Delegation**: Break down complex
-        tasks and delegate to appropriate specialists\n- **Knowledge Management**:
-        Use memory tools to capture and share architectural decisions\n\n### Development
-        Workflow\n- **Git Operations**: Use Bash with git commands to inspect branches,
-        commits, and repository state\n- **Build Verification**: Run tests and verify
-        build status before approving changes\n- **Branch Management**: Coordinate
-        feature branches and integration workflow\n- **Code Integration**: Use PromoteBranch
-        for immediate development integration or to open a PR in production\n\n##
-        Enhanced Tool Capabilities\n\n### File System Access (Read/Write)\nYou now
-        have full file system access to:\n- Explore project structures and understand
-        codebases\n- Review code changes and implementations \n- Examine test files
-        and configuration\n- Read documentation and architectural decisions\n- Write
-        analysis reports and technical documentation\n\n### Command Execution (Bash)\nExecute
-        commands for:\n- **Git operations**: `git status`, `git log`, `git diff`,
-        `git branch`\n- **Build verification**: `npm test`, `rails test`, `make build`\n-
-        **Code analysis**: `grep`, `find`, `wc` for codebase metrics\n- **Project
-        exploration**: `ls`, `cat`, `head`, `tail` for navigation\n- **Quality checks**:
-        Linting, formatting, dependency analysis\n\n### Team Administration (ListAgents,
-        CreateAgent, EditAgent)\n- Query current team composition and capabilities\n-
-        Create new specialized agents as project needs evolve\n- Modify existing agent
-        capabilities and tool access\n- Balance team workload and expertise\n\n##
-        Task Execution Workflow\n\nWhen you receive a task:\n\n1. **Context Gathering**\n   -
-        Search memory for relevant architectural decisions, patterns, or constraints\n   -
-        Use ListAgents to understand current team capabilities\n   - Use Read to examine
-        relevant project files and understand current state\n\n2. **Technical Assessment**\n   -
-        Use Bash + git to inspect repository state, branches, recent changes\n   -
-        Read configuration files, tests, and documentation to understand requirements\n   -
-        Assess complexity, dependencies, and potential integration challenges\n\n3.
-        **Work Planning**\n   - Break complex tasks into concrete, reviewable chunks\n   -
-        Consider which team members have appropriate skills and availability\n   -
-        Plan verification steps (tests, builds, integration checks)\n\n4. **Delegation
-        & Oversight**\n   - Use DelegateTask with comprehensive context and clear
-        acceptance criteria\n   - Monitor progress and provide clarification when
-        needed\n   - Review completed work using Read to examine changes\n\n5. **Quality
-        Verification**\n   - Use Bash to run tests, verify builds, check git status\n   -
-        Read test results, build logs, and verify integration success\n   - Use git
-        commands to inspect commits and ensure clean integration\n\n6. **Completion
-        & Documentation**\n   - Use MemoryWrite to capture important decisions, patterns,
-        and lessons learned\n   - Use ReportBack to summarize outcomes with technical
-        details and any decisions made\n   - Update team capabilities or processes
-        if needed\n\n**Autonomy principle**: Resolve questions at the level they arise.
-        Before escalating, search memory, try alternate approaches, and make reasonable
-        assumptions. If you''re genuinely stuck on something your delegator would
-        know, ask them — but exhaust your own resources first. When you receive questions
-        from agents you''ve delegated to, absorb and answer them at your level rather
-        than passing them up. The goal is that questions get resolved within the team,
-        not forwarded to the human.\n\n**Reporting back**: If you have a `report_back`
-        tool, send interim reports as you make progress rather than waiting until
-        everything is done. Don''t risk running out of turns with nothing reported.\n\n##
-        Self-modification (changes to daan-rails)\n\nWhen modifying agent definitions,
-        core tools, or anything in the daan-rails repo itself:\n\n1. **Start from
-        latest main.** Fetch and create your branch from `origin/main`:\n   ```\n   git
-        fetch origin\n   git checkout -b <branch-name> origin/main\n   ```\n   Never
-        reuse an existing branch — always start fresh from `origin/main`.\n\n2. **Make
-        your changes.** Edit files, verify they look correct.\n\n3. **Read `README.md`
-        and `AGENTS.md`** in the repo root for conventions (PR rules, commit format,
-        test commands). Follow them throughout your work.\n\n4. **Run `bin/ci`** —
-        it runs linting, security scans, branch checks, and all tests. Do not proceed
-        if any step fails.\n\n5. **Commit and push.**\n   ```\n   git add <files>\n   git
-        commit -m \"<message>\"\n   git push origin <branch-name>\n   ```\n\n6. **Call
-        PromoteBranch** with the branch name. This merges your branch into develop,
-        pushes develop, and hot-reloads agent definitions in the running app.\n   -
-        The branch **must be pushed to origin** before calling PromoteBranch — it
-        will error otherwise.\n   - If there are merge conflicts, resolve them, commit,
-        push develop, and call PromoteBranch again.\n\n7. **Report back** with the
-        outcome and the branch name.\n\nUse MemoryWrite to preserve important context,
-        decisions, and patterns you encounter. Use MemoryGrep or MemoryGlob to search
-        past memory before starting a task. If a memory contradicts information you
-        have encountered, correct it with MemoryEdit or remove it with MemoryDelete.\n\nYour
-        workspace is at /home/ramon/src/me/daan-rails/tmp/workspaces/engineering_manager.
+        and team composition.\n\n## Prime Directive: Delegate Engineering Work\n\n**You
+        do not write or modify application code yourself.** All engineering implementation
+        — writing code, editing files, running tests — must be delegated to the Developer
+        via `DelegateTask`. Your direct tool use (Read, Bash) is limited to:\n- Gathering
+        context before delegating\n- Reviewing completed work after delegation\n-
+        Verifying quality (running tests, inspecting git output)\n\nIf you find yourself
+        reaching for Write or Bash to change application code, stop and delegate instead.\n\n##
+        Core Responsibilities\n\n### Technical Oversight\n- **Code Review**: Use Read
+        to examine code changes, verify implementations match requirements\n- **Architecture**:
+        Ensure consistency with established patterns and architectural decisions\n-
+        **Quality Assurance**: Verify tests pass, builds succeed, and code follows
+        team standards\n- **Project Structure**: Understand and navigate project hierarchies
+        using Read and Bash tools\n\n### Team Management  \n- **Agent Oversight**:
+        Use ListAgents to understand current team composition\n- **Capability Management**:
+        Use CreateAgent/EditAgent to adjust team skills as needs evolve\n- **Work
+        Delegation**: Break down complex tasks and delegate to appropriate specialists\n-
+        **Knowledge Management**: Use memory tools to capture and share architectural
+        decisions\n\n### Development Workflow\n- **Git Operations**: Use Bash with
+        git commands to inspect branches, commits, and repository state\n- **Build
+        Verification**: Run tests and verify build status before approving changes\n-
+        **Branch Management**: Coordinate feature branches and integration workflow\n-
+        **Code Integration**: Use PromoteBranch for immediate development integration
+        or to open a PR in production\n\n## Enhanced Tool Capabilities\n\n### File
+        System Access (Read/Write)\nYou now have full file system access to:\n- Explore
+        project structures and understand codebases\n- Review code changes and implementations
+        \n- Examine test files and configuration\n- Read documentation and architectural
+        decisions\n- Write analysis reports and technical documentation\n\n### Command
+        Execution (Bash)\nExecute commands for:\n- **Git operations**: `git status`,
+        `git log`, `git diff`, `git branch`\n- **Build verification**: `npm test`,
+        `rails test`, `make build`\n- **Code analysis**: `grep`, `find`, `wc` for
+        codebase metrics\n- **Project exploration**: `ls`, `cat`, `head`, `tail` for
+        navigation\n- **Quality checks**: Linting, formatting, dependency analysis\n\n###
+        Team Administration (ListAgents, CreateAgent, EditAgent)\n- Query current
+        team composition and capabilities\n- Create new specialized agents as project
+        needs evolve\n- Modify existing agent capabilities and tool access\n- Balance
+        team workload and expertise\n\n## Task Execution Workflow\n\nWhen you receive
+        a task:\n\n1. **Context Gathering**\n   - Search memory for relevant architectural
+        decisions, patterns, or constraints\n   - Use ListAgents to understand current
+        team capabilities\n   - Use Read to examine relevant project files and understand
+        current state\n\n2. **Technical Assessment**\n   - Use Bash + git to inspect
+        repository state, branches, recent changes\n   - Read configuration files,
+        tests, and documentation to understand requirements\n   - Assess complexity,
+        dependencies, and potential integration challenges\n\n3. **Work Planning**\n   -
+        Break complex tasks into concrete, reviewable chunks\n   - Consider which
+        team members have appropriate skills and availability\n   - Plan verification
+        steps (tests, builds, integration checks)\n\n4. **Delegation & Oversight**\n   -
+        Use DelegateTask with comprehensive context and clear acceptance criteria\n   -
+        Monitor progress and provide clarification when needed\n   - Review completed
+        work using Read to examine changes\n\n5. **Quality Verification**\n   - Use
+        Bash to run tests, verify builds, check git status\n   - Read test results,
+        build logs, and verify integration success\n   - Use git commands to inspect
+        commits and ensure clean integration\n\n6. **Completion & Documentation**\n   -
+        Use MemoryWrite to capture important decisions, patterns, and lessons learned\n   -
+        Use ReportBack to summarize outcomes with technical details and any decisions
+        made\n   - Update team capabilities or processes if needed\n\n**Autonomy principle**:
+        Resolve questions at the level they arise. Before escalating, search memory,
+        try alternate approaches, and make reasonable assumptions. If you''re genuinely
+        stuck on something your delegator would know, ask them — but exhaust your
+        own resources first. When you receive questions from agents you''ve delegated
+        to, absorb and answer them at your level rather than passing them up. The
+        goal is that questions get resolved within the team, not forwarded to the
+        human.\n\n**Reporting back**: If you have a `report_back` tool, send interim
+        reports as you make progress rather than waiting until everything is done.
+        Don''t risk running out of turns with nothing reported.\n\n## Self-modification
+        (changes to daan-rails)\n\nWhen modifying agent definitions, core tools, or
+        anything in the daan-rails repo itself:\n\n1. **Start from latest main.**
+        Fetch and create your branch from `origin/main`:\n   ```\n   git fetch origin\n   git
+        checkout -b <branch-name> origin/main\n   ```\n   Never reuse an existing
+        branch — always start fresh from `origin/main`.\n\n2. **Make your changes.**
+        Edit files, verify they look correct.\n\n3. **Read `README.md` and `AGENTS.md`**
+        in the repo root for conventions (PR rules, commit format, test commands).
+        Follow them throughout your work.\n\n4. **Run `bin/ci`** — it runs linting,
+        security scans, branch checks, and all tests. Do not proceed if any step fails.\n\n5.
+        **Commit and push.**\n   ```\n   git add <files>\n   git commit -m \"<message>\"\n   git
+        push origin <branch-name>\n   ```\n\n6. **Call PromoteBranch** with the branch
+        name. This merges your branch into develop, pushes develop, and hot-reloads
+        agent definitions in the running app.\n   - The branch **must be pushed to
+        origin** before calling PromoteBranch — it will error otherwise.\n   - If
+        there are merge conflicts, resolve them, commit, push develop, and call PromoteBranch
+        again.\n\n7. **Report back** with the outcome and the branch name.\n\nUse
+        MemoryWrite to preserve important context, decisions, and patterns you encounter.
+        Use MemoryGrep or MemoryGlob to search past memory before starting a task.
+        If a memory contradicts information you have encountered, correct it with
+        MemoryEdit or remove it with MemoryDelete.\n\nYour workspace is at /home/ramon/src/me/daan-rails/tmp/workspaces/engineering_manager.
         It is yours alone — no other agent shares it. You are responsible for keeping
         it orderly: decide where repos, projects, and temporary files live, and stick
         to that structure.\n\nUse MemoryWrite to record where you put things (repos,
@@ -1578,7 +1584,7 @@ http_interactions:
       message: OK
     headers:
       Date:
-      - Fri, 20 Mar 2026 10:38:24 GMT
+      - Tue, 24 Mar 2026 13:59:33 GMT
       Content-Type:
       - application/json
       Transfer-Encoding:
@@ -1590,27 +1596,27 @@ http_interactions:
       Anthropic-Ratelimit-Input-Tokens-Remaining:
       - '3995000'
       Anthropic-Ratelimit-Input-Tokens-Reset:
-      - '2026-03-20T10:38:24Z'
+      - '2026-03-24T13:59:33Z'
       Anthropic-Ratelimit-Output-Tokens-Limit:
       - '800000'
       Anthropic-Ratelimit-Output-Tokens-Remaining:
       - '800000'
       Anthropic-Ratelimit-Output-Tokens-Reset:
-      - '2026-03-20T10:38:24Z'
+      - '2026-03-24T13:59:33Z'
       Anthropic-Ratelimit-Requests-Limit:
       - '4000'
       Anthropic-Ratelimit-Requests-Remaining:
       - '3999'
       Anthropic-Ratelimit-Requests-Reset:
-      - '2026-03-20T10:38:23Z'
+      - '2026-03-24T13:59:32Z'
       Anthropic-Ratelimit-Tokens-Limit:
       - '4800000'
       Anthropic-Ratelimit-Tokens-Remaining:
       - '4795000'
       Anthropic-Ratelimit-Tokens-Reset:
-      - '2026-03-20T10:38:24Z'
+      - '2026-03-24T13:59:33Z'
       Request-Id:
-      - req_011CZEBq6Aey9mxh29MLWs2r
+      - req_011CZN2QPJKwGZx2ZDLSCH3i
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Anthropic-Organization-Id:
@@ -1618,27 +1624,27 @@ http_interactions:
       Server:
       - cloudflare
       X-Envoy-Upstream-Service-Time:
-      - '1296'
+      - '1571'
       Vary:
       - Accept-Encoding
       Server-Timing:
-      - x-originResponse;dur=1297
-      Cf-Cache-Status:
-      - DYNAMIC
+      - x-originResponse;dur=1572
       Set-Cookie:
-      - _cfuvid=5bzJ9o6B2GvHt2J0OPu49ubo2V.dTwDgMtWagls7Hro-1774003103.50983-1.0.1.1-OnVfSs0ejIjlLndvT3jFQfr8DFFL8YrtAG.hpi9yUxE;
+      - _cfuvid=Ja18clzfnDU27MDRGeYlZucfHbgrp61qgCmzgPJ2yk8-1774360772.1692483-1.0.1.1-FakGKNm6JRSWeSwLExoYgr1tKwua.HRjLwYGpvpF74o;
         HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
       X-Robots-Tag:
       - none
+      Cf-Cache-Status:
+      - DYNAMIC
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
       Cf-Ray:
-      - 9df41644eee92531-MAD
+      - 9e16326a0fd3f777-MAD
     body:
       encoding: ASCII-8BIT
-      string: '{"model":"claude-haiku-4-5-20251001","id":"msg_01TVXBBQEiq8gQcaSTxEFN9t","type":"message","role":"assistant","content":[{"type":"tool_use","id":"toolu_01VyMh2cUfLvuQHbYoi3Ctce","name":"daan--core--write","input":{"path":"chain_test.txt","content":"chain
-        test passed"},"caller":{"type":"direct"}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":10343,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":80,"service_tier":"standard","inference_geo":"not_available"}}'
-  recorded_at: Fri, 20 Mar 2026 10:38:24 GMT
+      string: '{"model":"claude-haiku-4-5-20251001","id":"msg_011Jp1kzcsDdYxg5UmenRuCq","type":"message","role":"assistant","content":[{"type":"tool_use","id":"toolu_01Dhn28BtLJTtud6S9rT92Hb","name":"daan--core--write","input":{"path":"chain_test.txt","content":"chain
+        test passed"},"caller":{"type":"direct"}}],"stop_reason":"tool_use","stop_sequence":null,"usage":{"input_tokens":10458,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":80,"service_tier":"standard","inference_geo":"not_available"}}'
+  recorded_at: Tue, 24 Mar 2026 13:59:33 GMT
 - request:
     method: post
     uri: https://api.anthropic.com/v1/messages
@@ -1646,9 +1652,9 @@ http_interactions:
       encoding: UTF-8
       string: '{"model":"claude-haiku-4-5-20251001","messages":[{"role":"user","content":[{"type":"text","text":"Write
         \"chain test passed\" to chain_test.txt and summarise it for me"}]},{"role":"assistant","content":[{"type":"text","text":"I
-        don''t have a tool to directly write files to your system. However, I can
-        help you by delegating this task to a team member who has file system access.\n\nLet
-        me check which agents are available:"},{"type":"tool_use","id":"toolu_016Zvx1CwuaJm1VtuQ8qZAK9","name":"daan--core--list_agents","input":{}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_016Zvx1CwuaJm1VtuQ8qZAK9","content":[{"type":"text","text":"Agent
+        don''t have a direct file writing tool available in my current toolset. Let
+        me check what agents are available who might be able to help with this file
+        operation."},{"type":"tool_use","id":"toolu_019SnXT5MyAjpzjs98ucmAUR","name":"daan--core--list_agents","input":{}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_019SnXT5MyAjpzjs98ucmAUR","content":[{"type":"text","text":"Agent
         Resource Manager (agent_resource_manager)\n  Tools: Daan::Core::CreateAgent,
         Daan::Core::EditAgent, Daan::Core::Read, Daan::Core::Write, Daan::Core::ReportBack,
         Daan::Core::CreateSteps, Daan::Core::UpdateStep\n\nChief of Staff (chief_of_staff)\n  Tools:
@@ -1666,13 +1672,15 @@ http_interactions:
         Daan::Core::CreateSteps, Daan::Core::UpdateStep, SwarmMemory::Tools::MemoryWrite,
         SwarmMemory::Tools::MemoryRead, SwarmMemory::Tools::MemoryEdit, SwarmMemory::Tools::MemoryDelete,
         SwarmMemory::Tools::MemoryGlob, SwarmMemory::Tools::MemoryGrep"}]}]},{"role":"assistant","content":[{"type":"text","text":"Perfect!
-        I''ll delegate this to the Developer who has Write access:"},{"type":"tool_use","id":"toolu_01GchwZrSEgjN7CN73EafYcQ","name":"daan--core--delegate_task","input":{"agent_name":"developer","task":"Write
-        the text \"chain test passed\" to a file called chain_test.txt"}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_01GchwZrSEgjN7CN73EafYcQ","content":[{"type":"text","text":"Error:
+        I''ll delegate this to the developer who has Write capability."},{"type":"tool_use","id":"toolu_011UpiCLDcW2KgtWaPzYjHgW","name":"daan--core--delegate_task","input":{"agent_name":"developer","task":"Write
+        \"chain test passed\" to a file named chain_test.txt in the current working
+        directory."}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_011UpiCLDcW2KgtWaPzYjHgW","content":[{"type":"text","text":"Error:
         chief_of_staff cannot delegate to developer. Allowed: engineering_manager,
-        agent_resource_manager"}]}]},{"role":"assistant","content":[{"type":"text","text":"Let
-        me delegate this to the Engineering Manager instead:"},{"type":"tool_use","id":"toolu_01DCdfoAGecycohoMtxrjKTa","name":"daan--core--delegate_task","input":{"agent_name":"engineering_manager","task":"Write
-        the text \"chain test passed\" to a file called chain_test.txt in the current
-        directory."}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_01DCdfoAGecycohoMtxrjKTa","content":[{"type":"text","text":"Delegated
+        agent_resource_manager"}]}]},{"role":"assistant","content":[{"type":"text","text":"I
+        see — I can only delegate to the engineering_manager or agent_resource_manager.
+        Let me use the engineering_manager for this task."},{"type":"tool_use","id":"toolu_01BrK8MUiz9zNEsTCttk8ap5","name":"daan--core--delegate_task","input":{"agent_name":"engineering_manager","task":"Write
+        \"chain test passed\" to a file named chain_test.txt in the current working
+        directory."}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_01BrK8MUiz9zNEsTCttk8ap5","content":[{"type":"text","text":"Delegated
         to Engineering Manager (Thread #57519493). Awaiting their report."}]}]}],"stream":false,"max_tokens":64000,"tools":[{"name":"daan--core--delegate_task","description":"Delegate
         a task or follow-up message to a sub-agent. Each agent has one persistent
         thread — if a thread already exists, your message is added to it and the agent
@@ -1978,7 +1986,7 @@ http_interactions:
       message: OK
     headers:
       Date:
-      - Fri, 20 Mar 2026 10:38:26 GMT
+      - Tue, 24 Mar 2026 13:59:35 GMT
       Content-Type:
       - application/json
       Transfer-Encoding:
@@ -1990,27 +1998,27 @@ http_interactions:
       Anthropic-Ratelimit-Input-Tokens-Remaining:
       - '3996000'
       Anthropic-Ratelimit-Input-Tokens-Reset:
-      - '2026-03-20T10:38:25Z'
+      - '2026-03-24T13:59:34Z'
       Anthropic-Ratelimit-Output-Tokens-Limit:
       - '800000'
       Anthropic-Ratelimit-Output-Tokens-Remaining:
       - '800000'
       Anthropic-Ratelimit-Output-Tokens-Reset:
-      - '2026-03-20T10:38:26Z'
+      - '2026-03-24T13:59:35Z'
       Anthropic-Ratelimit-Requests-Limit:
       - '4000'
       Anthropic-Ratelimit-Requests-Remaining:
       - '3999'
       Anthropic-Ratelimit-Requests-Reset:
-      - '2026-03-20T10:38:25Z'
+      - '2026-03-24T13:59:34Z'
       Anthropic-Ratelimit-Tokens-Limit:
       - '4800000'
       Anthropic-Ratelimit-Tokens-Remaining:
       - '4796000'
       Anthropic-Ratelimit-Tokens-Reset:
-      - '2026-03-20T10:38:25Z'
+      - '2026-03-24T13:59:34Z'
       Request-Id:
-      - req_011CZEBqCc6xVvmSABiG3qZ1
+      - req_011CZN2QWviAtYoT5sggFzr2
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Anthropic-Organization-Id:
@@ -2018,13 +2026,13 @@ http_interactions:
       Server:
       - cloudflare
       X-Envoy-Upstream-Service-Time:
-      - '1083'
+      - '1378'
       Vary:
       - Accept-Encoding
       Server-Timing:
-      - x-originResponse;dur=1083
+      - x-originResponse;dur=1381
       Set-Cookie:
-      - _cfuvid=.gdBOilVv4U1Cp0G81VctfqeF1y6Z1.t5LMzhlPsn4E-1774003105.019609-1.0.1.1-6xu7yLp8pexcjcr4.3nTuh09Wq58M7_O1zXHiSGp0wM;
+      - _cfuvid=sayuouPsTvrzLCT3ApRSyBoYG7KrL441NrRj8QGcKDY-1774360773.950668-1.0.1.1-D4rMjaAPjes30nvJebL7njEtq_VMHedGmdEPvG_Bt.U;
         HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com
       X-Robots-Tag:
       - none
@@ -2033,24 +2041,25 @@ http_interactions:
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Cf-Ray:
-      - 9df4164e5ea70d01-MAD
+      - 9e1632752a990268-MAD
     body:
       encoding: ASCII-8BIT
-      string: '{"model":"claude-haiku-4-5-20251001","id":"msg_011RCgGvqo92fEtT84pfcsen","type":"message","role":"assistant","content":[{"type":"text","text":"Great!
-        I''ve delegated the task to the Engineering Manager. They will write \"chain
-        test passed\" to chain_test.txt and report back to me. Let me wait for their
-        response...\n\nI''m waiting for the Engineering Manager to complete the task
-        and report back. Once they do, I''ll summarize the results for you."}],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":8799,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":72,"service_tier":"standard","inference_geo":"not_available"}}'
-  recorded_at: Fri, 20 Mar 2026 10:38:26 GMT
+      string: '{"model":"claude-haiku-4-5-20251001","id":"msg_01TEQerqPSeFxFE8YXFznGoY","type":"message","role":"assistant","content":[{"type":"text","text":"Great!
+        I''ve delegated the task to the Engineering Manager to write \"chain test
+        passed\" to chain_test.txt. Waiting for their report...\n\nOnce they complete
+        it, I''ll provide you with a summary.\n\n---\n\n**Status Update:** The Engineering
+        Manager is working on writing the content to chain_test.txt. I''ll report
+        the results as soon as they come back."}],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":8811,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":84,"service_tier":"standard","inference_geo":"not_available"}}'
+  recorded_at: Tue, 24 Mar 2026 13:59:35 GMT
 - request:
     method: post
     uri: https://api.anthropic.com/v1/messages
     body:
       encoding: UTF-8
       string: '{"model":"claude-haiku-4-5-20251001","messages":[{"role":"user","content":[{"type":"text","text":"Write
-        the text \"chain test passed\" to a file called chain_test.txt in the current
-        directory."}]},{"role":"assistant","content":[{"type":"tool_use","id":"toolu_01VyMh2cUfLvuQHbYoi3Ctce","name":"daan--core--write","input":{"path":"chain_test.txt","content":"chain
-        test passed"}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_01VyMh2cUfLvuQHbYoi3Ctce","content":[{"type":"text","text":"Written
+        \"chain test passed\" to a file named chain_test.txt in the current working
+        directory."}]},{"role":"assistant","content":[{"type":"tool_use","id":"toolu_01Dhn28BtLJTtud6S9rT92Hb","name":"daan--core--write","input":{"path":"chain_test.txt","content":"chain
+        test passed"}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_01Dhn28BtLJTtud6S9rT92Hb","content":[{"type":"text","text":"Written
         17 bytes to chain_test.txt"}]}]}],"stream":false,"max_tokens":64000,"tools":[{"name":"daan--core--delegate_task","description":"Delegate
         a task or follow-up message to a sub-agent. Each agent has one persistent
         thread — if a thread already exists, your message is added to it and the agent
@@ -2354,84 +2363,90 @@ http_interactions:
         execution timeout in seconds (default: 10, max: 1800)"}},"required":["pattern"],"additionalProperties":false,"strict":true}}],"system":[{"type":"text","text":"You
         are the Engineering Manager for the Daan agent team. You oversee development
         work, review code, verify implementations, and manage both technical direction
-        and team composition.\n\n## Core Responsibilities\n\n### Technical Oversight\n-
-        **Code Review**: Use Read to examine code changes, verify implementations
-        match requirements\n- **Architecture**: Ensure consistency with established
-        patterns and architectural decisions\n- **Quality Assurance**: Verify tests
-        pass, builds succeed, and code follows team standards\n- **Project Structure**:
-        Understand and navigate project hierarchies using Read and Bash tools\n\n###
-        Team Management  \n- **Agent Oversight**: Use ListAgents to understand current
-        team composition\n- **Capability Management**: Use CreateAgent/EditAgent to
-        adjust team skills as needs evolve\n- **Work Delegation**: Break down complex
-        tasks and delegate to appropriate specialists\n- **Knowledge Management**:
-        Use memory tools to capture and share architectural decisions\n\n### Development
-        Workflow\n- **Git Operations**: Use Bash with git commands to inspect branches,
-        commits, and repository state\n- **Build Verification**: Run tests and verify
-        build status before approving changes\n- **Branch Management**: Coordinate
-        feature branches and integration workflow\n- **Code Integration**: Use PromoteBranch
-        for immediate development integration or to open a PR in production\n\n##
-        Enhanced Tool Capabilities\n\n### File System Access (Read/Write)\nYou now
-        have full file system access to:\n- Explore project structures and understand
-        codebases\n- Review code changes and implementations \n- Examine test files
-        and configuration\n- Read documentation and architectural decisions\n- Write
-        analysis reports and technical documentation\n\n### Command Execution (Bash)\nExecute
-        commands for:\n- **Git operations**: `git status`, `git log`, `git diff`,
-        `git branch`\n- **Build verification**: `npm test`, `rails test`, `make build`\n-
-        **Code analysis**: `grep`, `find`, `wc` for codebase metrics\n- **Project
-        exploration**: `ls`, `cat`, `head`, `tail` for navigation\n- **Quality checks**:
-        Linting, formatting, dependency analysis\n\n### Team Administration (ListAgents,
-        CreateAgent, EditAgent)\n- Query current team composition and capabilities\n-
-        Create new specialized agents as project needs evolve\n- Modify existing agent
-        capabilities and tool access\n- Balance team workload and expertise\n\n##
-        Task Execution Workflow\n\nWhen you receive a task:\n\n1. **Context Gathering**\n   -
-        Search memory for relevant architectural decisions, patterns, or constraints\n   -
-        Use ListAgents to understand current team capabilities\n   - Use Read to examine
-        relevant project files and understand current state\n\n2. **Technical Assessment**\n   -
-        Use Bash + git to inspect repository state, branches, recent changes\n   -
-        Read configuration files, tests, and documentation to understand requirements\n   -
-        Assess complexity, dependencies, and potential integration challenges\n\n3.
-        **Work Planning**\n   - Break complex tasks into concrete, reviewable chunks\n   -
-        Consider which team members have appropriate skills and availability\n   -
-        Plan verification steps (tests, builds, integration checks)\n\n4. **Delegation
-        & Oversight**\n   - Use DelegateTask with comprehensive context and clear
-        acceptance criteria\n   - Monitor progress and provide clarification when
-        needed\n   - Review completed work using Read to examine changes\n\n5. **Quality
-        Verification**\n   - Use Bash to run tests, verify builds, check git status\n   -
-        Read test results, build logs, and verify integration success\n   - Use git
-        commands to inspect commits and ensure clean integration\n\n6. **Completion
-        & Documentation**\n   - Use MemoryWrite to capture important decisions, patterns,
-        and lessons learned\n   - Use ReportBack to summarize outcomes with technical
-        details and any decisions made\n   - Update team capabilities or processes
-        if needed\n\n**Autonomy principle**: Resolve questions at the level they arise.
-        Before escalating, search memory, try alternate approaches, and make reasonable
-        assumptions. If you''re genuinely stuck on something your delegator would
-        know, ask them — but exhaust your own resources first. When you receive questions
-        from agents you''ve delegated to, absorb and answer them at your level rather
-        than passing them up. The goal is that questions get resolved within the team,
-        not forwarded to the human.\n\n**Reporting back**: If you have a `report_back`
-        tool, send interim reports as you make progress rather than waiting until
-        everything is done. Don''t risk running out of turns with nothing reported.\n\n##
-        Self-modification (changes to daan-rails)\n\nWhen modifying agent definitions,
-        core tools, or anything in the daan-rails repo itself:\n\n1. **Start from
-        latest main.** Fetch and create your branch from `origin/main`:\n   ```\n   git
-        fetch origin\n   git checkout -b <branch-name> origin/main\n   ```\n   Never
-        reuse an existing branch — always start fresh from `origin/main`.\n\n2. **Make
-        your changes.** Edit files, verify they look correct.\n\n3. **Read `README.md`
-        and `AGENTS.md`** in the repo root for conventions (PR rules, commit format,
-        test commands). Follow them throughout your work.\n\n4. **Run `bin/ci`** —
-        it runs linting, security scans, branch checks, and all tests. Do not proceed
-        if any step fails.\n\n5. **Commit and push.**\n   ```\n   git add <files>\n   git
-        commit -m \"<message>\"\n   git push origin <branch-name>\n   ```\n\n6. **Call
-        PromoteBranch** with the branch name. This merges your branch into develop,
-        pushes develop, and hot-reloads agent definitions in the running app.\n   -
-        The branch **must be pushed to origin** before calling PromoteBranch — it
-        will error otherwise.\n   - If there are merge conflicts, resolve them, commit,
-        push develop, and call PromoteBranch again.\n\n7. **Report back** with the
-        outcome and the branch name.\n\nUse MemoryWrite to preserve important context,
-        decisions, and patterns you encounter. Use MemoryGrep or MemoryGlob to search
-        past memory before starting a task. If a memory contradicts information you
-        have encountered, correct it with MemoryEdit or remove it with MemoryDelete.\n\nYour
-        workspace is at /home/ramon/src/me/daan-rails/tmp/workspaces/engineering_manager.
+        and team composition.\n\n## Prime Directive: Delegate Engineering Work\n\n**You
+        do not write or modify application code yourself.** All engineering implementation
+        — writing code, editing files, running tests — must be delegated to the Developer
+        via `DelegateTask`. Your direct tool use (Read, Bash) is limited to:\n- Gathering
+        context before delegating\n- Reviewing completed work after delegation\n-
+        Verifying quality (running tests, inspecting git output)\n\nIf you find yourself
+        reaching for Write or Bash to change application code, stop and delegate instead.\n\n##
+        Core Responsibilities\n\n### Technical Oversight\n- **Code Review**: Use Read
+        to examine code changes, verify implementations match requirements\n- **Architecture**:
+        Ensure consistency with established patterns and architectural decisions\n-
+        **Quality Assurance**: Verify tests pass, builds succeed, and code follows
+        team standards\n- **Project Structure**: Understand and navigate project hierarchies
+        using Read and Bash tools\n\n### Team Management  \n- **Agent Oversight**:
+        Use ListAgents to understand current team composition\n- **Capability Management**:
+        Use CreateAgent/EditAgent to adjust team skills as needs evolve\n- **Work
+        Delegation**: Break down complex tasks and delegate to appropriate specialists\n-
+        **Knowledge Management**: Use memory tools to capture and share architectural
+        decisions\n\n### Development Workflow\n- **Git Operations**: Use Bash with
+        git commands to inspect branches, commits, and repository state\n- **Build
+        Verification**: Run tests and verify build status before approving changes\n-
+        **Branch Management**: Coordinate feature branches and integration workflow\n-
+        **Code Integration**: Use PromoteBranch for immediate development integration
+        or to open a PR in production\n\n## Enhanced Tool Capabilities\n\n### File
+        System Access (Read/Write)\nYou now have full file system access to:\n- Explore
+        project structures and understand codebases\n- Review code changes and implementations
+        \n- Examine test files and configuration\n- Read documentation and architectural
+        decisions\n- Write analysis reports and technical documentation\n\n### Command
+        Execution (Bash)\nExecute commands for:\n- **Git operations**: `git status`,
+        `git log`, `git diff`, `git branch`\n- **Build verification**: `npm test`,
+        `rails test`, `make build`\n- **Code analysis**: `grep`, `find`, `wc` for
+        codebase metrics\n- **Project exploration**: `ls`, `cat`, `head`, `tail` for
+        navigation\n- **Quality checks**: Linting, formatting, dependency analysis\n\n###
+        Team Administration (ListAgents, CreateAgent, EditAgent)\n- Query current
+        team composition and capabilities\n- Create new specialized agents as project
+        needs evolve\n- Modify existing agent capabilities and tool access\n- Balance
+        team workload and expertise\n\n## Task Execution Workflow\n\nWhen you receive
+        a task:\n\n1. **Context Gathering**\n   - Search memory for relevant architectural
+        decisions, patterns, or constraints\n   - Use ListAgents to understand current
+        team capabilities\n   - Use Read to examine relevant project files and understand
+        current state\n\n2. **Technical Assessment**\n   - Use Bash + git to inspect
+        repository state, branches, recent changes\n   - Read configuration files,
+        tests, and documentation to understand requirements\n   - Assess complexity,
+        dependencies, and potential integration challenges\n\n3. **Work Planning**\n   -
+        Break complex tasks into concrete, reviewable chunks\n   - Consider which
+        team members have appropriate skills and availability\n   - Plan verification
+        steps (tests, builds, integration checks)\n\n4. **Delegation & Oversight**\n   -
+        Use DelegateTask with comprehensive context and clear acceptance criteria\n   -
+        Monitor progress and provide clarification when needed\n   - Review completed
+        work using Read to examine changes\n\n5. **Quality Verification**\n   - Use
+        Bash to run tests, verify builds, check git status\n   - Read test results,
+        build logs, and verify integration success\n   - Use git commands to inspect
+        commits and ensure clean integration\n\n6. **Completion & Documentation**\n   -
+        Use MemoryWrite to capture important decisions, patterns, and lessons learned\n   -
+        Use ReportBack to summarize outcomes with technical details and any decisions
+        made\n   - Update team capabilities or processes if needed\n\n**Autonomy principle**:
+        Resolve questions at the level they arise. Before escalating, search memory,
+        try alternate approaches, and make reasonable assumptions. If you''re genuinely
+        stuck on something your delegator would know, ask them — but exhaust your
+        own resources first. When you receive questions from agents you''ve delegated
+        to, absorb and answer them at your level rather than passing them up. The
+        goal is that questions get resolved within the team, not forwarded to the
+        human.\n\n**Reporting back**: If you have a `report_back` tool, send interim
+        reports as you make progress rather than waiting until everything is done.
+        Don''t risk running out of turns with nothing reported.\n\n## Self-modification
+        (changes to daan-rails)\n\nWhen modifying agent definitions, core tools, or
+        anything in the daan-rails repo itself:\n\n1. **Start from latest main.**
+        Fetch and create your branch from `origin/main`:\n   ```\n   git fetch origin\n   git
+        checkout -b <branch-name> origin/main\n   ```\n   Never reuse an existing
+        branch — always start fresh from `origin/main`.\n\n2. **Make your changes.**
+        Edit files, verify they look correct.\n\n3. **Read `README.md` and `AGENTS.md`**
+        in the repo root for conventions (PR rules, commit format, test commands).
+        Follow them throughout your work.\n\n4. **Run `bin/ci`** — it runs linting,
+        security scans, branch checks, and all tests. Do not proceed if any step fails.\n\n5.
+        **Commit and push.**\n   ```\n   git add <files>\n   git commit -m \"<message>\"\n   git
+        push origin <branch-name>\n   ```\n\n6. **Call PromoteBranch** with the branch
+        name. This merges your branch into develop, pushes develop, and hot-reloads
+        agent definitions in the running app.\n   - The branch **must be pushed to
+        origin** before calling PromoteBranch — it will error otherwise.\n   - If
+        there are merge conflicts, resolve them, commit, push develop, and call PromoteBranch
+        again.\n\n7. **Report back** with the outcome and the branch name.\n\nUse
+        MemoryWrite to preserve important context, decisions, and patterns you encounter.
+        Use MemoryGrep or MemoryGlob to search past memory before starting a task.
+        If a memory contradicts information you have encountered, correct it with
+        MemoryEdit or remove it with MemoryDelete.\n\nYour workspace is at /home/ramon/src/me/daan-rails/tmp/workspaces/engineering_manager.
         It is yours alone — no other agent shares it. You are responsible for keeping
         it orderly: decide where repos, projects, and temporary files live, and stick
         to that structure.\n\nUse MemoryWrite to record where you put things (repos,
@@ -2457,7 +2472,7 @@ http_interactions:
       message: OK
     headers:
       Date:
-      - Fri, 20 Mar 2026 10:38:27 GMT
+      - Tue, 24 Mar 2026 13:59:36 GMT
       Content-Type:
       - application/json
       Transfer-Encoding:
@@ -2469,27 +2484,27 @@ http_interactions:
       Anthropic-Ratelimit-Input-Tokens-Remaining:
       - '3995000'
       Anthropic-Ratelimit-Input-Tokens-Reset:
-      - '2026-03-20T10:38:26Z'
+      - '2026-03-24T13:59:36Z'
       Anthropic-Ratelimit-Output-Tokens-Limit:
       - '800000'
       Anthropic-Ratelimit-Output-Tokens-Remaining:
       - '800000'
       Anthropic-Ratelimit-Output-Tokens-Reset:
-      - '2026-03-20T10:38:27Z'
+      - '2026-03-24T13:59:36Z'
       Anthropic-Ratelimit-Requests-Limit:
       - '4000'
       Anthropic-Ratelimit-Requests-Remaining:
       - '3999'
       Anthropic-Ratelimit-Requests-Reset:
-      - '2026-03-20T10:38:26Z'
+      - '2026-03-24T13:59:35Z'
       Anthropic-Ratelimit-Tokens-Limit:
       - '4800000'
       Anthropic-Ratelimit-Tokens-Remaining:
       - '4795000'
       Anthropic-Ratelimit-Tokens-Reset:
-      - '2026-03-20T10:38:26Z'
+      - '2026-03-24T13:59:36Z'
       Request-Id:
-      - req_011CZEBqJHfZp5hoQm9s1We5
+      - req_011CZN2QdoxDK7E4zQGyozDV
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains; preload
       Anthropic-Organization-Id:
@@ -2497,13 +2512,13 @@ http_interactions:
       Server:
       - cloudflare
       X-Envoy-Upstream-Service-Time:
-      - '644'
+      - '1061'
       Vary:
       - Accept-Encoding
       Server-Timing:
-      - x-originResponse;dur=645
+      - x-originResponse;dur=1101
       Set-Cookie:
-      - _cfuvid=yCrj8CfVfbIuS01Xf3v7SeyVTA.NeJcT6IpR9KtHaJE-1774003106.3477676-1.0.1.1-AeLAvC6kpRnED_aRf.aq3xfLykMClHlt_TRjsNA_kIw;
+      - _cfuvid=Isy_mg31LH7dXaMxXo42m5qSHardYbQRyTTzes7DT.Q-1774360775.550379-1.0.1.1-EFd4fFXcd.m3E1vc6hu8_.AKCYL_kIYOn1eA3CHIa1I;
         HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com
       X-Robots-Tag:
       - none
@@ -2512,10 +2527,837 @@ http_interactions:
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Cf-Ray:
-      - 9df41656aed57cec-MAD
+      - 9e16327f2eceb835-MAD
     body:
       encoding: ASCII-8BIT
-      string: '{"model":"claude-haiku-4-5-20251001","id":"msg_011zyt1kFw31Y3sSm7YB4v5z","type":"message","role":"assistant","content":[{"type":"text","text":"Done!
-        I''ve written \"chain test passed\" to `chain_test.txt` in the current directory."}],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":10446,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":26,"service_tier":"standard","inference_geo":"not_available"}}'
-  recorded_at: Fri, 20 Mar 2026 10:38:27 GMT
+      string: '{"model":"claude-haiku-4-5-20251001","id":"msg_011AkNEDESiUmgfWqqsPDCA1","type":"message","role":"assistant","content":[{"type":"text","text":"Done!
+        I''ve written \"chain test passed\" to `chain_test.txt` in the current working
+        directory."}],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":10561,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":27,"service_tier":"standard","inference_geo":"not_available"}}'
+  recorded_at: Tue, 24 Mar 2026 13:59:36 GMT
+- request:
+    method: post
+    uri: https://api.anthropic.com/v1/messages
+    body:
+      encoding: UTF-8
+      string: '{"model":"claude-haiku-4-5-20251001","messages":[{"role":"user","content":[{"type":"text","text":"Write
+        \"chain test passed\" to chain_test.txt and summarise it for me"}]},{"role":"assistant","content":[{"type":"text","text":"I
+        don''t have a direct file writing tool available in my current toolset. Let
+        me check what agents are available who might be able to help with this file
+        operation."},{"type":"tool_use","id":"toolu_019SnXT5MyAjpzjs98ucmAUR","name":"daan--core--list_agents","input":{}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_019SnXT5MyAjpzjs98ucmAUR","content":[{"type":"text","text":"Agent
+        Resource Manager (agent_resource_manager)\n  Tools: Daan::Core::CreateAgent,
+        Daan::Core::EditAgent, Daan::Core::Read, Daan::Core::Write, Daan::Core::ReportBack,
+        Daan::Core::CreateSteps, Daan::Core::UpdateStep\n\nChief of Staff (chief_of_staff)\n  Tools:
+        Daan::Core::DelegateTask, Daan::Core::ListAgents, Daan::Core::CreateSteps,
+        Daan::Core::UpdateStep, SwarmMemory::Tools::MemoryWrite, SwarmMemory::Tools::MemoryRead,
+        SwarmMemory::Tools::MemoryEdit, SwarmMemory::Tools::MemoryDelete, SwarmMemory::Tools::MemoryGlob,
+        SwarmMemory::Tools::MemoryGrep\n\nDeveloper (developer)\n  Tools: Daan::Core::Read,
+        Daan::Core::Write, Daan::Core::Bash, Daan::Core::ReportBack, Daan::Core::PromoteBranch,
+        Daan::Core::CreateSteps, Daan::Core::UpdateStep, SwarmMemory::Tools::MemoryWrite,
+        SwarmMemory::Tools::MemoryRead, SwarmMemory::Tools::MemoryEdit, SwarmMemory::Tools::MemoryDelete,
+        SwarmMemory::Tools::MemoryGlob, SwarmMemory::Tools::MemoryGrep\n\nEngineering
+        Manager (engineering_manager)\n  Tools: Daan::Core::DelegateTask, Daan::Core::ReportBack,
+        Daan::Core::Read, Daan::Core::Write, Daan::Core::Bash, Daan::Core::ListAgents,
+        Daan::Core::CreateAgent, Daan::Core::EditAgent, Daan::Core::PromoteBranch,
+        Daan::Core::CreateSteps, Daan::Core::UpdateStep, SwarmMemory::Tools::MemoryWrite,
+        SwarmMemory::Tools::MemoryRead, SwarmMemory::Tools::MemoryEdit, SwarmMemory::Tools::MemoryDelete,
+        SwarmMemory::Tools::MemoryGlob, SwarmMemory::Tools::MemoryGrep"}]}]},{"role":"assistant","content":[{"type":"text","text":"Perfect!
+        I''ll delegate this to the developer who has Write capability."},{"type":"tool_use","id":"toolu_011UpiCLDcW2KgtWaPzYjHgW","name":"daan--core--delegate_task","input":{"agent_name":"developer","task":"Write
+        \"chain test passed\" to a file named chain_test.txt in the current working
+        directory."}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_011UpiCLDcW2KgtWaPzYjHgW","content":[{"type":"text","text":"Error:
+        chief_of_staff cannot delegate to developer. Allowed: engineering_manager,
+        agent_resource_manager"}]}]},{"role":"assistant","content":[{"type":"text","text":"I
+        see — I can only delegate to the engineering_manager or agent_resource_manager.
+        Let me use the engineering_manager for this task."},{"type":"tool_use","id":"toolu_01BrK8MUiz9zNEsTCttk8ap5","name":"daan--core--delegate_task","input":{"agent_name":"engineering_manager","task":"Write
+        \"chain test passed\" to a file named chain_test.txt in the current working
+        directory."}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_01BrK8MUiz9zNEsTCttk8ap5","content":[{"type":"text","text":"Delegated
+        to Engineering Manager (Thread #57519493). Awaiting their report."}]}]},{"role":"assistant","content":[{"type":"text","text":"Great!
+        I''ve delegated the task to the Engineering Manager to write \"chain test
+        passed\" to chain_test.txt. Waiting for their report...\n\nOnce they complete
+        it, I''ll provide you with a summary.\n\n---\n\n**Status Update:** The Engineering
+        Manager is working on writing the content to chain_test.txt. I''ll report
+        the results as soon as they come back."}]},{"role":"user","content":[{"type":"text","text":"[System]
+        Engineering Manager completed their task without calling report_back. Their
+        last message: Done! I''ve written \"chain test passed\" to `chain_test.txt`
+        in the current working directory."}]}],"stream":false,"max_tokens":64000,"tools":[{"name":"daan--core--delegate_task","description":"Delegate
+        a task or follow-up message to a sub-agent. Each agent has one persistent
+        thread — if a thread already exists, your message is added to it and the agent
+        continues from where they left off. For follow-ups to an existing thread,
+        keep the message brief; the agent already has the full context.","input_schema":{"type":"object","properties":{"agent_name":{"type":"string","description":"The
+        agent to delegate to (e.g. ''engineering_manager'', ''developer'')"},"task":{"type":"string","description":"The
+        task or follow-up message. For initial delegation, include full context. For
+        follow-ups to an existing thread, be brief — do not repeat what was already
+        sent."},"timeout_seconds":{"type":"number","description":"Override execution
+        timeout in seconds (default: 10, max: 1800)"}},"required":["agent_name","task"],"additionalProperties":false,"strict":true}},{"name":"daan--core--list_agents","description":"List
+        all registered agents on the team — their names, descriptions, and tools.
+        Use this to understand who is available and what each agent can do before
+        delegating.","input_schema":{"type":"object","properties":{"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":[]}},{"name":"daan--core--create_steps","description":"Create
+        a checklist of steps for the current task. Use this at the start of a task
+        to plan your work. Steps appear in your system prompt so you always see them.","input_schema":{"type":"object","properties":{"steps":{"type":"array","description":"Ordered
+        list of step titles","items":{"type":"string"}},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["steps"],"additionalProperties":false,"strict":true}},{"name":"daan--core--update_step","description":"Update
+        the status of a step in your checklist. Use the position number shown in your
+        system prompt.","input_schema":{"type":"object","properties":{"position":{"type":"string","description":"Position
+        number of the step to update"},"status":{"type":"string","description":"New
+        status: pending, in_progress, or completed"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["position","status"],"additionalProperties":false,"strict":true}},{"name":"MemoryWrite","description":"Store
+        content in persistent memory with structured metadata for semantic search
+        and retrieval.\n\nCRITICAL: ALL 8 required parameters MUST be provided. Do
+        NOT skip any. If you''re missing information, ask the user or infer reasonable
+        defaults.\n\nREQUIRED PARAMETERS (provide ALL 8):\n1. file_path - Where to
+        store (e.g., ''concept/ruby/classes.md'', ''skill/debugging/trace-errors.md'')\n2.
+        content - Pure markdown content (no frontmatter)\n3. title - Brief descriptive
+        title\n4. type - Entry category: \"concept\", \"fact\", \"skill\", or \"experience\"\n5.
+        confidence - How sure you are: \"high\", \"medium\", or \"low\"\n6. tags -
+        JSON string of array of search keywords (e.g., ''[\"ruby\", \"classes\", \"oop\"]'')
+        - be comprehensive!\n7. related - JSON string of array of related memory paths
+        (e.g., ''[\"memory://concept/ruby/modules.md\", \"memory://concept/ruby/classes.md\"]'')
+        or ''[]'' if none\n8. domain - Category like ''programming/ruby'', ''people'',
+        ''debugging''\n9. source - Where this came from: \"user\", \"documentation\",
+        \"experimentation\", or \"inference\"\n\nOPTIONAL (for skills only):\n- tools
+        - JSON string of array of tool names needed (e.g., ''[\"Read\", \"Edit\",
+        \"Bash\"]'') or ''[]'' if none\n- permissions - Tool restrictions hash or
+        {}\n\nPATH STRUCTURE (EXACTLY 4 TOP-LEVEL CATEGORIES - NEVER CREATE OTHERS):\nMemory
+        has EXACTLY 4 fixed top-level categories. ALL paths MUST start with one of
+        these:\n\n1. concept/{domain}/{name}.md - Abstract ideas (e.g., concept/ruby/classes.md)\n2.
+        fact/{subfolder}/{name}.md - Concrete info (e.g., fact/people/john.md)\n3.
+        skill/{domain}/{name}.md - How-to procedures (e.g., skill/debugging/api-errors.md)\n4.
+        experience/{name}.md - Lessons learned (e.g., experience/fixed-cors-bug.md)\n\nINVALID
+        (do NOT create): documentation/, reference/, tutorial/, knowledge/, notes/\nThese
+        categories do NOT exist. Use concept/, fact/, skill/, or experience/ instead.\n\nTAGS
+        ARE CRITICAL: Think \"What would I search for in 6 months?\" For skills especially,
+        be VERY comprehensive with tags - they''re your search index.\n\nEXAMPLES:\n-
+        For concept: tags: [''ruby'', ''oop'', ''classes'', ''inheritance'', ''methods'']\n-
+        For skill: tags: [''debugging'', ''api'', ''http'', ''errors'', ''trace'',
+        ''network'', ''rest'']\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        with .md extension (e.g., ''concept/ruby/classes.md'', ''fact/people/john.md'')"},"content":{"type":"string","description":"Content
+        to store (pure markdown, no frontmatter needed)"},"title":{"type":"string","description":"Brief
+        title describing the content"},"type":{"type":"string","description":"Entry
+        type: concept, fact, skill, or experience (matches category: concept/, fact/,
+        skill/, experience/)"},"confidence":{"type":"string","description":"Confidence
+        level: high, medium, or low (defaults to ''medium'' if not specified)"},"tags":{"type":"string","description":"JSON
+        string of array of tag strings for searching (e.g., ''[\"ruby\", \"oop\"]'')"},"related":{"type":"string","description":"JSON
+        string of array of related memory path strings (e.g., ''[\"memory://concept/ruby/modules.md\",
+        \"memory://concept/ruby/classes.md\"]'')"},"domain":{"type":"string","description":"Category/subcategory
+        (e.g., ''programming/ruby'', ''people'')"},"source":{"type":"string","description":"Source
+        of information: user, documentation, experimentation, or inference (defaults
+        to ''user'' if not specified)"},"tools":{"type":"string","description":"JSON
+        string of array of tool name strings required for this skill (e.g., ''[\"Read\",
+        \"Edit\", \"Bash\"]''). Only for type: skill"},"permissions":{"type":"object","description":"Tool
+        permission restrictions (same format as swarm config). Only for type: skill"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path","content","title","type","tags","related","domain"],"additionalProperties":false,"strict":true}},{"name":"MemoryRead","description":"Read
+        content from your memory storage and retrieve all associated metadata.\n\nREQUIRED:
+        Provide the file_path parameter - the path to the memory entry you want to
+        read.\n\n**Parameters:**\n- file_path (REQUIRED): Path to memory entry - MUST
+        start with concept/, fact/, skill/, or experience/\n\n**MEMORY STRUCTURE -
+        EXACTLY 4 Top-Level Categories (NEVER create others):**\nALL paths MUST start
+        with one of these 4 fixed categories:\n- concept/{domain}/{name}.md - Abstract
+        ideas (e.g., concept/ruby/classes.md)\n- fact/{subfolder}/{name}.md - Concrete
+        info (e.g., fact/people/john.md)\n- skill/{domain}/{name}.md - Procedures
+        (e.g., skill/debugging/api-errors.md)\n- experience/{name}.md - Lessons (e.g.,
+        experience/fixed-bug.md)\n\nINVALID: documentation/, reference/, tutorial/,
+        parallel/, analysis/, notes/\n\n**Returns:**\nJSON with two fields:\n- content:
+        Markdown content with line numbers (same format as Read tool)\n- metadata:
+        All metadata (title, type, tags, tools, permissions, confidence, etc.)\n\n**Examples:**\n-
+        MemoryRead(file_path: \"concept/ruby/classes.md\") - Read a concept\n- MemoryRead(file_path:
+        \"fact/people/john.md\") - Read a fact\n- MemoryRead(file_path: \"skill/debugging/api-errors.md\")
+        - Read a skill before loading it\n\n**Important:**\n- Always read entries
+        before editing them with MemoryEdit or MemoryMultiEdit\n- Line numbers in
+        output are for reference only - don''t include them when editing\n- Each read
+        is tracked to enforce read-before-edit patterns\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to read from memory - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/ruby/classes.md'', ''skill/debugging/api.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path"],"additionalProperties":false,"strict":true}},{"name":"MemoryEdit","description":"Perform
+        exact string replacements in memory entries (works like Edit tool but for
+        memory content).\n\nREQUIRED: Provide ALL THREE parameters - file_path, old_string,
+        and new_string.\n\n**Required Parameters:**\n- file_path (REQUIRED): Path
+        to memory entry - MUST start with concept/, fact/, skill/, or experience/\n-
+        old_string (REQUIRED): The exact text to replace - must match exactly including
+        all whitespace and indentation\n- new_string (REQUIRED): The replacement text
+        - must be different from old_string\n\n**MEMORY STRUCTURE (4 Fixed Categories
+        Only):**\n- concept/{domain}/{name}.md - Abstract ideas\n- fact/{subfolder}/{name}.md
+        - Concrete information\n- skill/{domain}/{name}.md - Procedures\n- experience/{name}.md
+        - Lessons\nINVALID: documentation/, reference/, analysis/, parallel/, tutorial/\n\n**Optional
+        Parameters:**\n- replace_all: Set to true to replace all occurrences (default:
+        false, replaces only first occurrence)\n\n**CRITICAL - Before Using This Tool:**\n1.
+        You MUST use MemoryRead on the entry first - edits without reading will FAIL\n2.
+        Copy text exactly from MemoryRead output, EXCLUDING the line number prefix\n3.
+        Line number format: \"    123→actual content\" - only use text AFTER the arrow\n4.
+        Preserve exact indentation and whitespace from the original content\n\n**How
+        It Works:**\n- If old_string appears once: replacement succeeds\n- If old_string
+        appears multiple times: FAILS unless replace_all=true\n- If old_string not
+        found: FAILS with helpful error\n- Make old_string unique by including more
+        surrounding context\n\n**Examples:**\n```\n# Update a fact\nMemoryEdit(\n  file_path:
+        \"fact/people/john.md\",\n  old_string: \"status: active\",\n  new_string:
+        \"status: inactive\"\n)\n\n# Update a skill\nMemoryEdit(\n  file_path: \"skill/debugging/api-errors.md\",\n  old_string:
+        \"TODO: Add error codes\",\n  new_string: \"Common error codes: 401, 403,
+        404, 500\",\n  replace_all: true\n)\n\n# Update a concept\nMemoryEdit(\n  file_path:
+        \"concept/ruby/classes.md\",\n  old_string: \"def calculate_total(items)\n  return
+        sum(items)\nend\",\n  new_string: \"def compute_sum(items)\n  items.sum\nend\"\n)\n```\n\n**Common
+        Mistakes to Avoid:**\n- Including line numbers in old_string or new_string\n-
+        Not reading the entry first with MemoryRead\n- Not matching whitespace exactly\n-
+        Trying to replace non-unique text without replace_all\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to memory entry - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/ruby/classes.md'', ''skill/debugging/api.md'')"},"old_string":{"type":"string","description":"The
+        exact text to replace (must match exactly including whitespace)"},"new_string":{"type":"string","description":"The
+        text to replace it with (must be different from old_string)"},"replace_all":{"type":"string","description":"Replace
+        all occurrences of old_string (default false)"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path","old_string","new_string"],"additionalProperties":false,"strict":true}},{"name":"MemoryDelete","description":"Delete
+        entries from your memory storage when they''re no longer needed.\n\nREQUIRED:
+        Provide the file_path parameter - the path to the entry you want to delete.\n\n**Parameters:**\n-
+        file_path (REQUIRED): Path to memory entry - MUST start with concept/, fact/,
+        skill/, or experience/\n\n**MEMORY STRUCTURE (4 Fixed Categories Only):**\n-
+        concept/{domain}/{name}.md - Abstract ideas\n- fact/{subfolder}/{name}.md
+        - Concrete information\n- skill/{domain}/{name}.md - Procedures\n- experience/{name}.md
+        - Lessons\nINVALID: documentation/, reference/, analysis/, parallel/, temp/,
+        notes/\n\n**When to Delete:**\n- Outdated information that''s been superseded\n-
+        Completed tasks that are no longer relevant\n- Duplicate entries (after consolidating)\n-
+        Test data or temporary calculations\n- Low-quality entries with minimal value\n\n**IMPORTANT
+        WARNINGS:**\n- Deletion is PERMANENT - content cannot be recovered\n- Think
+        carefully before deleting - consider if it might be useful later\n- Use MemoryDefrag
+        to identify candidates for deletion (find_archival_candidates, compact)\n-
+        Consider reading the entry first to verify you''re deleting the right thing\n\n**Examples:**\n```\n#
+        Delete outdated concept\nMemoryDelete(file_path: \"concept/old-api/deprecated.md\")\n\n#
+        Delete completed experience\nMemoryDelete(file_path: \"experience/temp-experiment.md\")\n\n#
+        Delete obsolete fact\nMemoryDelete(file_path: \"fact/orgs/defunct-company.md\")\n```\n\n**Best
+        Practices:**\n1. Read entry first with MemoryRead to confirm it''s the right
+        one\n2. Use MemoryDefrag(action: \"find_archival_candidates\") to find old,
+        unused entries\n3. Delete in batches during memory maintenance sessions\n4.
+        Keep entries that might provide historical context\n5. Don''t delete skills
+        unless you''re certain they won''t be needed\n\n**Alternative to Deletion:**\nInstead
+        of deleting, consider:\n- Updating entries to mark them as archived\n- Consolidating
+        multiple entries into one comprehensive entry\n- Moving entries to an \"archive/\"
+        hierarchy for later reference\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to delete from memory - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/old-api/deprecated.md'', ''experience/temp.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path"],"additionalProperties":false,"strict":true}},{"name":"MemoryGlob","description":"Search
+        your memory entries using glob patterns (like filesystem glob).\n\nREQUIRED:
+        Provide the pattern parameter - the glob pattern to match entries against.\n\n**Parameters:**\n-
+        pattern (REQUIRED): Glob pattern with wildcards (e.g., ''**/*.txt'', ''parallel/*/task_*'',
+        ''skill/**'')\n\n**Glob Pattern Syntax (Standard Ruby Glob):**\n- `*` - matches
+        .md files at a single directory level (e.g., ''fact/*'' → fact/*.md)\n- `**`
+        - matches .md files recursively at any depth (e.g., ''fact/**'' → fact/**/*.md)\n-
+        `?` - matches any single character (e.g., ''task_?'')\n- `[abc]` - matches
+        any character in the set (e.g., ''task_[0-9]'')\n\n**Returns:**\nList of matching
+        .md memory entries with:\n- Full memory:// path\n- Entry title\n- Size in
+        bytes/KB/MB\n\n**Note**: Only returns .md files (actual memory entries), not
+        directory entries.\n\n**MEMORY STRUCTURE (4 Fixed Categories Only):**\nALL
+        patterns MUST target one of these 4 categories:\n- concept/{domain}/** - Abstract
+        ideas\n- fact/{subfolder}/** - Concrete information\n- skill/{domain}/** -
+        Procedures\n- experience/** - Lessons\nINVALID: documentation/, reference/,
+        parallel/, analysis/, tutorial/\n\n**Common Use Cases:**\n```\n# Find direct
+        .md files in fact/\nMemoryGlob(pattern: \"fact/*\")\nResult: fact/api.md (only
+        direct children, not nested)\n\n# Find ALL facts recursively\nMemoryGlob(pattern:
+        \"fact/**\")\nResult: fact/api.md, fact/people/john.md, fact/people/jane.md,
+        ...\n\n# Find all skills recursively\nMemoryGlob(pattern: \"skill/**\")\nResult:
+        skill/debugging/api-errors.md, skill/meta/deep-learning.md, ...\n\n# Find
+        all concepts in a domain\nMemoryGlob(pattern: \"concept/ruby/**\")\nResult:
+        concept/ruby/classes.md, concept/ruby/modules.md, ...\n\n# Find direct files
+        in fact/people/\nMemoryGlob(pattern: \"fact/people/*\")\nResult: fact/people/john.md,
+        fact/people/jane.md (not fact/people/teams/x.md)\n\n# Find all experiences\nMemoryGlob(pattern:
+        \"experience/**\")\nResult: experience/fixed-cors-bug.md, experience/optimization.md,
+        ...\n\n# Find debugging skills recursively\nMemoryGlob(pattern: \"skill/debugging/**\")\nResult:
+        skill/debugging/api-errors.md, skill/debugging/performance.md, ...\n\n# Find
+        all entries (all categories)\nMemoryGlob(pattern: \"**/*\")\nResult: All .md
+        entries across all 4 categories\n```\n\n**Understanding * vs **:**\n- `fact/*`
+        matches only direct .md files: fact/api.md\n- `fact/**` matches ALL .md files
+        recursively: fact/api.md, fact/people/john.md, ...\n- To explore subdirectories,
+        use recursive pattern and examine returned paths\n\n**When to Use MemoryGlob:**\n-
+        Discovering what''s in a memory hierarchy\n- Finding all entries matching
+        a naming convention\n- Locating related entries by path pattern\n- Exploring
+        memory structure before reading specific entries\n- Batch operations preparation
+        (find all, then process each)\n\n**Combining with Other Tools:**\n1. Use MemoryGlob
+        to find candidates\n2. Use MemoryRead to examine specific entries\n3. Use
+        MemoryEdit/MemoryDelete to modify/remove them\n\n**Tips:**\n- Start with broad
+        patterns and narrow down\n- Use `**` for recursive searching entire hierarchies\n-
+        Combine with MemoryGrep if you need content-based search\n- Check entry sizes
+        to identify large entries\n","input_schema":{"type":"object","properties":{"pattern":{"type":"string","description":"Glob
+        pattern - target concept/, fact/, skill/, or experience/ only (e.g., ''skill/**'',
+        ''concept/ruby/*'', ''fact/people/*.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["pattern"],"additionalProperties":false,"strict":true}},{"name":"MemoryGrep","description":"Search
+        your memory content using regular expression patterns (like grep).\n\nREQUIRED:
+        Provide the pattern parameter - the regex pattern to search for in entry content.\n\nMEMORY
+        STRUCTURE: Searches across all 4 fixed categories (concept/, fact/, skill/,
+        experience/)\nNO OTHER top-level categories exist.\n\n**Required Parameters:**\n-
+        pattern (REQUIRED): Regular expression pattern to search for (e.g., ''status:
+        pending'', ''TODO.*urgent'', ''\\btask_\\d+\\b'')\n\n**Optional Parameters:**\n-
+        path: Limit search to specific path (e.g., ''concept/'', ''fact/api-design/'',
+        ''skill/ruby'')\n- case_insensitive: Set to true for case-insensitive search
+        (default: false)\n- output_mode: Choose output format - ''files_with_matches''
+        (default), ''content'', or ''count''\n\n**Output Modes Explained:**\n1. **files_with_matches**
+        (default): Just shows which entries contain matches\n   - Fast and efficient
+        for discovery\n   - Use when you want to know WHERE matches exist\n\n2. **content**:
+        Shows matching lines with line numbers\n   - See the actual matching content\n   -
+        Use when you need to read the matches in context\n\n3. **count**: Shows how
+        many matches in each entry\n   - Quantify occurrences\n   - Use for statistics
+        or finding entries with most matches\n\n**Regular Expression Syntax:**\n-
+        Literal text: ''status: pending''\n- Any character: ''task.done''\n- Character
+        classes: ''[0-9]+'' (digits), ''[a-z]+'' (lowercase)\n- Word boundaries: ''\\btodo\\b''
+        (exact word)\n- Anchors: ''^Start'' (line start), ''end$'' (line end)\n- Quantifiers:
+        ''*'' (0+), ''+'' (1+), ''?'' (0 or 1), ''{3}'' (exactly 3)\n- Alternation:
+        ''pending|in-progress|blocked''\n\n**Path Parameter - Directory-Style Filtering:**\nThe
+        path parameter works just like searching in directories:\n- ''concept/'' -
+        Search only concept entries\n- ''fact/api-design'' - Search only in fact/api-design
+        (treats as directory)\n- ''fact/api-design/'' - Same as above\n- ''skill/ruby/blocks.md''
+        - Search only that specific file\n\n**Examples:**\n```\n# Find entries containing
+        \"TODO\" (case-sensitive)\nMemoryGrep(pattern: \"TODO\")\n\n# Search only
+        in concepts\nMemoryGrep(pattern: \"TODO\", path: \"concept/\")\n\n# Search
+        in a specific subdirectory\nMemoryGrep(pattern: \"endpoint\", path: \"fact/api-design\")\n\n#
+        Search a specific file\nMemoryGrep(pattern: \"lambda\", path: \"skill/ruby/blocks.md\")\n\n#
+        Find entries with any status (case-insensitive)\nMemoryGrep(pattern: \"status:\",
+        case_insensitive: true)\n\n# Show actual content of matches in skills only\nMemoryGrep(pattern:
+        \"error|warning|failed\", path: \"skill/\", output_mode: \"content\")\n\n#
+        Count how many times \"completed\" appears in experiences\nMemoryGrep(pattern:
+        \"completed\", path: \"experience/\", output_mode: \"count\")\n\n# Find task
+        numbers in facts\nMemoryGrep(pattern: \"task_\\d+\", path: \"fact/\")\n\n#
+        Find incomplete tasks\nMemoryGrep(pattern: \"^- \\[ \\]\", output_mode: \"content\")\n\n#
+        Find entries mentioning specific functions\nMemoryGrep(pattern: \"\\bprocess_data\\(\")\n```\n\n**Use
+        Cases:**\n- Finding entries by keyword or phrase\n- Locating TODO items or
+        action items\n- Searching for error messages or debugging info\n- Finding
+        entries about specific code/functions\n- Identifying patterns in your memory\n-
+        Content-based discovery (vs MemoryGlob''s path-based discovery)\n\n**Combining
+        with Other Tools:**\n1. Use MemoryGrep to find entries containing specific
+        content\n2. Use MemoryRead to examine full entries\n3. Use MemoryEdit to update
+        the found content\n\n**Tips:**\n- Start with simple literal patterns before
+        using complex regex\n- Use case_insensitive=true for broader matches\n- Use
+        path parameter to limit search scope (faster and more precise)\n- Use output_mode=\"content\"
+        to see context around matches\n- Escape special regex characters with backslash:
+        \\. \\* \\? \\[ \\]\n- Test patterns on a small set before broad searches\n-
+        Use word boundaries (\\b) for exact word matching\n","input_schema":{"type":"object","properties":{"pattern":{"type":"string","description":"Regular
+        expression pattern to search for"},"path":{"type":"string","description":"Limit
+        search to specific path (e.g., ''concept/'', ''fact/api-design/'', ''skill/ruby/blocks.md'')"},"case_insensitive":{"type":"boolean","description":"Set
+        to true for case-insensitive search (default: false)"},"output_mode":{"type":"string","description":"Output
+        mode: ''files_with_matches'' (default), ''content'', or ''count''"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["pattern"],"additionalProperties":false,"strict":true}}],"system":[{"type":"text","text":"You
+        are the Chief of Staff for the Daan agent team. You are the human''s primary
+        contact. You receive requests, delegate work to appropriate team members,
+        and report results back to the human.\n\n**Autonomy principle**: Resolve questions
+        at the level they arise. Before escalating, search memory, try alternate approaches,
+        and make reasonable assumptions. If you''re genuinely stuck on something your
+        delegator would know, ask them — but exhaust your own resources first. When
+        you receive questions from agents you''ve delegated to, absorb and answer
+        them at your level rather than passing them up. The goal is that questions
+        get resolved within the team, not forwarded to the human.\n\n**Reporting back**:
+        If you have a `report_back` tool, send interim reports as you make progress
+        rather than waiting until everything is done. Don''t risk running out of turns
+        with nothing reported.\n\nBefore delegating, search memory for relevant context
+        about the human''s preferences, past decisions, or similar tasks. Use what
+        you find to write a richer delegation brief — so the team has what they need
+        to act independently.\n\nWhen you need to delegate a task and are unsure who
+        to assign it to, call ListAgents first to get a current view of the team —
+        their roles and capabilities.\n\nWhen a report comes back, present it in terms
+        of outcomes and decisions made, not process. Use memory to frame results around
+        what the human has previously cared about. After each interaction, write or
+        update memories that capture what the human seemed satisfied or dissatisfied
+        with.\n\nWhen you receive a task:\n\n**For Technical Work:**\n1. Use DelegateTask
+        with agent_name \"engineering_manager\" to assign development, coding, or
+        technical tasks.\n2. Let the human know you''ve delegated and will update
+        them when results are in.\n3. When the Engineering Manager''s report arrives
+        in this thread, synthesize it and respond to the human clearly and concisely.\n\n**For
+        Agent Management Work:**\n1. Use DelegateTask with agent_name \"agent_resource_manager\"
+        to assign tasks related to creating new agents, modifying existing agents,
+        or managing the agent team structure.\n2. Let the human know you''ve delegated
+        and will update them when results are in.\n3. When the Agent Resource Manager''s
+        report arrives in this thread, synthesize it and respond to the human clearly
+        and concisely.\n\nYour response after receiving a report is your final message
+        in this cycle.\n\nUse MemoryWrite to preserve important context, decisions,
+        and patterns you encounter. Use MemoryGrep or MemoryGlob to search past memory
+        before starting a task. If a memory contradicts information you have encountered,
+        correct it with MemoryEdit or remove it with MemoryDelete."}]}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      X-Api-Key:
+      - "<ANTHROPIC_API_KEY>"
+      Anthropic-Version:
+      - '2023-06-01'
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Tue, 24 Mar 2026 13:59:37 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Anthropic-Ratelimit-Input-Tokens-Limit:
+      - '4000000'
+      Anthropic-Ratelimit-Input-Tokens-Remaining:
+      - '3996000'
+      Anthropic-Ratelimit-Input-Tokens-Reset:
+      - '2026-03-24T13:59:37Z'
+      Anthropic-Ratelimit-Output-Tokens-Limit:
+      - '800000'
+      Anthropic-Ratelimit-Output-Tokens-Remaining:
+      - '800000'
+      Anthropic-Ratelimit-Output-Tokens-Reset:
+      - '2026-03-24T13:59:37Z'
+      Anthropic-Ratelimit-Requests-Limit:
+      - '4000'
+      Anthropic-Ratelimit-Requests-Remaining:
+      - '3999'
+      Anthropic-Ratelimit-Requests-Reset:
+      - '2026-03-24T13:59:36Z'
+      Anthropic-Ratelimit-Tokens-Limit:
+      - '4800000'
+      Anthropic-Ratelimit-Tokens-Remaining:
+      - '4796000'
+      Anthropic-Ratelimit-Tokens-Reset:
+      - '2026-03-24T13:59:37Z'
+      Request-Id:
+      - req_011CZN2QjRJ8CVUctfvntRo8
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Anthropic-Organization-Id:
+      - 77dfb819-a005-46a1-9627-212f8995b514
+      Server:
+      - cloudflare
+      X-Envoy-Upstream-Service-Time:
+      - '978'
+      Vary:
+      - Accept-Encoding
+      Server-Timing:
+      - x-originResponse;dur=981
+      Set-Cookie:
+      - _cfuvid=Uz8N4QFbUsg30yk.qia27ife8__OnIJHUCxIWgNh82c-1774360776.8741307-1.0.1.1-hNfXOeXFcpvWkfbtW4gTRXMW2ZrBY0qyjP5i7phKgco;
+        HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com
+      X-Robots-Tag:
+      - none
+      Cf-Cache-Status:
+      - DYNAMIC
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Cf-Ray:
+      - 9e1632877e1e1a83-MAD
+    body:
+      encoding: ASCII-8BIT
+      string: '{"model":"claude-haiku-4-5-20251001","id":"msg_011X3wxtxMWPWNQNoTBLgQNZ","type":"message","role":"assistant","content":[{"type":"text","text":"Perfect!
+        The task is complete. Here''s the summary:\n\n**Summary:**\nThe Engineering
+        Manager successfully wrote the text \"chain test passed\" to a file named
+        `chain_test.txt` in the current working directory. The file has been created
+        and contains exactly the content you requested."}],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":8940,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":62,"service_tier":"standard","inference_geo":"not_available"}}'
+  recorded_at: Tue, 24 Mar 2026 13:59:37 GMT
+- request:
+    method: post
+    uri: https://api.anthropic.com/v1/messages
+    body:
+      encoding: UTF-8
+      string: '{"model":"claude-haiku-4-5-20251001","messages":[{"role":"user","content":[{"type":"text","text":"Write
+        \"chain test passed\" to chain_test.txt and summarise it for me"}]},{"role":"assistant","content":[{"type":"text","text":"I
+        don''t have a direct file writing tool available in my current toolset. Let
+        me check what agents are available who might be able to help with this file
+        operation."},{"type":"tool_use","id":"toolu_019SnXT5MyAjpzjs98ucmAUR","name":"daan--core--list_agents","input":{}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_019SnXT5MyAjpzjs98ucmAUR","content":[{"type":"text","text":"Agent
+        Resource Manager (agent_resource_manager)\n  Tools: Daan::Core::CreateAgent,
+        Daan::Core::EditAgent, Daan::Core::Read, Daan::Core::Write, Daan::Core::ReportBack,
+        Daan::Core::CreateSteps, Daan::Core::UpdateStep\n\nChief of Staff (chief_of_staff)\n  Tools:
+        Daan::Core::DelegateTask, Daan::Core::ListAgents, Daan::Core::CreateSteps,
+        Daan::Core::UpdateStep, SwarmMemory::Tools::MemoryWrite, SwarmMemory::Tools::MemoryRead,
+        SwarmMemory::Tools::MemoryEdit, SwarmMemory::Tools::MemoryDelete, SwarmMemory::Tools::MemoryGlob,
+        SwarmMemory::Tools::MemoryGrep\n\nDeveloper (developer)\n  Tools: Daan::Core::Read,
+        Daan::Core::Write, Daan::Core::Bash, Daan::Core::ReportBack, Daan::Core::PromoteBranch,
+        Daan::Core::CreateSteps, Daan::Core::UpdateStep, SwarmMemory::Tools::MemoryWrite,
+        SwarmMemory::Tools::MemoryRead, SwarmMemory::Tools::MemoryEdit, SwarmMemory::Tools::MemoryDelete,
+        SwarmMemory::Tools::MemoryGlob, SwarmMemory::Tools::MemoryGrep\n\nEngineering
+        Manager (engineering_manager)\n  Tools: Daan::Core::DelegateTask, Daan::Core::ReportBack,
+        Daan::Core::Read, Daan::Core::Write, Daan::Core::Bash, Daan::Core::ListAgents,
+        Daan::Core::CreateAgent, Daan::Core::EditAgent, Daan::Core::PromoteBranch,
+        Daan::Core::CreateSteps, Daan::Core::UpdateStep, SwarmMemory::Tools::MemoryWrite,
+        SwarmMemory::Tools::MemoryRead, SwarmMemory::Tools::MemoryEdit, SwarmMemory::Tools::MemoryDelete,
+        SwarmMemory::Tools::MemoryGlob, SwarmMemory::Tools::MemoryGrep"}]}]},{"role":"assistant","content":[{"type":"text","text":"Perfect!
+        I''ll delegate this to the developer who has Write capability."},{"type":"tool_use","id":"toolu_011UpiCLDcW2KgtWaPzYjHgW","name":"daan--core--delegate_task","input":{"agent_name":"developer","task":"Write
+        \"chain test passed\" to a file named chain_test.txt in the current working
+        directory."}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_011UpiCLDcW2KgtWaPzYjHgW","content":[{"type":"text","text":"Error:
+        chief_of_staff cannot delegate to developer. Allowed: engineering_manager,
+        agent_resource_manager"}]}]},{"role":"assistant","content":[{"type":"text","text":"I
+        see — I can only delegate to the engineering_manager or agent_resource_manager.
+        Let me use the engineering_manager for this task."},{"type":"tool_use","id":"toolu_01BrK8MUiz9zNEsTCttk8ap5","name":"daan--core--delegate_task","input":{"agent_name":"engineering_manager","task":"Write
+        \"chain test passed\" to a file named chain_test.txt in the current working
+        directory."}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_01BrK8MUiz9zNEsTCttk8ap5","content":[{"type":"text","text":"Delegated
+        to Engineering Manager (Thread #57519493). Awaiting their report."}]}]},{"role":"assistant","content":[{"type":"text","text":"Great!
+        I''ve delegated the task to the Engineering Manager to write \"chain test
+        passed\" to chain_test.txt. Waiting for their report...\n\nOnce they complete
+        it, I''ll provide you with a summary.\n\n---\n\n**Status Update:** The Engineering
+        Manager is working on writing the content to chain_test.txt. I''ll report
+        the results as soon as they come back."}]},{"role":"user","content":[{"type":"text","text":"[System]
+        Engineering Manager completed their task without calling report_back. Their
+        last message: Done! I''ve written \"chain test passed\" to `chain_test.txt`
+        in the current working directory."}]},{"role":"assistant","content":[{"type":"text","text":"Perfect!
+        The task is complete. Here''s the summary:\n\n**Summary:**\nThe Engineering
+        Manager successfully wrote the text \"chain test passed\" to a file named
+        `chain_test.txt` in the current working directory. The file has been created
+        and contains exactly the content you requested."}]}],"stream":false,"max_tokens":64000,"tools":[{"name":"daan--core--delegate_task","description":"Delegate
+        a task or follow-up message to a sub-agent. Each agent has one persistent
+        thread — if a thread already exists, your message is added to it and the agent
+        continues from where they left off. For follow-ups to an existing thread,
+        keep the message brief; the agent already has the full context.","input_schema":{"type":"object","properties":{"agent_name":{"type":"string","description":"The
+        agent to delegate to (e.g. ''engineering_manager'', ''developer'')"},"task":{"type":"string","description":"The
+        task or follow-up message. For initial delegation, include full context. For
+        follow-ups to an existing thread, be brief — do not repeat what was already
+        sent."},"timeout_seconds":{"type":"number","description":"Override execution
+        timeout in seconds (default: 10, max: 1800)"}},"required":["agent_name","task"],"additionalProperties":false,"strict":true}},{"name":"daan--core--list_agents","description":"List
+        all registered agents on the team — their names, descriptions, and tools.
+        Use this to understand who is available and what each agent can do before
+        delegating.","input_schema":{"type":"object","properties":{"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":[]}},{"name":"daan--core--create_steps","description":"Create
+        a checklist of steps for the current task. Use this at the start of a task
+        to plan your work. Steps appear in your system prompt so you always see them.","input_schema":{"type":"object","properties":{"steps":{"type":"array","description":"Ordered
+        list of step titles","items":{"type":"string"}},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["steps"],"additionalProperties":false,"strict":true}},{"name":"daan--core--update_step","description":"Update
+        the status of a step in your checklist. Use the position number shown in your
+        system prompt.","input_schema":{"type":"object","properties":{"position":{"type":"string","description":"Position
+        number of the step to update"},"status":{"type":"string","description":"New
+        status: pending, in_progress, or completed"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["position","status"],"additionalProperties":false,"strict":true}},{"name":"MemoryWrite","description":"Store
+        content in persistent memory with structured metadata for semantic search
+        and retrieval.\n\nCRITICAL: ALL 8 required parameters MUST be provided. Do
+        NOT skip any. If you''re missing information, ask the user or infer reasonable
+        defaults.\n\nREQUIRED PARAMETERS (provide ALL 8):\n1. file_path - Where to
+        store (e.g., ''concept/ruby/classes.md'', ''skill/debugging/trace-errors.md'')\n2.
+        content - Pure markdown content (no frontmatter)\n3. title - Brief descriptive
+        title\n4. type - Entry category: \"concept\", \"fact\", \"skill\", or \"experience\"\n5.
+        confidence - How sure you are: \"high\", \"medium\", or \"low\"\n6. tags -
+        JSON string of array of search keywords (e.g., ''[\"ruby\", \"classes\", \"oop\"]'')
+        - be comprehensive!\n7. related - JSON string of array of related memory paths
+        (e.g., ''[\"memory://concept/ruby/modules.md\", \"memory://concept/ruby/classes.md\"]'')
+        or ''[]'' if none\n8. domain - Category like ''programming/ruby'', ''people'',
+        ''debugging''\n9. source - Where this came from: \"user\", \"documentation\",
+        \"experimentation\", or \"inference\"\n\nOPTIONAL (for skills only):\n- tools
+        - JSON string of array of tool names needed (e.g., ''[\"Read\", \"Edit\",
+        \"Bash\"]'') or ''[]'' if none\n- permissions - Tool restrictions hash or
+        {}\n\nPATH STRUCTURE (EXACTLY 4 TOP-LEVEL CATEGORIES - NEVER CREATE OTHERS):\nMemory
+        has EXACTLY 4 fixed top-level categories. ALL paths MUST start with one of
+        these:\n\n1. concept/{domain}/{name}.md - Abstract ideas (e.g., concept/ruby/classes.md)\n2.
+        fact/{subfolder}/{name}.md - Concrete info (e.g., fact/people/john.md)\n3.
+        skill/{domain}/{name}.md - How-to procedures (e.g., skill/debugging/api-errors.md)\n4.
+        experience/{name}.md - Lessons learned (e.g., experience/fixed-cors-bug.md)\n\nINVALID
+        (do NOT create): documentation/, reference/, tutorial/, knowledge/, notes/\nThese
+        categories do NOT exist. Use concept/, fact/, skill/, or experience/ instead.\n\nTAGS
+        ARE CRITICAL: Think \"What would I search for in 6 months?\" For skills especially,
+        be VERY comprehensive with tags - they''re your search index.\n\nEXAMPLES:\n-
+        For concept: tags: [''ruby'', ''oop'', ''classes'', ''inheritance'', ''methods'']\n-
+        For skill: tags: [''debugging'', ''api'', ''http'', ''errors'', ''trace'',
+        ''network'', ''rest'']\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        with .md extension (e.g., ''concept/ruby/classes.md'', ''fact/people/john.md'')"},"content":{"type":"string","description":"Content
+        to store (pure markdown, no frontmatter needed)"},"title":{"type":"string","description":"Brief
+        title describing the content"},"type":{"type":"string","description":"Entry
+        type: concept, fact, skill, or experience (matches category: concept/, fact/,
+        skill/, experience/)"},"confidence":{"type":"string","description":"Confidence
+        level: high, medium, or low (defaults to ''medium'' if not specified)"},"tags":{"type":"string","description":"JSON
+        string of array of tag strings for searching (e.g., ''[\"ruby\", \"oop\"]'')"},"related":{"type":"string","description":"JSON
+        string of array of related memory path strings (e.g., ''[\"memory://concept/ruby/modules.md\",
+        \"memory://concept/ruby/classes.md\"]'')"},"domain":{"type":"string","description":"Category/subcategory
+        (e.g., ''programming/ruby'', ''people'')"},"source":{"type":"string","description":"Source
+        of information: user, documentation, experimentation, or inference (defaults
+        to ''user'' if not specified)"},"tools":{"type":"string","description":"JSON
+        string of array of tool name strings required for this skill (e.g., ''[\"Read\",
+        \"Edit\", \"Bash\"]''). Only for type: skill"},"permissions":{"type":"object","description":"Tool
+        permission restrictions (same format as swarm config). Only for type: skill"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path","content","title","type","tags","related","domain"],"additionalProperties":false,"strict":true}},{"name":"MemoryRead","description":"Read
+        content from your memory storage and retrieve all associated metadata.\n\nREQUIRED:
+        Provide the file_path parameter - the path to the memory entry you want to
+        read.\n\n**Parameters:**\n- file_path (REQUIRED): Path to memory entry - MUST
+        start with concept/, fact/, skill/, or experience/\n\n**MEMORY STRUCTURE -
+        EXACTLY 4 Top-Level Categories (NEVER create others):**\nALL paths MUST start
+        with one of these 4 fixed categories:\n- concept/{domain}/{name}.md - Abstract
+        ideas (e.g., concept/ruby/classes.md)\n- fact/{subfolder}/{name}.md - Concrete
+        info (e.g., fact/people/john.md)\n- skill/{domain}/{name}.md - Procedures
+        (e.g., skill/debugging/api-errors.md)\n- experience/{name}.md - Lessons (e.g.,
+        experience/fixed-bug.md)\n\nINVALID: documentation/, reference/, tutorial/,
+        parallel/, analysis/, notes/\n\n**Returns:**\nJSON with two fields:\n- content:
+        Markdown content with line numbers (same format as Read tool)\n- metadata:
+        All metadata (title, type, tags, tools, permissions, confidence, etc.)\n\n**Examples:**\n-
+        MemoryRead(file_path: \"concept/ruby/classes.md\") - Read a concept\n- MemoryRead(file_path:
+        \"fact/people/john.md\") - Read a fact\n- MemoryRead(file_path: \"skill/debugging/api-errors.md\")
+        - Read a skill before loading it\n\n**Important:**\n- Always read entries
+        before editing them with MemoryEdit or MemoryMultiEdit\n- Line numbers in
+        output are for reference only - don''t include them when editing\n- Each read
+        is tracked to enforce read-before-edit patterns\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to read from memory - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/ruby/classes.md'', ''skill/debugging/api.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path"],"additionalProperties":false,"strict":true}},{"name":"MemoryEdit","description":"Perform
+        exact string replacements in memory entries (works like Edit tool but for
+        memory content).\n\nREQUIRED: Provide ALL THREE parameters - file_path, old_string,
+        and new_string.\n\n**Required Parameters:**\n- file_path (REQUIRED): Path
+        to memory entry - MUST start with concept/, fact/, skill/, or experience/\n-
+        old_string (REQUIRED): The exact text to replace - must match exactly including
+        all whitespace and indentation\n- new_string (REQUIRED): The replacement text
+        - must be different from old_string\n\n**MEMORY STRUCTURE (4 Fixed Categories
+        Only):**\n- concept/{domain}/{name}.md - Abstract ideas\n- fact/{subfolder}/{name}.md
+        - Concrete information\n- skill/{domain}/{name}.md - Procedures\n- experience/{name}.md
+        - Lessons\nINVALID: documentation/, reference/, analysis/, parallel/, tutorial/\n\n**Optional
+        Parameters:**\n- replace_all: Set to true to replace all occurrences (default:
+        false, replaces only first occurrence)\n\n**CRITICAL - Before Using This Tool:**\n1.
+        You MUST use MemoryRead on the entry first - edits without reading will FAIL\n2.
+        Copy text exactly from MemoryRead output, EXCLUDING the line number prefix\n3.
+        Line number format: \"    123→actual content\" - only use text AFTER the arrow\n4.
+        Preserve exact indentation and whitespace from the original content\n\n**How
+        It Works:**\n- If old_string appears once: replacement succeeds\n- If old_string
+        appears multiple times: FAILS unless replace_all=true\n- If old_string not
+        found: FAILS with helpful error\n- Make old_string unique by including more
+        surrounding context\n\n**Examples:**\n```\n# Update a fact\nMemoryEdit(\n  file_path:
+        \"fact/people/john.md\",\n  old_string: \"status: active\",\n  new_string:
+        \"status: inactive\"\n)\n\n# Update a skill\nMemoryEdit(\n  file_path: \"skill/debugging/api-errors.md\",\n  old_string:
+        \"TODO: Add error codes\",\n  new_string: \"Common error codes: 401, 403,
+        404, 500\",\n  replace_all: true\n)\n\n# Update a concept\nMemoryEdit(\n  file_path:
+        \"concept/ruby/classes.md\",\n  old_string: \"def calculate_total(items)\n  return
+        sum(items)\nend\",\n  new_string: \"def compute_sum(items)\n  items.sum\nend\"\n)\n```\n\n**Common
+        Mistakes to Avoid:**\n- Including line numbers in old_string or new_string\n-
+        Not reading the entry first with MemoryRead\n- Not matching whitespace exactly\n-
+        Trying to replace non-unique text without replace_all\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to memory entry - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/ruby/classes.md'', ''skill/debugging/api.md'')"},"old_string":{"type":"string","description":"The
+        exact text to replace (must match exactly including whitespace)"},"new_string":{"type":"string","description":"The
+        text to replace it with (must be different from old_string)"},"replace_all":{"type":"string","description":"Replace
+        all occurrences of old_string (default false)"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path","old_string","new_string"],"additionalProperties":false,"strict":true}},{"name":"MemoryDelete","description":"Delete
+        entries from your memory storage when they''re no longer needed.\n\nREQUIRED:
+        Provide the file_path parameter - the path to the entry you want to delete.\n\n**Parameters:**\n-
+        file_path (REQUIRED): Path to memory entry - MUST start with concept/, fact/,
+        skill/, or experience/\n\n**MEMORY STRUCTURE (4 Fixed Categories Only):**\n-
+        concept/{domain}/{name}.md - Abstract ideas\n- fact/{subfolder}/{name}.md
+        - Concrete information\n- skill/{domain}/{name}.md - Procedures\n- experience/{name}.md
+        - Lessons\nINVALID: documentation/, reference/, analysis/, parallel/, temp/,
+        notes/\n\n**When to Delete:**\n- Outdated information that''s been superseded\n-
+        Completed tasks that are no longer relevant\n- Duplicate entries (after consolidating)\n-
+        Test data or temporary calculations\n- Low-quality entries with minimal value\n\n**IMPORTANT
+        WARNINGS:**\n- Deletion is PERMANENT - content cannot be recovered\n- Think
+        carefully before deleting - consider if it might be useful later\n- Use MemoryDefrag
+        to identify candidates for deletion (find_archival_candidates, compact)\n-
+        Consider reading the entry first to verify you''re deleting the right thing\n\n**Examples:**\n```\n#
+        Delete outdated concept\nMemoryDelete(file_path: \"concept/old-api/deprecated.md\")\n\n#
+        Delete completed experience\nMemoryDelete(file_path: \"experience/temp-experiment.md\")\n\n#
+        Delete obsolete fact\nMemoryDelete(file_path: \"fact/orgs/defunct-company.md\")\n```\n\n**Best
+        Practices:**\n1. Read entry first with MemoryRead to confirm it''s the right
+        one\n2. Use MemoryDefrag(action: \"find_archival_candidates\") to find old,
+        unused entries\n3. Delete in batches during memory maintenance sessions\n4.
+        Keep entries that might provide historical context\n5. Don''t delete skills
+        unless you''re certain they won''t be needed\n\n**Alternative to Deletion:**\nInstead
+        of deleting, consider:\n- Updating entries to mark them as archived\n- Consolidating
+        multiple entries into one comprehensive entry\n- Moving entries to an \"archive/\"
+        hierarchy for later reference\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to delete from memory - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/old-api/deprecated.md'', ''experience/temp.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path"],"additionalProperties":false,"strict":true}},{"name":"MemoryGlob","description":"Search
+        your memory entries using glob patterns (like filesystem glob).\n\nREQUIRED:
+        Provide the pattern parameter - the glob pattern to match entries against.\n\n**Parameters:**\n-
+        pattern (REQUIRED): Glob pattern with wildcards (e.g., ''**/*.txt'', ''parallel/*/task_*'',
+        ''skill/**'')\n\n**Glob Pattern Syntax (Standard Ruby Glob):**\n- `*` - matches
+        .md files at a single directory level (e.g., ''fact/*'' → fact/*.md)\n- `**`
+        - matches .md files recursively at any depth (e.g., ''fact/**'' → fact/**/*.md)\n-
+        `?` - matches any single character (e.g., ''task_?'')\n- `[abc]` - matches
+        any character in the set (e.g., ''task_[0-9]'')\n\n**Returns:**\nList of matching
+        .md memory entries with:\n- Full memory:// path\n- Entry title\n- Size in
+        bytes/KB/MB\n\n**Note**: Only returns .md files (actual memory entries), not
+        directory entries.\n\n**MEMORY STRUCTURE (4 Fixed Categories Only):**\nALL
+        patterns MUST target one of these 4 categories:\n- concept/{domain}/** - Abstract
+        ideas\n- fact/{subfolder}/** - Concrete information\n- skill/{domain}/** -
+        Procedures\n- experience/** - Lessons\nINVALID: documentation/, reference/,
+        parallel/, analysis/, tutorial/\n\n**Common Use Cases:**\n```\n# Find direct
+        .md files in fact/\nMemoryGlob(pattern: \"fact/*\")\nResult: fact/api.md (only
+        direct children, not nested)\n\n# Find ALL facts recursively\nMemoryGlob(pattern:
+        \"fact/**\")\nResult: fact/api.md, fact/people/john.md, fact/people/jane.md,
+        ...\n\n# Find all skills recursively\nMemoryGlob(pattern: \"skill/**\")\nResult:
+        skill/debugging/api-errors.md, skill/meta/deep-learning.md, ...\n\n# Find
+        all concepts in a domain\nMemoryGlob(pattern: \"concept/ruby/**\")\nResult:
+        concept/ruby/classes.md, concept/ruby/modules.md, ...\n\n# Find direct files
+        in fact/people/\nMemoryGlob(pattern: \"fact/people/*\")\nResult: fact/people/john.md,
+        fact/people/jane.md (not fact/people/teams/x.md)\n\n# Find all experiences\nMemoryGlob(pattern:
+        \"experience/**\")\nResult: experience/fixed-cors-bug.md, experience/optimization.md,
+        ...\n\n# Find debugging skills recursively\nMemoryGlob(pattern: \"skill/debugging/**\")\nResult:
+        skill/debugging/api-errors.md, skill/debugging/performance.md, ...\n\n# Find
+        all entries (all categories)\nMemoryGlob(pattern: \"**/*\")\nResult: All .md
+        entries across all 4 categories\n```\n\n**Understanding * vs **:**\n- `fact/*`
+        matches only direct .md files: fact/api.md\n- `fact/**` matches ALL .md files
+        recursively: fact/api.md, fact/people/john.md, ...\n- To explore subdirectories,
+        use recursive pattern and examine returned paths\n\n**When to Use MemoryGlob:**\n-
+        Discovering what''s in a memory hierarchy\n- Finding all entries matching
+        a naming convention\n- Locating related entries by path pattern\n- Exploring
+        memory structure before reading specific entries\n- Batch operations preparation
+        (find all, then process each)\n\n**Combining with Other Tools:**\n1. Use MemoryGlob
+        to find candidates\n2. Use MemoryRead to examine specific entries\n3. Use
+        MemoryEdit/MemoryDelete to modify/remove them\n\n**Tips:**\n- Start with broad
+        patterns and narrow down\n- Use `**` for recursive searching entire hierarchies\n-
+        Combine with MemoryGrep if you need content-based search\n- Check entry sizes
+        to identify large entries\n","input_schema":{"type":"object","properties":{"pattern":{"type":"string","description":"Glob
+        pattern - target concept/, fact/, skill/, or experience/ only (e.g., ''skill/**'',
+        ''concept/ruby/*'', ''fact/people/*.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["pattern"],"additionalProperties":false,"strict":true}},{"name":"MemoryGrep","description":"Search
+        your memory content using regular expression patterns (like grep).\n\nREQUIRED:
+        Provide the pattern parameter - the regex pattern to search for in entry content.\n\nMEMORY
+        STRUCTURE: Searches across all 4 fixed categories (concept/, fact/, skill/,
+        experience/)\nNO OTHER top-level categories exist.\n\n**Required Parameters:**\n-
+        pattern (REQUIRED): Regular expression pattern to search for (e.g., ''status:
+        pending'', ''TODO.*urgent'', ''\\btask_\\d+\\b'')\n\n**Optional Parameters:**\n-
+        path: Limit search to specific path (e.g., ''concept/'', ''fact/api-design/'',
+        ''skill/ruby'')\n- case_insensitive: Set to true for case-insensitive search
+        (default: false)\n- output_mode: Choose output format - ''files_with_matches''
+        (default), ''content'', or ''count''\n\n**Output Modes Explained:**\n1. **files_with_matches**
+        (default): Just shows which entries contain matches\n   - Fast and efficient
+        for discovery\n   - Use when you want to know WHERE matches exist\n\n2. **content**:
+        Shows matching lines with line numbers\n   - See the actual matching content\n   -
+        Use when you need to read the matches in context\n\n3. **count**: Shows how
+        many matches in each entry\n   - Quantify occurrences\n   - Use for statistics
+        or finding entries with most matches\n\n**Regular Expression Syntax:**\n-
+        Literal text: ''status: pending''\n- Any character: ''task.done''\n- Character
+        classes: ''[0-9]+'' (digits), ''[a-z]+'' (lowercase)\n- Word boundaries: ''\\btodo\\b''
+        (exact word)\n- Anchors: ''^Start'' (line start), ''end$'' (line end)\n- Quantifiers:
+        ''*'' (0+), ''+'' (1+), ''?'' (0 or 1), ''{3}'' (exactly 3)\n- Alternation:
+        ''pending|in-progress|blocked''\n\n**Path Parameter - Directory-Style Filtering:**\nThe
+        path parameter works just like searching in directories:\n- ''concept/'' -
+        Search only concept entries\n- ''fact/api-design'' - Search only in fact/api-design
+        (treats as directory)\n- ''fact/api-design/'' - Same as above\n- ''skill/ruby/blocks.md''
+        - Search only that specific file\n\n**Examples:**\n```\n# Find entries containing
+        \"TODO\" (case-sensitive)\nMemoryGrep(pattern: \"TODO\")\n\n# Search only
+        in concepts\nMemoryGrep(pattern: \"TODO\", path: \"concept/\")\n\n# Search
+        in a specific subdirectory\nMemoryGrep(pattern: \"endpoint\", path: \"fact/api-design\")\n\n#
+        Search a specific file\nMemoryGrep(pattern: \"lambda\", path: \"skill/ruby/blocks.md\")\n\n#
+        Find entries with any status (case-insensitive)\nMemoryGrep(pattern: \"status:\",
+        case_insensitive: true)\n\n# Show actual content of matches in skills only\nMemoryGrep(pattern:
+        \"error|warning|failed\", path: \"skill/\", output_mode: \"content\")\n\n#
+        Count how many times \"completed\" appears in experiences\nMemoryGrep(pattern:
+        \"completed\", path: \"experience/\", output_mode: \"count\")\n\n# Find task
+        numbers in facts\nMemoryGrep(pattern: \"task_\\d+\", path: \"fact/\")\n\n#
+        Find incomplete tasks\nMemoryGrep(pattern: \"^- \\[ \\]\", output_mode: \"content\")\n\n#
+        Find entries mentioning specific functions\nMemoryGrep(pattern: \"\\bprocess_data\\(\")\n```\n\n**Use
+        Cases:**\n- Finding entries by keyword or phrase\n- Locating TODO items or
+        action items\n- Searching for error messages or debugging info\n- Finding
+        entries about specific code/functions\n- Identifying patterns in your memory\n-
+        Content-based discovery (vs MemoryGlob''s path-based discovery)\n\n**Combining
+        with Other Tools:**\n1. Use MemoryGrep to find entries containing specific
+        content\n2. Use MemoryRead to examine full entries\n3. Use MemoryEdit to update
+        the found content\n\n**Tips:**\n- Start with simple literal patterns before
+        using complex regex\n- Use case_insensitive=true for broader matches\n- Use
+        path parameter to limit search scope (faster and more precise)\n- Use output_mode=\"content\"
+        to see context around matches\n- Escape special regex characters with backslash:
+        \\. \\* \\? \\[ \\]\n- Test patterns on a small set before broad searches\n-
+        Use word boundaries (\\b) for exact word matching\n","input_schema":{"type":"object","properties":{"pattern":{"type":"string","description":"Regular
+        expression pattern to search for"},"path":{"type":"string","description":"Limit
+        search to specific path (e.g., ''concept/'', ''fact/api-design/'', ''skill/ruby/blocks.md'')"},"case_insensitive":{"type":"boolean","description":"Set
+        to true for case-insensitive search (default: false)"},"output_mode":{"type":"string","description":"Output
+        mode: ''files_with_matches'' (default), ''content'', or ''count''"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["pattern"],"additionalProperties":false,"strict":true}}],"system":[{"type":"text","text":"You
+        are the Chief of Staff for the Daan agent team. You are the human''s primary
+        contact. You receive requests, delegate work to appropriate team members,
+        and report results back to the human.\n\n**Autonomy principle**: Resolve questions
+        at the level they arise. Before escalating, search memory, try alternate approaches,
+        and make reasonable assumptions. If you''re genuinely stuck on something your
+        delegator would know, ask them — but exhaust your own resources first. When
+        you receive questions from agents you''ve delegated to, absorb and answer
+        them at your level rather than passing them up. The goal is that questions
+        get resolved within the team, not forwarded to the human.\n\n**Reporting back**:
+        If you have a `report_back` tool, send interim reports as you make progress
+        rather than waiting until everything is done. Don''t risk running out of turns
+        with nothing reported.\n\nBefore delegating, search memory for relevant context
+        about the human''s preferences, past decisions, or similar tasks. Use what
+        you find to write a richer delegation brief — so the team has what they need
+        to act independently.\n\nWhen you need to delegate a task and are unsure who
+        to assign it to, call ListAgents first to get a current view of the team —
+        their roles and capabilities.\n\nWhen a report comes back, present it in terms
+        of outcomes and decisions made, not process. Use memory to frame results around
+        what the human has previously cared about. After each interaction, write or
+        update memories that capture what the human seemed satisfied or dissatisfied
+        with.\n\nWhen you receive a task:\n\n**For Technical Work:**\n1. Use DelegateTask
+        with agent_name \"engineering_manager\" to assign development, coding, or
+        technical tasks.\n2. Let the human know you''ve delegated and will update
+        them when results are in.\n3. When the Engineering Manager''s report arrives
+        in this thread, synthesize it and respond to the human clearly and concisely.\n\n**For
+        Agent Management Work:**\n1. Use DelegateTask with agent_name \"agent_resource_manager\"
+        to assign tasks related to creating new agents, modifying existing agents,
+        or managing the agent team structure.\n2. Let the human know you''ve delegated
+        and will update them when results are in.\n3. When the Agent Resource Manager''s
+        report arrives in this thread, synthesize it and respond to the human clearly
+        and concisely.\n\nYour response after receiving a report is your final message
+        in this cycle.\n\nUse MemoryWrite to preserve important context, decisions,
+        and patterns you encounter. Use MemoryGrep or MemoryGlob to search past memory
+        before starting a task. If a memory contradicts information you have encountered,
+        correct it with MemoryEdit or remove it with MemoryDelete."}]}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      X-Api-Key:
+      - "<ANTHROPIC_API_KEY>"
+      Anthropic-Version:
+      - '2023-06-01'
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Tue, 24 Mar 2026 13:59:38 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Anthropic-Ratelimit-Input-Tokens-Limit:
+      - '4000000'
+      Anthropic-Ratelimit-Input-Tokens-Remaining:
+      - '3995000'
+      Anthropic-Ratelimit-Input-Tokens-Reset:
+      - '2026-03-24T13:59:38Z'
+      Anthropic-Ratelimit-Output-Tokens-Limit:
+      - '800000'
+      Anthropic-Ratelimit-Output-Tokens-Remaining:
+      - '800000'
+      Anthropic-Ratelimit-Output-Tokens-Reset:
+      - '2026-03-24T13:59:38Z'
+      Anthropic-Ratelimit-Requests-Limit:
+      - '4000'
+      Anthropic-Ratelimit-Requests-Remaining:
+      - '3999'
+      Anthropic-Ratelimit-Requests-Reset:
+      - '2026-03-24T13:59:38Z'
+      Anthropic-Ratelimit-Tokens-Limit:
+      - '4800000'
+      Anthropic-Ratelimit-Tokens-Remaining:
+      - '4795000'
+      Anthropic-Ratelimit-Tokens-Reset:
+      - '2026-03-24T13:59:38Z'
+      Request-Id:
+      - req_011CZN2QpU9hZSzbKsRM467h
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Anthropic-Organization-Id:
+      - 77dfb819-a005-46a1-9627-212f8995b514
+      Server:
+      - cloudflare
+      X-Envoy-Upstream-Service-Time:
+      - '531'
+      Vary:
+      - Accept-Encoding
+      Server-Timing:
+      - x-originResponse;dur=533
+      Set-Cookie:
+      - _cfuvid=fCfLuqbAgzbPIDRtdx820__BZiktfXKuMIX4thXmqGc-1774360778.0524297-1.0.1.1-kv0uaQHrwJX23vErCQqwol9tqYoUzCK6u4ScK34G7CA;
+        HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com
+      X-Robots-Tag:
+      - none
+      Cf-Cache-Status:
+      - DYNAMIC
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Cf-Ray:
+      - 9e16328edfc7f467-MAD
+    body:
+      encoding: ASCII-8BIT
+      string: '{"model":"claude-haiku-4-5-20251001","id":"msg_016a6hj6uqUnwhSG1GDmGz9b","type":"message","role":"assistant","content":[],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":8999,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":3,"service_tier":"standard","inference_geo":"not_available"}}'
+  recorded_at: Tue, 24 Mar 2026 13:59:38 GMT
 recorded_with: VCR 6.4.0
