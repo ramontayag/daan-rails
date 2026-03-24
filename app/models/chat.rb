@@ -125,6 +125,14 @@ class Chat < ApplicationRecord
     )
   end
 
+  def broadcast_chat_cost
+    broadcast_replace_to(
+      "chat_#{id}",
+      target: "chat_cost_#{id}",
+      renderable: ChatCostComponent.new(chat: self)
+    )
+  end
+
   private
 
   # RubyLLM calls this private hook (defined in RubyLLM::ActiveRecord::ChatMethods,

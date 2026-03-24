@@ -4,12 +4,7 @@
       <%= link_to "← Back", chat_agent_path(chat.agent), class: "text-sm text-blue-600" %>
     </div>
     <div class="flex items-center gap-3 ml-auto">
-      <div class="text-xs text-gray-500">
-        <span class="font-medium"><%= number_with_delimiter(chat.total_tokens) %></span> tokens
-        <% if chat.estimated_cost_usd > 0 %>
-          • <span class="font-medium"><%= chat.formatted_cost %></span>
-        <% end %>
-      </div>
+      <%= render ChatCostComponent.new(chat: chat) %>
       <% if chat.chat_steps.any? %>
         <%= link_to chat_thread_path(chat, show_tasks: show_tasks ? "0" : "1"),
                     class: "text-gray-400 hover:text-gray-600",

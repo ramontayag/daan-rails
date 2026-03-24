@@ -120,6 +120,7 @@ module Daan
     def self.run_step(chat)
       response = chat.step
       broadcast_step(chat, response)
+      chat.broadcast_chat_cost
       response
     rescue => e
       tag = "[ConversationRunner] chat_id=#{chat.id}"
@@ -127,6 +128,7 @@ module Daan
       Rails.logger.error("#{tag} #{e.backtrace&.first(10)&.join("\n")}")
       chat.fail!
       chat.broadcast_agent_status
+      chat.broadcast_chat_cost
       broadcast_typing(chat, false)
       begin
         notify_parent_of_termination(chat, :failed)
@@ -190,6 +192,7 @@ module Daan
       chat.finish! if chat.may_finish?
       Rails.logger.info("#{tag} finished status=#{chat.task_status} step=#{chat.step_count}/#{agent.max_steps}")
       chat.broadcast_agent_status
+      chat.broadcast_chat_cost
     end
     private_class_method :finish_conversation
 

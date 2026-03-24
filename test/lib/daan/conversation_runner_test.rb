@@ -72,7 +72,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
 
   test "broadcasts typing indicator on start, appends step message, and turns typing off on finish" do
     with_stub_step do
-      assert_broadcasts("chat_#{@chat.id}", 3) do
+      assert_broadcasts("chat_#{@chat.id}", 5) do
         Daan::ConversationRunner.call(@chat)
       end
     end
