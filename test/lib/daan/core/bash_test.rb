@@ -96,4 +96,33 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
     result = @tool.execute(commands: [ [ "echo", "hi" ] ])
     assert_includes result, "hi"
   end
+
+  test "returns timed out error promptly when child process holds pipe open after parent is killed" do
+    # Simulate what happens with `git rebase -i`: the command spawns a child that
+    # keeps stdout/stderr pipes open even after the parent process is killed.
+    # Without the fix, out_thread.join in the rescue block blocks forever because
+    # the child still holds the write end of the pipe.
+    script = Tempfile.new([ "pipe_hog", ".sh" ])
+    script.write(<<~SH)
+      #!/bin/sh
+      # Spawn a background child that sleeps indefinitely (keeps pipes open).
+      sleep 60 &
+      # Parent then sleeps, waiting to be killed.
+      sleep 60
+    SH
+    script.close
+    File.chmod(0o755, script.path)
+
+    tool = Daan::Core::Bash.new(workspace: @workspace, allowed_commands: %w[sh])
+    tool.singleton_class.prepend(Daan::Core::SafeExecute)
+
+    started_at = Time.now
+    result = tool.execute(commands: [ [ "sh", script.path ] ], timeout_seconds: 0.5)
+    elapsed = Time.now - started_at
+
+    assert_match(/timed out/, result)
+    assert elapsed < 3, "expected to return within 3s but took #{elapsed.round(2)}s"
+  ensure
+    script&.unlink
+  end
 end
