@@ -19,6 +19,21 @@ class ChatBroadcastTest < ActiveSupport::TestCase
     end
   end
 
+  test "broadcast_chat_cost broadcasts to own chat stream" do
+    assert_broadcasts("chat_#{@chat.id}", 1) do
+      @chat.broadcast_chat_cost
+    end
+  end
+
+  test "broadcast_chat_cost also broadcasts to parent chat stream" do
+    parent = Chat.create!(agent_name: "chief_of_staff")
+    child  = Chat.create!(agent_name: "chief_of_staff", parent_chat: parent)
+
+    assert_broadcasts("chat_#{parent.id}", 1) do
+      child.broadcast_chat_cost
+    end
+  end
+
   test "ConversationRunner broadcasts after start! and after finish!" do
     assert_broadcasts("agents", 2) do
       @chat.define_singleton_method(:with_model) { |_| self }
