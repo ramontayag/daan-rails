@@ -15,13 +15,6 @@ class Daan::Chats::EnqueueCompactionTest < ActiveSupport::TestCase
     )
     @chat = Chat.create!(agent_name: "test_agent")
     @chat.messages.where(compacted_message_id: nil).delete_all
-    @chat.define_singleton_method(:model) { OpenStruct.new(context_window: 1000) }
-  end
-
-  teardown do
-    if @chat.singleton_class.method_defined?(:model, false)
-      @chat.singleton_class.remove_method(:model)
-    end
   end
 
   test "enqueues CompactJob when token count exceeds 80% of context window" do
@@ -31,16 +24,20 @@ class Daan::Chats::EnqueueCompactionTest < ActiveSupport::TestCase
     end
     # 25 * 40 = 1000 tokens; 80% of 1000 = 800 → triggers compaction
 
-    assert_enqueued_with(job: CompactJob) do
-      Daan::Chats::EnqueueCompaction.call(@chat)
+    @chat.stub(:model, OpenStruct.new(context_window: 1000)) do
+      assert_enqueued_with(job: CompactJob) do
+        Daan::Chats::EnqueueCompaction.call(@chat)
+      end
     end
   end
 
   test "does not enqueue CompactJob when token count is below threshold" do
     @chat.messages.create!(role: "user", content: "hi", output_tokens: 10)
 
-    assert_no_enqueued_jobs(only: CompactJob) do
-      Daan::Chats::EnqueueCompaction.call(@chat)
+    @chat.stub(:model, OpenStruct.new(context_window: 1000)) do
+      assert_no_enqueued_jobs(only: CompactJob) do
+        Daan::Chats::EnqueueCompaction.call(@chat)
+      end
     end
   end
 end
