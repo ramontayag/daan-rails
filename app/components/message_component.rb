@@ -1,6 +1,6 @@
 class MessageComponent < ViewComponent::Base
   RENDERER = Redcarpet::Render::HTML.new(filter_html: true, hard_wrap: true, safe_links_only: true)
-  MARKDOWN = Redcarpet::Markdown.new(RENDERER, fenced_code_blocks: true, autolink: true, tables: true)
+  MARKDOWN = Redcarpet::Markdown.new(RENDERER, fenced_code_blocks: true, autolink: true, tables: true, no_intra_emphasis: true)
 
   def initialize(role: nil, body: nil, dom_id: nil, sender_name: nil, message: nil)
     @message     = message
