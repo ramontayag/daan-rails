@@ -40,4 +40,39 @@ class MessageComponentTest < ActiveSupport::TestCase
     render_inline(MessageComponent.new(role: "assistant", body: "Hi"))
     assert_includes rendered_content, "prose"
   end
+
+  test "rewrites /documents/:id links with return_to_uri and turbo frame" do
+    render_inline(MessageComponent.new(
+      role: "assistant",
+      body: "See [the plan](/documents/42)",
+      return_to_uri: "/chat/threads/1"
+    ))
+    assert_includes rendered_content, "href=\"/documents/42?return_to_uri=%2Fchat%2Fthreads%2F1\""
+    assert_includes rendered_content, "data-turbo-frame=\"_top\""
+  end
+
+  test "does not rewrite non-document links" do
+    render_inline(MessageComponent.new(
+      role: "assistant",
+      body: "See [Google](https://google.com)",
+      return_to_uri: "/chat/threads/1"
+    ))
+    assert_includes rendered_content, "https://google.com"
+    assert_not_includes rendered_content, "return_to_uri"
+  end
+
+  test "rewrites absolute document URLs to relative path with return_to_uri" do
+    render_inline(MessageComponent.new(
+      role: "assistant",
+      body: "See [the plan](https://example.com/documents/42)",
+      return_to_uri: "/chat/threads/1"
+    ))
+    assert_includes rendered_content, "href=\"/documents/42?return_to_uri=%2Fchat%2Fthreads%2F1\""
+    assert_not_includes rendered_content, "example.com"
+  end
+
+  test "does not add return_to_uri when not given" do
+    render_inline(MessageComponent.new(role: "assistant", body: "See [plan](/documents/42)"))
+    assert_not_includes rendered_content, "return_to_uri"
+  end
 end

@@ -18,7 +18,7 @@ module Daan
         doc = @chat.documents.create!(title: title, body: body)
         @chat.reload
         broadcast_new_document(doc)
-        "Document created with id=#{doc.id}"
+        "Document created with id=#{doc.id}. Link to it in your reply with: [#{doc.title}](/documents/#{doc.id})"
       end
 
       private
