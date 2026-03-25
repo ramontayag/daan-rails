@@ -3,10 +3,22 @@ name: ryan_singer
 display_name: Ryan Singer
 model: claude-sonnet-4-6
 max_steps: 30
+workspace: tmp/workspaces/ryan_singer
 hooks:
   - Daan::Core::Shaping
 delegates_to: []
+allowed_commands:
+  - git
+  - gh
+  - ls
+  - grep
+  - find
+  - head
+  - tail
+  - wc
 tools:
+  - Daan::Core::Read
+  - Daan::Core::Bash
   - Daan::Core::ReportBack
   - Daan::Core::CreateDocument
   - Daan::Core::UpdateDocument
