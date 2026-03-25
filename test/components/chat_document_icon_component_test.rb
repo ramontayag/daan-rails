@@ -51,4 +51,10 @@ class ChatDocumentIconComponentTest < ActiveSupport::TestCase
     render_inline(ChatDocumentIconComponent.new(chat: @chat))
     assert_includes rendered_content, "chat_document_#{doc.id}"
   end
+
+  test "document titles link to their show page" do
+    doc = Document.create!(title: "Plan A", body: "# A", chat: @chat)
+    render_inline(ChatDocumentIconComponent.new(chat: @chat))
+    assert_includes rendered_content, "/documents/#{doc.id}"
+  end
 end
