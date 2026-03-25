@@ -46,6 +46,7 @@ module Daan
             raise "command '#{binary}' is not allowed. Permitted: #{@allowed_commands.join(', ')}"
           end
 
+          validate_path_args!(cmd[1..], dir)
           run_command(cmd, dir: dir)
         end
 
@@ -53,6 +54,17 @@ module Daan
       end
 
       private
+
+      def validate_path_args!(args, cwd)
+        args.each do |arg|
+          next unless arg.start_with?("/") || arg.include?("..")
+
+          expanded = File.expand_path(arg, cwd)
+          unless expanded.start_with?("#{@workspace.root}/") || expanded == @workspace.root.to_s
+            raise ArgumentError, "Argument '#{arg}' escapes workspace"
+          end
+        end
+      end
 
       def run_command(cmd, dir:)
         env = { "GIT_TERMINAL_PROMPT" => "0" }
