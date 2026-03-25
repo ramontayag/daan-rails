@@ -1,0 +1,12 @@
+<div id="chat_document_panel" class="<%= visible? ? 'border-b border-gray-200 bg-gray-50 px-4 py-3' : 'hidden' %>">
+  <% if visible? %>
+    <div class="mx-4 mb-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+      <h4 class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Documents</h4>
+      <ul class="space-y-1 text-sm">
+        <% documents.each do |doc| %>
+          <li class="text-gray-700"><%= doc.title %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+</div>

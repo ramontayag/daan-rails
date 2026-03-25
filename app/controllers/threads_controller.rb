@@ -14,6 +14,7 @@ class ThreadsController < ApplicationController
     end.order(created_at: :desc).includes(:messages)
     @hide_tools = params[:show_tools] == "0"
     @show_tasks = params[:show_tasks] == "1"
+    @show_docs  = params[:show_docs] == "1"
   end
 
   def create
@@ -24,7 +25,7 @@ class ThreadsController < ApplicationController
   end
 
   def default_url_options
-    super.merge({ show_tools: params[:show_tools], show_tasks: params[:show_tasks] }.compact)
+    super.merge({ show_tools: params[:show_tools], show_tasks: params[:show_tasks], show_docs: params[:show_docs] }.compact)
   end
 
   private

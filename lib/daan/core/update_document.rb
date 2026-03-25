@@ -14,9 +14,27 @@ module Daan
       end
 
       def execute(id:, body:)
-        doc = @chat.documents.find(id)
+        doc = @chat.documents.find_by(id: id)
+        return "No document with id=#{id} found in this thread." unless doc
         doc.update!(body: body)
+        broadcast_document_panel
         "Document updated with id=#{doc.id}"
+      end
+
+      private
+
+      def broadcast_document_panel
+        @chat.reload
+        Turbo::StreamsChannel.broadcast_replace_to(
+          "chat_#{@chat.id}",
+          target: "chat_documents_icon_#{@chat.id}",
+          renderable: ChatDocumentIconComponent.new(chat: @chat, show_docs: true)
+        )
+        Turbo::StreamsChannel.broadcast_replace_to(
+          "chat_#{@chat.id}",
+          target: "chat_document_panel",
+          renderable: ChatDocumentPanelComponent.new(chat: @chat, show_docs: true)
+        )
       end
     end
   end

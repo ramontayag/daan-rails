@@ -19,7 +19,7 @@
     <% end %>
     <%= turbo_frame_tag "thread_panel",
           class: "flex flex-col flex-1 min-w-0 #{'hidden' unless @chat}" do %>
-      <%= render ThreadPanelComponent.new(chat: @chat, perspective_name: perspective_name, hide_tools: @hide_tools, show_tasks: @show_tasks) %>
+      <%= render ThreadPanelComponent.new(chat: @chat, perspective_name: perspective_name, hide_tools: @hide_tools, show_tasks: @show_tasks, show_docs: @show_docs) %>
     <% end %>
   </div>
 </div>
