@@ -40,4 +40,10 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
     get document_path(@doc)
     assert_select "a[href='/']"
   end
+
+  test "GET show strips host from return_to_uri to prevent open redirect" do
+    get document_path(@doc, return_to_uri: "http://evil.com/steal")
+    assert_select "a[href='/steal']"
+    assert_no_match "evil.com", response.body
+  end
 end

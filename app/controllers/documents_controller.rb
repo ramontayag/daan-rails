@@ -2,7 +2,7 @@
 class DocumentsController < ApplicationController
   def show
     @document = Document.find(params[:id])
-    renderer = Redcarpet::Render::HTML.new(hard_wrap: true)
+    renderer = Redcarpet::Render::HTML.new(hard_wrap: true, filter_html: true, safe_links_only: true)
     markdown = Redcarpet::Markdown.new(renderer,
       fenced_code_blocks: true,
       autolink: true,

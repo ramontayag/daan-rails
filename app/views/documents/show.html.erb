@@ -24,7 +24,7 @@
   </div>
   <div class="flex-1 overflow-y-auto">
     <div class="prose prose-gray max-w-3xl mx-auto px-6 py-8">
-      <%= raw @body_html %>
+      <%= sanitize @body_html, attributes: %w[href src alt title class id colspan rowspan scope align] %>
     </div>
   </div>
 </div>

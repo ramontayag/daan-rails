@@ -14,7 +14,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :documents, only: [:show]
+  resources :documents, only: [ :show ]
 
   get "up" => "rails/health#show", as: :rails_health_check
 end
