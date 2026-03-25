@@ -13,10 +13,11 @@ class ThreadListItemComponentTest < ActiveSupport::TestCase
     assert_includes rendered_content, "Write me a report"
   end
 
-  test "truncates long preview text" do
-    @chat.messages.create!(role: "user", content: "A" * 100)
+  test "shows full preview text without truncation" do
+    long_content = "A" * 100
+    @chat.messages.create!(role: "user", content: long_content)
     render_inline(ThreadListItemComponent.new(chat: @chat))
-    assert_includes rendered_content, "..."
+    assert_includes rendered_content, long_content
   end
 
   test "shows (empty) when no user message" do
