@@ -1,8 +1,24 @@
-<div class="flex h-screen" data-testid="chat-layout">
-  <%= render SidebarComponent.new(current_perspective: perspective_name, current_agent: @agent) %>
-  <div class="flex flex-1 overflow-hidden">
+<div class="flex h-screen" data-testid="chat-layout" data-controller="sidebar">
+  <div class="hidden fixed inset-0 bg-black/50 z-20"
+       data-sidebar-target="backdrop"
+       data-action="click->sidebar#close"></div>
+
+  <div class="fixed inset-y-0 left-0 -translate-x-full transition-transform duration-200 z-30
+              md:relative md:translate-x-0 md:flex"
+       data-sidebar-target="panel">
+    <%= render SidebarComponent.new(current_perspective: perspective_name, current_agent: @agent) %>
+  </div>
+
+  <div class="flex flex-1 overflow-hidden min-w-0" data-controller="panel-resize">
     <%= render ThreadListComponent.new(agent: @agent, chats: @chats, open_chat: @chat, readonly: perspective_name != "me") %>
-    <%= turbo_frame_tag "thread_panel", class: "flex flex-col flex-1 border-l border-gray-200" do %>
+    <% if @chat %>
+      <div class="hidden md:flex w-1 cursor-col-resize flex-shrink-0 group items-stretch shadow-[-4px_0_8px_rgba(0,0,0,0.1)]"
+           data-action="pointerdown->panel-resize#startDrag pointermove->panel-resize#_drag pointerup->panel-resize#_stopDrag">
+        <div class="w-full bg-transparent group-hover:bg-blue-500 transition-colors duration-150"></div>
+      </div>
+    <% end %>
+    <%= turbo_frame_tag "thread_panel",
+          class: "flex flex-col flex-1 min-w-0 #{'hidden' unless @chat}" do %>
       <%= render ThreadPanelComponent.new(chat: @chat, perspective_name: perspective_name, hide_tools: @hide_tools, show_tasks: @show_tasks) %>
     <% end %>
   </div>

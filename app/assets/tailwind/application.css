@@ -1,2 +1,40 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+/* Slack-like inline code */
+.prose :not(pre) > code {
+  background-color: #fdf3f5;
+  color: #c0341d;
+  border: 1px solid rgba(209, 107, 119, 0.25);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 85%;
+  font-weight: normal;
+}
+
+.prose :not(pre) > code::before,
+.prose :not(pre) > code::after {
+  content: none;
+}
+
+/* Slack-like code blocks */
+.prose pre {
+  background-color: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+/* Let highlight.js control code block colours */
+.prose pre code {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  color: #24292e;
+  font-size: 0.8125rem;
+}
+
+.prose pre code::before,
+.prose pre code::after {
+  content: none;
+}

@@ -9,7 +9,7 @@ class ThreadListItemComponent < ViewComponent::Base
   attr_reader :chat, :open
 
   def preview_text
-    chat.messages.find { |m| m.role == "user" }&.content&.truncate(80) || "(empty)"
+    chat.messages.find { |m| m.role == "user" }&.content || "(empty)"
   end
 
   def reply_count = [ chat.messages.size - 1, 0 ].max

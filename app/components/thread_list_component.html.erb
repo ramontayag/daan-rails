@@ -1,6 +1,16 @@
-<div class="flex flex-col w-full md:w-96 border-r border-gray-200"
-     data-testid="thread-list-column">
-  <div class="<%= open_chat ? 'hidden md:flex' : 'flex' %> flex-1 overflow-y-auto">
+<div class="<%= open_chat ? 'hidden md:flex md:flex-col md:w-72 md:flex-shrink-0' : 'flex flex-col flex-1 min-w-0' %> border-r border-gray-200"
+     data-testid="thread-list-column"
+     <% if open_chat %>data-panel-resize-target="panel"<% end %>>
+  <div class="flex md:hidden items-center h-12 px-4 border-b border-gray-200 flex-shrink-0">
+    <button data-action="click->sidebar#toggle"
+            class="p-1 rounded hover:bg-gray-100 text-gray-500">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+    <span class="ml-3 font-semibold text-sm"><%= agent.name %></span>
+  </div>
+  <div class="flex flex-col flex-1 overflow-y-auto">
     <% if chats.any? %>
       <ul>
         <% chats.each do |chat| %>
