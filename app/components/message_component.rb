@@ -14,7 +14,12 @@ class MessageComponent < ViewComponent::Base
 
   attr_reader :role, :body, :dom_id, :sender_name, :message
 
-  def rendered_body = MARKDOWN.render(body.to_s).html_safe
+  def rendered_body
+    # Ensure code fences are preceded by a blank line so hard_wrap doesn't
+    # prevent Redcarpet from recognising them as block-level fences.
+    content = body.to_s.gsub(/([^\n])\n(```)/m, "\\1\n\n\\2")
+    MARKDOWN.render(content).html_safe
+  end
 
   def initials
     return "?" unless sender_name

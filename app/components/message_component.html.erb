@@ -9,7 +9,7 @@
     <% if sender_name %>
       <div class="text-sm font-bold text-gray-900 mb-0.5"><%= sender_name %></div>
     <% end %>
-    <div class="prose prose-sm max-w-none overflow-x-auto">
+    <div class="prose prose-sm max-w-none overflow-x-auto" data-controller="syntax-highlight">
       <%= rendered_body %>
     </div>
     <% if message&.summary? %>
