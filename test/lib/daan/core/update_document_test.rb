@@ -26,4 +26,17 @@ class Daan::Core::UpdateDocumentTest < ActiveSupport::TestCase
     @tool.execute(id: @doc.id, body: "New body")
     assert_equal "Old Title", @doc.reload.title
   end
+
+  test "returns error when document id does not exist" do
+    result = @tool.execute(id: 0, body: "New body")
+    assert_includes result, "No document with id=0 found"
+  end
+
+  test "does not update a document belonging to a different chat" do
+    other_chat = Chat.create!(agent_name: "chief_of_staff")
+    other_doc = Document.create!(title: "Other", body: "Other body", chat: other_chat)
+    result = Daan::Core::UpdateDocument.new(chat: @chat).execute(id: other_doc.id, body: "Hacked")
+    assert_includes result, "No document with id=#{other_doc.id} found"
+    assert_equal "Other body", other_doc.reload.body
+  end
 end

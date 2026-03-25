@@ -14,8 +14,14 @@ module Daan
       end
 
       def execute(id:, body:)
-        doc = @chat.documents.find(id)
+        doc = @chat.documents.find_by(id: id)
+        return "No document with id=#{id} found in this thread." unless doc
         doc.update!(body: body)
+        Turbo::StreamsChannel.broadcast_replace_to(
+          "chat_#{@chat.id}",
+          target: "chat_document_#{doc.id}",
+          html: "<div id=\"chat_document_#{doc.id}\" class=\"px-3 py-1.5 text-xs\">#{ERB::Util.html_escape(doc.title)}</div>"
+        )
         "Document updated with id=#{doc.id}"
       end
     end

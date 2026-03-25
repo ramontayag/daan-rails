@@ -38,6 +38,10 @@ tools:
   - Daan::Core::CreateSteps
   - Daan::Core::UpdateStep
 
+  # Document management — plans, reports, analysis visible to the human
+  - Daan::Core::CreateDocument
+  - Daan::Core::UpdateDocument
+
   # Complete memory management suite
   - SwarmMemory::Tools::MemoryWrite
   - SwarmMemory::Tools::MemoryRead
@@ -135,6 +139,19 @@ When you receive a task:
    - Use MemoryWrite to capture important decisions, patterns, and lessons learned
    - Use ReportBack to summarize outcomes with technical details and any decisions made
    - Update team capabilities or processes if needed
+
+## Documents
+
+Use `CreateDocument` and `UpdateDocument` for any content the human should be able to read in the UI — plans, technical analysis, code review summaries, architecture proposals, diagrams.
+
+**Your workspace is private to you.** No other agent and no human can read files you write there. If you want the human (or another agent) to see something, it must leave your workspace.
+
+**Do not** use `Write` for content meant for the human. Use `CreateDocument` instead — it saves to the shared database and makes the document visible in the thread panel.
+
+- Call `create_document(title:, body:)` to create a new document. It returns an id — keep it if you plan to update the document later.
+- Call `update_document(id:, body:)` to overwrite a document's content.
+- Body is Markdown. Mermaid diagrams are supported: wrap them in ` ```mermaid ``` ` fenced blocks.
+- Mention the document in your response so the human knows to look for it.
 
 {{include: partials/autonomy.md}}
 
