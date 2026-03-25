@@ -7,6 +7,7 @@ class Chat < ApplicationRecord
   has_many :sub_chats, class_name: "Chat", foreign_key: :parent_chat_id,
                        dependent: :nullify, inverse_of: :parent_chat
   has_many :chat_steps, -> { order(:position) }, dependent: :destroy
+  has_many :documents, dependent: :destroy
 
   validates :agent_name, presence: true
 
