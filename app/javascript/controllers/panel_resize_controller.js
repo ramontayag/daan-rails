@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
-const STORAGE_KEY = "thread-panel-width"
-const MIN_WIDTH = 200
+const STORAGE_KEY = "thread-list-width"
+const MIN_WIDTH = 180
 
 export default class extends Controller {
   static targets = ["panel"]
@@ -9,7 +9,7 @@ export default class extends Controller {
   panelTargetConnected(panel) {
     if (window.innerWidth < 768 || panel.classList.contains("hidden")) return
     const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) panel.style.width = saved + "px"
+    if (saved) panel.style.flex = `0 0 ${saved}px`
   }
 
   startDrag(event) {
@@ -20,20 +20,21 @@ export default class extends Controller {
 
   _drag(event) {
     if (!this._dragging) return
+    const containerLeft = this.element.getBoundingClientRect().left
     const width = Math.max(
       MIN_WIDTH,
       Math.min(
         this.element.offsetWidth - MIN_WIDTH,
-        this.element.getBoundingClientRect().right - event.clientX
+        event.clientX - containerLeft
       )
     )
-    this.panelTarget.style.width = width + "px"
+    this.panelTarget.style.flex = `0 0 ${width}px`
   }
 
   _stopDrag() {
     if (!this._dragging) return
     this._dragging = false
-    const width = parseInt(this.panelTarget.style.width)
-    if (!isNaN(width)) localStorage.setItem(STORAGE_KEY, width)
+    const width = Math.round(this.panelTarget.getBoundingClientRect().width)
+    if (width > 0) localStorage.setItem(STORAGE_KEY, width)
   }
 }

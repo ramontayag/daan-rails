@@ -1,5 +1,6 @@
-<div class="<%= open_chat ? 'hidden md:flex md:flex-col md:flex-1 md:min-w-0' : 'flex flex-col flex-1 min-w-0' %> border-r border-gray-200"
-     data-testid="thread-list-column">
+<div class="<%= open_chat ? 'hidden md:flex md:flex-col md:w-72 md:flex-shrink-0' : 'flex flex-col flex-1 min-w-0' %> border-r border-gray-200"
+     data-testid="thread-list-column"
+     <% if open_chat %>data-panel-resize-target="panel"<% end %>>
   <div class="flex md:hidden items-center h-12 px-4 border-b border-gray-200 flex-shrink-0">
     <button data-action="click->sidebar#toggle"
             class="p-1 rounded hover:bg-gray-100 text-gray-500">

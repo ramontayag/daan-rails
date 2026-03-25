@@ -18,9 +18,7 @@
       </div>
     <% end %>
     <%= turbo_frame_tag "thread_panel",
-          class: "flex flex-col #{'hidden' unless @chat}",
-          style: (@chat ? "width: 400px" : nil),
-          data: { panel_resize_target: "panel" } do %>
+          class: "flex flex-col flex-1 min-w-0 #{'hidden' unless @chat}" do %>
       <%= render ThreadPanelComponent.new(chat: @chat, perspective_name: perspective_name, hide_tools: @hide_tools, show_tasks: @show_tasks) %>
     <% end %>
   </div>
