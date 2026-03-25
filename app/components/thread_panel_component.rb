@@ -1,5 +1,5 @@
 class ThreadPanelComponent < ViewComponent::Base
-  def initialize(chat:, perspective_name:, hide_tools: false, show_tasks: nil)
+  def initialize(chat:, perspective_name:, hide_tools: false, show_tasks: nil, show_docs: nil)
     @chat             = chat
     @perspective_name = perspective_name
     @hide_tools       = hide_tools

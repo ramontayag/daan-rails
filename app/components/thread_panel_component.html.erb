@@ -11,6 +11,7 @@
     </div>
     <div class="flex items-center gap-3 ml-auto">
       <%= render ChatCostComponent.new(chat: chat) %>
+      <%= render ChatDocumentIconComponent.new(chat: chat) %>
       <% if chat.chat_steps.any? %>
         <%= link_to chat_thread_path(chat, show_tasks: show_tasks ? "0" : "1"),
                     class: "text-gray-400 hover:text-gray-600",
@@ -36,7 +37,7 @@
     </div>
   </div>
   <%= render ChatStepPanelComponent.new(chat: chat, show_tasks: show_tasks) %>
-  <div class="flex-1 overflow-y-auto p-4" data-controller="scroll-to-bottom">
+<div class="flex-1 overflow-y-auto p-4" data-controller="scroll-to-bottom">
     <%= helpers.turbo_stream_from "chat_#{chat.id}" %>
     <div id="messages">
       <% chat_messages.each do |message| %>

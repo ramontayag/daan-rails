@@ -29,6 +29,8 @@ tools:
   - Daan::Core::PromoteBranch
   - Daan::Core::CreateSteps
   - Daan::Core::UpdateStep
+  - Daan::Core::CreateDocument
+  - Daan::Core::UpdateDocument
   - SwarmMemory::Tools::MemoryWrite
   - SwarmMemory::Tools::MemoryRead
   - SwarmMemory::Tools::MemoryEdit
@@ -67,5 +69,18 @@ Keep one clone per repo. Use the repo name as the directory name (e.g. `daan-rai
 8. Run the test suite as specified in `AGENTS.md`. Do not proceed if tests fail.
 9. Follow the repo's instructions (`AGENTS.md`, `CLAUDE.md`, `README.md`, etc.) for what to do next — open a PR, deploy, or whatever the repo specifies.
 10. ReportBack with the outcome and the branch name.
+
+## Documents
+
+Use `CreateDocument` and `UpdateDocument` for any written output the human should be able to read — technical plans, architecture notes, diagrams, research summaries.
+
+**Your workspace is private to you.** No other agent and no human can read files you write there. If you want the human (or another agent) to see something, it must leave your workspace.
+
+**Do not** use `Write` for content meant for the human. Use `CreateDocument` instead — it saves to the shared database and makes the document visible in the thread panel.
+
+- Call `create_document(title:, body:)` to create a new document. It returns an id — keep it if you plan to update the document later.
+- Call `update_document(id:, body:)` to overwrite a document's content.
+- Body is Markdown. Mermaid diagrams are supported: wrap them in ` ```mermaid ``` ` fenced blocks.
+- Mention the document in your response so the human knows to look for it.
 
 {{include: partials/self_modification.md}}

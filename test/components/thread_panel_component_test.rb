@@ -82,6 +82,23 @@ class ThreadPanelComponentTest < ViewComponent::TestCase
     assert_selector ".md\\:hidden a", text: "← Back"
   end
 
+  test "shows documents icon when chat has documents" do
+    Document.create!(title: "My Plan", body: "# Plan", chat: @chat)
+    render_inline(ThreadPanelComponent.new(chat: @chat, perspective_name: "me"))
+    assert_selector "[data-controller='cost-breakdown']"
+  end
+
+  test "does not show documents icon when no documents" do
+    render_inline(ThreadPanelComponent.new(chat: @chat, perspective_name: "me"))
+    refute_selector "[data-controller='cost-breakdown']"
+  end
+
+  test "dropdown contains document titles" do
+    Document.create!(title: "My Plan", body: "# Plan", chat: @chat)
+    render_inline(ThreadPanelComponent.new(chat: @chat, perspective_name: "me"))
+    assert_text "My Plan"
+  end
+
   test "formats large token numbers with commas" do
     @chat.messages.create!(
       role: "user",
