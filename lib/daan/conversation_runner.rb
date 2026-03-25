@@ -17,9 +17,21 @@ module Daan
       Chats::EnqueueCompaction.call(chat)
       Chats::ConfigureLlm.call(chat, agent)
 
+      hooks = Daan::Core::Hook::Registry.agent_hooks(agent.hook_names) +
+              Daan::Core::Hook::Registry.tool_hooks
+      last_tool_calls = last_tool_calls_for(chat)
+      hooks.each { |h| h.before_llm_call(chat: chat, last_tool_calls: last_tool_calls) }
+
       response = Chats::RunStep.call(chat, context_user_message_id: context_user_message_id)
       Chats::FinishOrReenqueue.call(chat, agent, response)
     end
+
+    def self.last_tool_calls_for(chat)
+      last_assistant = chat.messages.where(role: "assistant").order(:id).last
+      return [] unless last_assistant
+      ToolCall.where(message_id: last_assistant.id)
+    end
+    private_class_method :last_tool_calls_for
 
     def self.already_responded?(chat)
       last_user_message      = chat.messages.where(role: "user").last

@@ -238,6 +238,39 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert_includes notification.content, "No response recorded."
   end
 
+  test "calls before_llm_call on agent's hooks with chat and last_tool_calls" do
+    received_args = nil
+    spy_hook = Class.new do
+      include Daan::Core::Hook
+      define_method(:before_llm_call) { |chat:, last_tool_calls:| received_args = { chat: chat, last_tool_calls: last_tool_calls } }
+    end
+
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [spy_hook.new]) do
+      Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
+        with_stub_step { Daan::ConversationRunner.call(@chat) }
+      end
+    end
+
+    assert_not_nil received_args
+    assert_equal @chat, received_args[:chat]
+    assert_respond_to received_args[:last_tool_calls], :each
+  end
+
+  test "ripple-check message injected when agent has shaping hook and update_document was called" do
+    @agent.hook_names = ["Daan::Core::Shaping"]
+
+    assistant = @chat.messages.create!(role: "assistant", content: "Updating doc")
+    ToolCall.create!(message: assistant, name: Daan::Core::UpdateDocument.tool_name,
+                     tool_call_id: SecureRandom.hex(8))
+
+    with_stub_step { Daan::ConversationRunner.call(@chat) }
+
+    ripple = @chat.messages.where_content_like("%Ripple check%").first
+    assert ripple, "expected ripple check message"
+    assert_equal false, ripple.visible
+    assert_equal "user", ripple.role
+  end
+
   def with_stub_tool_step
     chat = @chat
     step_callable = ->(*) {
