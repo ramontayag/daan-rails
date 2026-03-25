@@ -1,13 +1,14 @@
 # lib/daan/agent.rb
 module Daan
   Agent = Struct.new(:name, :display_name, :model_name, :system_prompt, :max_steps,
-                     :workspace, :base_tools, :delegates_to, :allowed_commands,
+                     :workspace, :base_tools, :delegates_to, :allowed_commands, :hook_names,
                      keyword_init: true) do
     def initialize(**)
       super
       self.base_tools       ||= []
       self.delegates_to     ||= []
       self.allowed_commands ||= []
+      self.hook_names       ||= []
     end
 
     def tools(chat: nil)

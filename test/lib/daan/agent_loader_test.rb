@@ -136,6 +136,46 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     assert agent.workspace.to_s.end_with?("tmp/workspaces/agent_resource_manager")
   end
 
+  test "parses hooks from frontmatter" do
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "shaper.md")
+      File.write(path, <<~MD)
+        ---
+        name: shaper
+        display_name: Shaper
+        model: claude-haiku-4-5-20251001
+        max_steps: 10
+        hooks:
+          - Daan::Core::Shaping
+        tools: []
+        delegates_to: []
+        ---
+        You shape.
+      MD
+      definition = Daan::AgentLoader.parse(path)
+      assert_equal ["Daan::Core::Shaping"], definition[:hook_names]
+    end
+  end
+
+  test "hook_names defaults to empty array when hooks not declared" do
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "plain.md")
+      File.write(path, <<~MD)
+        ---
+        name: plain
+        display_name: Plain
+        model: claude-haiku-4-5-20251001
+        max_steps: 5
+        tools: []
+        delegates_to: []
+        ---
+        Plain agent.
+      MD
+      definition = Daan::AgentLoader.parse(path)
+      assert_equal [], definition[:hook_names]
+    end
+  end
+
   test "agents with PromoteBranch tool include self-modification instructions" do
     Daan::AgentLoader.sync!(@definitions_path)
 
