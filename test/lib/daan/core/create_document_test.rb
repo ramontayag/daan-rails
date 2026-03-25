@@ -24,9 +24,11 @@ class Daan::Core::CreateDocumentTest < ActiveSupport::TestCase
     assert_equal "# My Plan\n\nDetails here.", doc.body
   end
 
-  test "returns the document id" do
+  test "returns the document id and a markdown link" do
     result = @tool.execute(title: "My Plan", body: "# My Plan")
     doc = @chat.documents.last
     assert_includes result, doc.id.to_s
+    assert_includes result, "/documents/#{doc.id}"
+    assert_includes result, "[My Plan]"
   end
 end

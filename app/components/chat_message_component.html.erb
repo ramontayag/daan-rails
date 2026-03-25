@@ -2,7 +2,8 @@
   <% if message.content.present? %>
     <%= render MessageComponent.new(role: "assistant", body: message.content,
                                    dom_id: "message_#{message.id}",
-                                   sender_name: sender_name) %>
+                                   sender_name: sender_name,
+                                   return_to_uri: return_to_uri) %>
   <% end %>
   <% unless hide_tools %>
     <% message.tool_calls.each do |tool_call| %>
@@ -12,5 +13,6 @@
 <% else %>
   <%= render MessageComponent.new(role: message.role, body: message.content,
                                  dom_id: "message_#{message.id}",
-                                 sender_name: sender_name, message: message) %>
+                                 sender_name: sender_name, message: message,
+                                 return_to_uri: return_to_uri) %>
 <% end %>

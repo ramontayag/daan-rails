@@ -12,6 +12,10 @@ class ChatMessageComponent < ViewComponent::Base
 
   attr_reader :message, :results, :hide_tools
 
+  def return_to_uri
+    helpers.chat_thread_path(chat)
+  end
+
   def chat
     @chat ||= message.chat
   end
