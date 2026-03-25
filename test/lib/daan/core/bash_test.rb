@@ -77,6 +77,24 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
     assert_match(/escape/, @tool.execute(commands: [ [ "echo", "hi" ] ], path: "../escape"))
   end
 
+  test "returns error when an argument is an absolute path outside the workspace" do
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    result = @tool.execute(commands: [ [ "echo", "/etc/passwd" ] ])
+    assert_match(/escape/, result)
+  end
+
+  test "returns error when an argument uses .. to traverse outside the workspace" do
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    result = @tool.execute(commands: [ [ "echo", "../../.." ] ])
+    assert_match(/escape/, result)
+  end
+
+  test "allows arguments that are absolute paths inside the workspace" do
+    path_inside = File.join(@workspace_dir, "somefile.txt")
+    result = @tool.execute(commands: [ [ "echo", path_inside ] ])
+    assert_includes result, path_inside
+  end
+
   test "includes stderr in successful command output" do
     # git init writes "Initialized..." to stdout and hints to stderr
     # both should appear in the result so LLMs see the full picture
@@ -102,27 +120,26 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
     # keeps stdout/stderr pipes open even after the parent process is killed.
     # Without the fix, out_thread.join in the rescue block blocks forever because
     # the child still holds the write end of the pipe.
-    script = Tempfile.new([ "pipe_hog", ".sh" ])
-    script.write(<<~SH)
+    script_path = File.join(@workspace_dir, "pipe_hog.sh")
+    File.write(script_path, <<~SH)
       #!/bin/sh
       # Spawn a background child that sleeps indefinitely (keeps pipes open).
       sleep 60 &
       # Parent then sleeps, waiting to be killed.
       sleep 60
     SH
-    script.close
-    File.chmod(0o755, script.path)
+    File.chmod(0o755, script_path)
 
     tool = Daan::Core::Bash.new(workspace: @workspace, allowed_commands: %w[sh])
     tool.singleton_class.prepend(Daan::Core::SafeExecute)
 
     started_at = Time.now
-    result = tool.execute(commands: [ [ "sh", script.path ] ], timeout_seconds: 0.5)
+    result = tool.execute(commands: [ [ "sh", script_path ] ], timeout_seconds: 0.5)
     elapsed = Time.now - started_at
 
     assert_match(/timed out/, result)
     assert elapsed < 3, "expected to return within 3s but took #{elapsed.round(2)}s"
   ensure
-    script&.unlink
+    File.unlink(script_path) rescue nil
   end
 end
