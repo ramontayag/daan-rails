@@ -20,7 +20,11 @@ module Daan
       hooks = Daan::Core::Hook::Registry.agent_hooks(agent.hook_names) +
               Daan::Core::Hook::Registry.tool_hooks
       last_tool_calls = last_tool_calls_for(chat)
-      hooks.each { |h| h.before_llm_call(chat: chat, last_tool_calls: last_tool_calls) }
+      hooks.each do |h|
+        h.before_llm_call(chat: chat, last_tool_calls: last_tool_calls)
+      rescue => e
+        Rails.logger.error("[Hook] #{h.class} raised during before_llm_call: #{e.message}")
+      end
 
       response = Chats::RunStep.call(chat, context_user_message_id: context_user_message_id)
       Chats::FinishOrReenqueue.call(chat, agent, response)

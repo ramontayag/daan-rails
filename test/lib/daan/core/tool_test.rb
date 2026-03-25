@@ -2,9 +2,10 @@ require "test_helper"
 
 class Daan::Core::ToolTest < ActiveSupport::TestCase
   test "raises if included directly without .module" do
-    assert_raises(RuntimeError) do
+    error = assert_raises(RuntimeError) do
       Class.new(RubyLLM::Tool) { include Daan::Core::Tool }
     end
+    assert_match(/Use.*\.module/, error.message)
   end
 
   test ".module(timeout:) adds tool_timeout_seconds to the including class" do

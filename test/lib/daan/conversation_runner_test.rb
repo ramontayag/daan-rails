@@ -256,6 +256,21 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert_respond_to received_args[:last_tool_calls], :each
   end
 
+  test "a hook that raises does not abort the conversation" do
+    exploding_hook = Class.new do
+      include Daan::Core::Hook
+      def before_llm_call(chat:, last_tool_calls:) = raise "boom"
+    end
+
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [exploding_hook.new]) do
+      Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
+        with_stub_step { Daan::ConversationRunner.call(@chat) }
+      end
+    end
+
+    assert @chat.reload.completed?
+  end
+
   test "ripple-check message injected when agent has shaping hook and update_document was called" do
     @agent.hook_names = [ "Daan::Core::Shaping" ]
 
