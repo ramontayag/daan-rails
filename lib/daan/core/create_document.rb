@@ -3,6 +3,7 @@ module Daan
   module Core
     class CreateDocument < RubyLLM::Tool
       extend ToolTimeout
+      include Rails.application.routes.url_helpers
       tool_timeout_seconds 5.seconds
 
       description "Create a new document in this thread"
@@ -35,14 +36,21 @@ module Daan
           Turbo::StreamsChannel.broadcast_append_to(
             "chat_#{@chat.id}",
             target: "chat_documents_list_#{@chat.id}",
-            html: "<div id=\"chat_document_#{doc.id}\" class=\"px-3 py-1.5 text-xs\">#{ERB::Util.html_escape(doc.title)}</div>"
+            html: document_row_html(doc)
           )
           Turbo::StreamsChannel.broadcast_replace_to(
             "chat_#{@chat.id}",
             target: "chat_documents_count_#{@chat.id}",
-            html: "<span id=\"chat_documents_count_#{@chat.id}\" class=\"text-xs\">#{@chat.documents.count}</span>"
+            html: %(<span id="chat_documents_count_#{@chat.id}" class="text-xs">#{@chat.documents.count}</span>)
           )
         end
+      end
+
+      def document_row_html(doc)
+        return_to = chat_thread_path(@chat)
+        href = document_path(doc, return_to_uri: return_to)
+        title = ERB::Util.html_escape(doc.title)
+        %(<div id="chat_document_#{doc.id}" class="px-3 py-1.5 text-xs"><a href="#{href}" class="hover:text-blue-600 block">#{title}</a></div>)
       end
     end
   end

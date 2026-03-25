@@ -1,0 +1,30 @@
+<% content_for :head do %>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    document.querySelectorAll('pre code.language-mermaid').forEach(el => {
+      const div = document.createElement('div');
+      div.className = 'mermaid';
+      div.textContent = el.textContent;
+      el.parentNode.replaceWith(div);
+    });
+    await mermaid.run();
+  </script>
+<% end %>
+
+<div class="flex flex-col h-screen bg-white">
+  <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
+    <h1 class="text-lg font-semibold text-gray-900 truncate"><%= @document.title %></h1>
+    <%= link_to @return_to_uri,
+                class: "ml-4 flex-shrink-0 flex items-center justify-center w-7 h-7 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600",
+                title: "Close" do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    <% end %>
+  </div>
+  <div class="flex-1 overflow-y-auto">
+    <div class="prose prose-gray max-w-3xl mx-auto px-6 py-8">
+      <%= raw @body_html %>
+    </div>
+  </div>
+</div>

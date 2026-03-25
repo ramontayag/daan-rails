@@ -13,7 +13,11 @@
            class="hidden absolute top-full right-0 mt-1 w-52 py-1 bg-white border border-gray-200 rounded shadow-lg z-50 text-gray-700">
         <div id="chat_documents_list_<%= chat.id %>">
           <% documents.each do |doc| %>
-            <div id="chat_document_<%= doc.id %>" class="px-3 py-1.5 text-xs"><%= doc.title %></div>
+            <div id="chat_document_<%= doc.id %>" class="px-3 py-1.5 text-xs">
+              <%= link_to doc.title,
+                          document_path(doc, return_to_uri: chat_thread_path(chat)),
+                          class: "hover:text-blue-600 block" %>
+            </div>
           <% end %>
         </div>
       </div>

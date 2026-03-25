@@ -3,6 +3,7 @@ module Daan
   module Core
     class UpdateDocument < RubyLLM::Tool
       extend ToolTimeout
+      include Rails.application.routes.url_helpers
       tool_timeout_seconds 5.seconds
 
       description "Update the body of an existing document in this thread"
@@ -17,10 +18,13 @@ module Daan
         doc = @chat.documents.find_by(id: id)
         return "No document with id=#{id} found in this thread." unless doc
         doc.update!(body: body)
+        return_to = chat_thread_path(@chat)
+        href = document_path(doc, return_to_uri: return_to)
+        title = ERB::Util.html_escape(doc.title)
         Turbo::StreamsChannel.broadcast_replace_to(
           "chat_#{@chat.id}",
           target: "chat_document_#{doc.id}",
-          html: "<div id=\"chat_document_#{doc.id}\" class=\"px-3 py-1.5 text-xs\">#{ERB::Util.html_escape(doc.title)}</div>"
+          html: %(<div id="chat_document_#{doc.id}" class="px-3 py-1.5 text-xs"><a href="#{href}" class="hover:text-blue-600 block">#{title}</a></div>)
         )
         "Document updated with id=#{doc.id}"
       end
