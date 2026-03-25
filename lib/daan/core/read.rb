@@ -2,8 +2,7 @@
 module Daan
   module Core
     class Read < RubyLLM::Tool
-      extend ToolTimeout
-      tool_timeout_seconds 10.seconds
+      include Daan::Core::Tool.module(timeout: 10.seconds)
 
       DEFAULT_LINE_LIMIT = 2000
 
