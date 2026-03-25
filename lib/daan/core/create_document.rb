@@ -50,7 +50,7 @@ module Daan
         return_to = chat_thread_path(@chat)
         href = document_path(doc, return_to_uri: return_to)
         title = ERB::Util.html_escape(doc.title)
-        %(<div id="chat_document_#{doc.id}" class="px-3 py-1.5 text-xs"><a href="#{href}" class="hover:text-blue-600 block">#{title}</a></div>)
+        %(<div id="chat_document_#{doc.id}" class="px-3 py-1.5 text-xs"><a href="#{href}" class="hover:text-blue-600 block" data-turbo-frame="_top">#{title}</a></div>)
       end
     end
   end

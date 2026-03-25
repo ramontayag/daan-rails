@@ -24,7 +24,7 @@ module Daan
         Turbo::StreamsChannel.broadcast_replace_to(
           "chat_#{@chat.id}",
           target: "chat_document_#{doc.id}",
-          html: %(<div id="chat_document_#{doc.id}" class="px-3 py-1.5 text-xs"><a href="#{href}" class="hover:text-blue-600 block">#{title}</a></div>)
+          html: %(<div id="chat_document_#{doc.id}" class="px-3 py-1.5 text-xs"><a href="#{href}" class="hover:text-blue-600 block" data-turbo-frame="_top">#{title}</a></div>)
         )
         "Document updated with id=#{doc.id}"
       end

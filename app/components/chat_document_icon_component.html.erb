@@ -16,7 +16,8 @@
             <div id="chat_document_<%= doc.id %>" class="px-3 py-1.5 text-xs">
               <%= link_to doc.title,
                           document_path(doc, return_to_uri: chat_thread_path(chat)),
-                          class: "hover:text-blue-600 block" %>
+                          class: "hover:text-blue-600 block",
+                          data: { turbo_frame: "_top" } %>
             </div>
           <% end %>
         </div>
