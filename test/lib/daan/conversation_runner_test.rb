@@ -245,7 +245,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
       define_method(:before_llm_call) { |chat:, last_tool_calls:| received_args = { chat: chat, last_tool_calls: last_tool_calls } }
     end
 
-    Daan::Core::Hook::Registry.stub(:agent_hooks, [spy_hook.new]) do
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [ spy_hook.new ]) do
       Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
         with_stub_step { Daan::ConversationRunner.call(@chat) }
       end
@@ -257,7 +257,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   end
 
   test "ripple-check message injected when agent has shaping hook and update_document was called" do
-    @agent.hook_names = ["Daan::Core::Shaping"]
+    @agent.hook_names = [ "Daan::Core::Shaping" ]
 
     assistant = @chat.messages.create!(role: "assistant", content: "Updating doc")
     ToolCall.create!(message: assistant, name: Daan::Core::UpdateDocument.tool_name,

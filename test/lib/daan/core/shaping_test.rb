@@ -27,14 +27,14 @@ class Daan::Core::ShapingTest < ActiveSupport::TestCase
   test "does nothing when last_tool_calls has no update_document call" do
     tc = build_tool_call(Daan::Core::Read.tool_name)
     assert_no_difference -> { @chat.messages.count } do
-      call_hook(last_tool_calls: [tc])
+      call_hook(last_tool_calls: [ tc ])
     end
   end
 
   test "injects a visible:false ripple-check message when update_document was called" do
     tc = build_tool_call(Daan::Core::UpdateDocument.tool_name)
     assert_difference -> { @chat.messages.count }, 1 do
-      call_hook(last_tool_calls: [tc])
+      call_hook(last_tool_calls: [ tc ])
     end
 
     msg = @chat.messages.order(:id).last
@@ -56,7 +56,7 @@ class Daan::Core::ShapingTest < ActiveSupport::TestCase
   test "does not enqueue LlmJob when injecting ripple check" do
     tc = build_tool_call(Daan::Core::UpdateDocument.tool_name)
     assert_no_enqueued_jobs only: LlmJob do
-      call_hook(last_tool_calls: [tc])
+      call_hook(last_tool_calls: [ tc ])
     end
   end
 

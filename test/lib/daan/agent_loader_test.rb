@@ -153,7 +153,7 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
         You shape.
       MD
       definition = Daan::AgentLoader.parse(path)
-      assert_equal ["Daan::Core::Shaping"], definition[:hook_names]
+      assert_equal [ "Daan::Core::Shaping" ], definition[:hook_names]
     end
   end
 

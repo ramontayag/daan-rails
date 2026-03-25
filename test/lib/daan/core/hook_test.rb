@@ -19,7 +19,7 @@ class Daan::Core::HookTest < ActiveSupport::TestCase
   end
 
   test ".module(applies_to:) sets applies_to_tool? for listed tool classes" do
-    klass = Class.new { include Daan::Core::Hook.module(applies_to: [Daan::Core::Bash]) }
+    klass = Class.new { include Daan::Core::Hook.module(applies_to: [ Daan::Core::Bash ]) }
     assert_equal true,  klass.new.applies_to_tool?(Daan::Core::Bash.tool_name)
     assert_equal false, klass.new.applies_to_tool?(Daan::Core::Write.tool_name)
   end
@@ -27,7 +27,7 @@ class Daan::Core::HookTest < ActiveSupport::TestCase
   test "Registry.agent_hooks resolves constant name strings to instances" do
     stub_hook = Class.new { include Daan::Core::Hook }
     Object.const_set("StubHook", stub_hook)
-    instances = Daan::Core::Hook::Registry.agent_hooks(["StubHook"])
+    instances = Daan::Core::Hook::Registry.agent_hooks([ "StubHook" ])
     assert_equal 1, instances.size
     assert_instance_of stub_hook, instances.first
   ensure
