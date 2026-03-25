@@ -2,9 +2,8 @@
 module Daan
   module Core
     class CreateDocument < RubyLLM::Tool
-      extend ToolTimeout
+      include Daan::Core::Tool.module(timeout: 5.seconds)
       include Rails.application.routes.url_helpers
-      tool_timeout_seconds 5.seconds
 
       description "Create a new document in this thread"
       param :title, desc: "Title of the document"
