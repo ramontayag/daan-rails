@@ -6,7 +6,7 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
     @workspace = Daan::Workspace.new(@workspace_dir)
     @tool = Daan::Core::Bash.new(
       workspace: @workspace,
-      allowed_commands: %w[echo git pwd]
+      allowed_commands: %w[echo git pwd sh]
     )
   end
 
@@ -42,15 +42,15 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
 
   test "returns error string when a command fails" do
     @tool.singleton_class.prepend(Daan::Core::SafeExecute)
-    result = @tool.execute(commands: [ [ "git", "status" ] ])
-    assert_match(/git status/, result)
+    result = @tool.execute(commands: [ [ "sh", "-c", "exit 1" ] ])
+    assert_match(/sh -c exit 1/, result)
     assert_match(/failed/, result)
   end
 
   test "returns error string on second command failure" do
     @tool.singleton_class.prepend(Daan::Core::SafeExecute)
-    result = @tool.execute(commands: [ [ "echo", "step one" ], [ "git", "status" ] ])
-    assert_match(/git status/, result)
+    result = @tool.execute(commands: [ [ "echo", "step one" ], [ "sh", "-c", "exit 1" ] ])
+    assert_match(/sh -c exit 1/, result)
     assert_match(/failed/, result)
   end
 
