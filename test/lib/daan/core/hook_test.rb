@@ -13,6 +13,26 @@ class Daan::Core::HookTest < ActiveSupport::TestCase
     assert_nothing_raised { klass.new.before_llm_call(chat: nil, last_tool_calls: []) }
   end
 
+  test "included class gets default no-op before_conversation" do
+    klass = Class.new { include Daan::Core::Hook }
+    assert_nothing_raised { klass.new.before_conversation(chat: nil) }
+  end
+
+  test "included class gets default no-op before_tool_call" do
+    klass = Class.new { include Daan::Core::Hook }
+    assert_nothing_raised { klass.new.before_tool_call(chat: nil, tool_name: "foo", args: {}) }
+  end
+
+  test "included class gets default no-op after_tool_call" do
+    klass = Class.new { include Daan::Core::Hook }
+    assert_nothing_raised { klass.new.after_tool_call(chat: nil, tool_name: "foo", args: {}, result: "ok") }
+  end
+
+  test "included class gets default no-op after_conversation" do
+    klass = Class.new { include Daan::Core::Hook }
+    assert_nothing_raised { klass.new.after_conversation(chat: nil, status: :completed) }
+  end
+
   test "applies_to_tool? returns false for plain agent hook includes" do
     klass = Class.new { include Daan::Core::Hook }
     assert_equal false, klass.new.applies_to_tool?("anything")
