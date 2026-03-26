@@ -262,7 +262,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
       def before_llm_call(chat:, last_tool_calls:) = raise "boom"
     end
 
-    Daan::Core::Hook::Registry.stub(:agent_hooks, [exploding_hook.new]) do
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [ exploding_hook.new ]) do
       Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
         with_stub_step { Daan::ConversationRunner.call(@chat) }
       end
