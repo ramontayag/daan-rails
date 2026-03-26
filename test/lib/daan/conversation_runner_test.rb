@@ -18,6 +18,8 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     @chat.messages.create!(role: "user", content: "Hello agent")
   end
 
+  teardown { Daan::Core::Hook::Registry.clear }
+
   test "transitions to completed" do
     with_stub_step { Daan::ConversationRunner.call(@chat) }
     assert @chat.reload.completed?
