@@ -2,15 +2,15 @@
 class DocumentsController < ApplicationController
   def show
     @document = Document.find(params[:id])
-    renderer = Redcarpet::Render::HTML.new(hard_wrap: true, filter_html: true, safe_links_only: true)
-    markdown = Redcarpet::Markdown.new(renderer,
-      fenced_code_blocks: true,
-      autolink: true,
-      tables: true,
-      strikethrough: true
-    )
-    @body_html = markdown.render(@document.body.to_s)
     @return_to_uri = safe_return_uri(params[:return_to_uri])
+
+    respond_to do |format|
+      format.html { @body_html = helpers.render_markdown(@document.body.to_s) }
+      format.md do
+        filename = "#{@document.title.parameterize}.md"
+        send_data @document.body, filename: filename, type: "text/markdown", disposition: "attachment"
+      end
+    end
   end
 
   private

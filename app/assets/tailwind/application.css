@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+@layer base {
+  button, [role="button"] {
+    cursor: pointer;
+  }
+}
+
 /* Slack-like inline code */
 .prose :not(pre) > code {
   background-color: #fdf3f5;
