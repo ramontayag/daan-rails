@@ -271,6 +271,39 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert @chat.reload.completed?
   end
 
+  test "dispatches before_conversation when step_count is 0 (first LLM step)" do
+    received = nil
+    spy = Class.new do
+      include Daan::Core::Hook
+      define_method(:before_conversation) { |chat:| received = chat }
+    end
+
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [spy.new]) do
+      Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
+        with_stub_step { Daan::ConversationRunner.call(@chat) }
+      end
+    end
+
+    assert_equal @chat, received
+  end
+
+  test "does not dispatch before_conversation on subsequent steps (step_count > 0)" do
+    prior_steps(1)  # creates one assistant message after the user message → step_count = 1
+    called = false
+    spy = Class.new do
+      include Daan::Core::Hook
+      define_method(:before_conversation) { |chat:| called = true }
+    end
+
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [spy.new]) do
+      Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
+        with_stub_step { Daan::ConversationRunner.call(@chat) }
+      end
+    end
+
+    assert_not called, "before_conversation must not fire on step 2+"
+  end
+
   test "ripple-check message injected when agent has shaping hook and update_document was called" do
     @agent.hook_names = [ "Daan::Core::Shaping" ]
 

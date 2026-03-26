@@ -26,6 +26,14 @@ module Daan
         Rails.logger.error("[Hook] #{h.class} raised during before_llm_call: #{e.message}")
       end
 
+      if chat.step_count == 0
+        hooks.each do |h|
+          h.before_conversation(chat: chat)
+        rescue => e
+          Rails.logger.error("[Hook] #{h.class} raised during before_conversation: #{e.message}")
+        end
+      end
+
       response = Chats::RunStep.call(chat, context_user_message_id: context_user_message_id)
       Chats::FinishOrReenqueue.call(chat, agent, response)
     end
