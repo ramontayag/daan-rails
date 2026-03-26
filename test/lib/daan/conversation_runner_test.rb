@@ -336,6 +336,76 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert_nil Thread.current[:daan_active_hooks]
   end
 
+  test "dispatches after_conversation(:completed) when chat finishes" do
+    received = nil
+    spy = Class.new do
+      include Daan::Core::Hook
+      define_method(:after_conversation) { |chat:, status:| received = { chat: chat, status: status } }
+    end
+
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [spy.new]) do
+      Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
+        with_stub_step { Daan::ConversationRunner.call(@chat) }
+      end
+    end
+
+    assert_not_nil received
+    assert_equal :completed, received[:status]
+  end
+
+  test "dispatches after_conversation(:blocked) when max steps reached" do
+    received_status = nil
+    spy = Class.new do
+      include Daan::Core::Hook
+      define_method(:after_conversation) { |chat:, status:| received_status = status }
+    end
+
+    prior_steps(@agent.max_steps - 1)
+
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [spy.new]) do
+      Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
+        with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
+      end
+    end
+
+    assert_equal :blocked, received_status
+  end
+
+  test "dispatches after_conversation(:failed) when RunStep raises" do
+    received_status = nil
+    spy = Class.new do
+      include Daan::Core::Hook
+      define_method(:after_conversation) { |chat:, status:| received_status = status }
+    end
+
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [spy.new]) do
+      Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
+        with_stub_step(raise_error: RuntimeError.new("LLM down")) do
+          assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
+        end
+      end
+    end
+
+    assert_equal :failed, received_status
+  end
+
+  test "does not dispatch after_conversation when chat is re-enqueued mid-conversation" do
+    called = false
+    spy = Class.new do
+      include Daan::Core::Hook
+      define_method(:after_conversation) { |chat:, status:| called = true }
+    end
+
+    # Tool call step, max_steps NOT reached — LlmJob re-enqueued, chat stays in_progress
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [spy.new]) do
+      Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
+        with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
+      end
+    end
+
+    assert_not called, "after_conversation must not fire when LlmJob is re-enqueued"
+  end
+
   test "ripple-check message injected when agent has shaping hook and update_document was called" do
     @agent.hook_names = [ "Daan::Core::Shaping" ]
 
