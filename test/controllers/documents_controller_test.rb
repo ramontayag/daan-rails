@@ -46,4 +46,21 @@ class DocumentsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='/steal']"
     assert_no_match "evil.com", response.body
   end
+
+  test "GET show.md returns raw markdown body as attachment" do
+    get document_path(@doc, format: :md)
+    assert_response :success
+    assert_equal @doc.body, response.body
+    assert_match "attachment", response.headers["Content-Disposition"]
+  end
+
+  test "GET show.md uses slugified title as filename" do
+    get document_path(@doc, format: :md)
+    assert_match "my-plan.md", response.headers["Content-Disposition"]
+  end
+
+  test "GET show.md sets text/markdown content type" do
+    get document_path(@doc, format: :md)
+    assert_match "text/markdown", response.content_type
+  end
 end
