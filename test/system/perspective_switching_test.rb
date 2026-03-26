@@ -34,7 +34,7 @@ class PerspectiveSwitchingTest < ApplicationSystemTestCase
 
     # === CoS perspective ===
     select "Chief of Staff", from: "perspective"
-    assert_selector "[data-testid='agent-item']", count: 4
+    assert_selector "[data-testid='agent-item']", count: 5
 
     # CoS's own page — shows conversation with the human
     find("[data-testid='thread-list-item'] a", match: :first).click
@@ -49,7 +49,7 @@ class PerspectiveSwitchingTest < ApplicationSystemTestCase
 
     # === EM perspective ===
     select "Engineering Manager", from: "perspective"
-    assert_selector "[data-testid='agent-item']", count: 4
+    assert_selector "[data-testid='agent-item']", count: 5
 
     # EM can see its own conversation with CoS
     click_on "Chief of Staff"
@@ -58,7 +58,7 @@ class PerspectiveSwitchingTest < ApplicationSystemTestCase
 
     # === Back to human ===
     select "Me (Human)", from: "perspective"
-    assert_selector "[data-testid='agent-item']", count: 4
+    assert_selector "[data-testid='agent-item']", count: 5
     click_on "Chief of Staff"
     assert_selector "[data-testid='message-input']"
   end

@@ -1,8 +1,7 @@
 module Daan
   module Core
     class UpdateStep < RubyLLM::Tool
-      extend ToolTimeout
-      tool_timeout_seconds 10.seconds
+      include Daan::Core::Tool.module(timeout: 10.seconds)
 
       description "Update the status of a step in your checklist. " \
                   "Use the position number shown in your system prompt."

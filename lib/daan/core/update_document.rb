@@ -2,9 +2,8 @@
 module Daan
   module Core
     class UpdateDocument < RubyLLM::Tool
-      extend ToolTimeout
+      include Daan::Core::Tool.module(timeout: 5.seconds)
       include Rails.application.routes.url_helpers
-      tool_timeout_seconds 5.seconds
 
       description "Update the body of an existing document in this thread"
       param :id, desc: "ID of the document to update"

@@ -40,7 +40,7 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
   test "sync! re-running overwrites previous registration" do
     Daan::AgentLoader.sync!(@definitions_path)
     Daan::AgentLoader.sync!(@definitions_path)
-    assert_equal 4, Daan::AgentRegistry.all.length # 4 agents: chief_of_staff, developer, engineering_manager, agent_resource_manager
+    assert_equal 5, Daan::AgentRegistry.all.length # 5 agents: chief_of_staff, developer, engineering_manager, agent_resource_manager, ryan_singer
   end
 
   test "parse returns base_tools array for chief_of_staff agent" do
@@ -134,6 +134,46 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     assert agent.base_tools.include?(Daan::Core::Write)
     assert agent.base_tools.include?(Daan::Core::ReportBack)
     assert agent.workspace.to_s.end_with?("tmp/workspaces/agent_resource_manager")
+  end
+
+  test "parses hooks from frontmatter" do
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "shaper.md")
+      File.write(path, <<~MD)
+        ---
+        name: shaper
+        display_name: Shaper
+        model: claude-haiku-4-5-20251001
+        max_steps: 10
+        hooks:
+          - Daan::Core::Shaping
+        tools: []
+        delegates_to: []
+        ---
+        You shape.
+      MD
+      definition = Daan::AgentLoader.parse(path)
+      assert_equal [ "Daan::Core::Shaping" ], definition[:hook_names]
+    end
+  end
+
+  test "hook_names defaults to empty array when hooks not declared" do
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "plain.md")
+      File.write(path, <<~MD)
+        ---
+        name: plain
+        display_name: Plain
+        model: claude-haiku-4-5-20251001
+        max_steps: 5
+        tools: []
+        delegates_to: []
+        ---
+        Plain agent.
+      MD
+      definition = Daan::AgentLoader.parse(path)
+      assert_equal [], definition[:hook_names]
+    end
   end
 
   test "agents with PromoteBranch tool include self-modification instructions" do
