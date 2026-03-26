@@ -34,7 +34,12 @@ module Daan
         end
       end
 
-      response = Chats::RunStep.call(chat, context_user_message_id: context_user_message_id)
+      Thread.current[:daan_active_hooks] = { hooks: hooks, chat: chat }
+      begin
+        response = Chats::RunStep.call(chat, context_user_message_id: context_user_message_id)
+      ensure
+        Thread.current[:daan_active_hooks] = nil
+      end
       Chats::FinishOrReenqueue.call(chat, agent, response)
     end
 

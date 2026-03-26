@@ -18,6 +18,7 @@ module Daan
         accepted = t.instance_method(:initialize).parameters.map(&:last)
         t.new(**all_kwargs.slice(*accepted)).tap do |instance|
           instance.singleton_class.prepend(Core::SafeExecute)
+          instance.singleton_class.prepend(Core::HookDispatch)
         end
       end
     end

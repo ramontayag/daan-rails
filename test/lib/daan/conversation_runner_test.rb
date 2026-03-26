@@ -306,6 +306,36 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert_not called, "before_conversation must not fire on step 2+"
   end
 
+  test "sets Thread.current[:daan_active_hooks] during RunStep execution" do
+    captured = nil
+    # Replace RunStep.call so we can inspect thread state mid-execution
+    Daan::Chats::RunStep.stub(:call, ->(chat, **) {
+      captured = Thread.current[:daan_active_hooks]
+      OpenStruct.new("tool_call?" => false, role: "assistant")
+    }) do
+      Daan::ConversationRunner.call(@chat)
+    end
+    assert_not_nil captured, "expected [:daan_active_hooks] to be set during RunStep"
+    assert_respond_to captured[:hooks], :each
+    assert_equal @chat, captured[:chat]
+  end
+
+  test "clears Thread.current[:daan_active_hooks] after RunStep" do
+    Daan::Chats::RunStep.stub(:call, ->(*) {
+      OpenStruct.new("tool_call?" => false, role: "assistant")
+    }) do
+      Daan::ConversationRunner.call(@chat)
+    end
+    assert_nil Thread.current[:daan_active_hooks]
+  end
+
+  test "clears Thread.current[:daan_active_hooks] even when RunStep raises" do
+    Daan::Chats::RunStep.stub(:call, ->(*) { raise RuntimeError, "boom" }) do
+      assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
+    end
+    assert_nil Thread.current[:daan_active_hooks]
+  end
+
   test "ripple-check message injected when agent has shaping hook and update_document was called" do
     @agent.hook_names = [ "Daan::Core::Shaping" ]
 
