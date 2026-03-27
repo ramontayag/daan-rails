@@ -52,4 +52,17 @@ class ScheduledTaskRunnerJobTest < ActiveSupport::TestCase
     assert_equal "system", messages.first.role
     assert_equal "user",   messages.second.role
   end
+
+  test "raises AgentNotFoundError when agent_name is not registered" do
+    task = ScheduledTask.create!(
+      agent_name: "nonexistent_agent",
+      message: "Do something",
+      schedule: "every day at 8am",
+      timezone: "UTC",
+      enabled: true
+    )
+    assert_raises(Daan::AgentNotFoundError) do
+      ScheduledTaskRunnerJob.perform_now(task)
+    end
+  end
 end

@@ -1,5 +1,5 @@
 <%= form_with model: task,
-      data: { controller: "timezone", testid: "scheduled-task-form" } do |f| %>
+      data: { controller: "timezone" } do |f| %>
 
   <%# Hidden timezone field — populated by the timezone Stimulus controller %>
   <%= f.hidden_field :timezone,
