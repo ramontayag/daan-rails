@@ -76,6 +76,29 @@ def agent_display_name = @agent_display_name ||= chat.agent.display_name
 
 Production callers just pass `message:`. Tests and Lookbook pass whatever they need to override.
 
+## Logic belongs in the component, not the template
+
+Keep ERB templates free of string interpolation, complex conditions, and computed values. Do that work in the component's Ruby class instead.
+
+```ruby
+# Good — template calls a simple method
+def wrapper_html
+  { class: "flex flex-col h-screen bg-white" }.merge(@html_options)
+end
+```
+
+```erb
+<%# Good — template is declarative %>
+<%= content_tag :div, wrapper_html do %>
+```
+
+```erb
+<%# Bad — logic leaking into the template %>
+<div class="flex flex-col h-screen bg-white"<%= tag.attributes(**html_options) if html_options.any? %>>
+```
+
+If you find yourself writing this kind of logic in a plain ERB view (not a component), that's a signal the view wants to be a component.
+
 ## Name time constants with their unit
 
 Constants that represent durations must include the unit in the name: `DEFAULT_TIMEOUT_SECONDS`, `POLL_INTERVAL_MS`, etc. Bare names like `DEFAULT_TIMEOUT` are ambiguous.
