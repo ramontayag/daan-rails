@@ -24,13 +24,13 @@ class Daan::Core::HookDispatchTest < ActiveSupport::TestCase
 
   test "calls execute normally when no thread-local hooks set" do
     result = @fake_tool.execute(foo: "bar")
-    assert_equal "result:#{({foo: "bar"}).inspect}", result
+    assert_equal "result:#{({ foo: "bar" }).inspect}", result
   end
 
   test "dispatches before_tool_call to applicable hooks with args" do
     received = nil
     hook = hook_for("fake_tool") { |chat:, tool_name:, args:| received = { chat: chat, tool_name: tool_name, args: args } }
-    with_active_hooks([hook]) { @fake_tool.execute(foo: "bar") }
+    with_active_hooks([ hook ]) { @fake_tool.execute(foo: "bar") }
     assert_not_nil received
     assert_equal "fake_tool", received[:tool_name]
     assert_equal @chat, received[:chat]
@@ -40,30 +40,30 @@ class Daan::Core::HookDispatchTest < ActiveSupport::TestCase
   test "dispatches after_tool_call to applicable hooks with result and args" do
     received = nil
     hook = after_hook_for("fake_tool") { |chat:, tool_name:, args:, result:| received = { result: result, args: args } }
-    with_active_hooks([hook]) { @fake_tool.execute(foo: "bar") }
-    assert_equal "result:#{({foo: "bar"}).inspect}", received[:result]
+    with_active_hooks([ hook ]) { @fake_tool.execute(foo: "bar") }
+    assert_equal "result:#{({ foo: "bar" }).inspect}", received[:result]
     assert_equal({ foo: "bar" }, received[:args])
   end
 
   test "does not dispatch to hooks that don't apply to this tool" do
     called = false
     hook = hook_for("other_tool") { |**| called = true }
-    with_active_hooks([hook]) { @fake_tool.execute }
+    with_active_hooks([ hook ]) { @fake_tool.execute }
     assert_not called
   end
 
   test "a hook that raises during before_tool_call does not abort execution" do
     boom = hook_for("fake_tool") { |**| raise "before boom" }
     result = nil
-    with_active_hooks([boom]) { result = @fake_tool.execute(x: 1) }
-    assert_equal "result:#{({x: 1}).inspect}", result
+    with_active_hooks([ boom ]) { result = @fake_tool.execute(x: 1) }
+    assert_equal "result:#{({ x: 1 }).inspect}", result
   end
 
   test "a hook that raises during after_tool_call does not abort execution" do
     boom = after_hook_for("fake_tool") { |**| raise "after boom" }
     result = nil
-    with_active_hooks([boom]) { result = @fake_tool.execute(x: 1) }
-    assert_equal "result:#{({x: 1}).inspect}", result
+    with_active_hooks([ boom ]) { result = @fake_tool.execute(x: 1) }
+    assert_equal "result:#{({ x: 1 }).inspect}", result
   end
 
   private

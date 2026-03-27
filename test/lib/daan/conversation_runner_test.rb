@@ -280,7 +280,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
       define_method(:before_conversation) { |chat:| received = chat }
     end
 
-    Daan::Core::Hook::Registry.stub(:agent_hooks, [spy.new]) do
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [ spy.new ]) do
       Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
         with_stub_step { Daan::ConversationRunner.call(@chat) }
       end
@@ -297,7 +297,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
       define_method(:before_conversation) { |chat:| called = true }
     end
 
-    Daan::Core::Hook::Registry.stub(:agent_hooks, [spy.new]) do
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [ spy.new ]) do
       Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
         with_stub_step { Daan::ConversationRunner.call(@chat) }
       end
@@ -343,7 +343,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
       define_method(:after_conversation) { |chat:, status:| received = { chat: chat, status: status } }
     end
 
-    Daan::Core::Hook::Registry.stub(:agent_hooks, [spy.new]) do
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [ spy.new ]) do
       Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
         with_stub_step { Daan::ConversationRunner.call(@chat) }
       end
@@ -362,7 +362,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
 
     prior_steps(@agent.max_steps - 1)
 
-    Daan::Core::Hook::Registry.stub(:agent_hooks, [spy.new]) do
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [ spy.new ]) do
       Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
         with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
       end
@@ -378,7 +378,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
       define_method(:after_conversation) { |chat:, status:| received_status = status }
     end
 
-    Daan::Core::Hook::Registry.stub(:agent_hooks, [spy.new]) do
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [ spy.new ]) do
       Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
         with_stub_step(raise_error: RuntimeError.new("LLM down")) do
           assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
@@ -397,7 +397,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     end
 
     # Tool call step, max_steps NOT reached — LlmJob re-enqueued, chat stays in_progress
-    Daan::Core::Hook::Registry.stub(:agent_hooks, [spy.new]) do
+    Daan::Core::Hook::Registry.stub(:agent_hooks, [ spy.new ]) do
       Daan::Core::Hook::Registry.stub(:tool_hooks, []) do
         with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
       end
