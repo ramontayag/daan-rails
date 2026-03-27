@@ -1,17 +1,5 @@
-<div class="flex flex-col h-screen bg-white">
-  <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
-    <h1 class="text-lg font-semibold text-gray-900">New Scheduled Task</h1>
-    <%= link_to scheduled_tasks_path(return_to_uri: @return_to_uri),
-          class: "flex items-center justify-center w-7 h-7 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600",
-          title: "Close" do %>
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-      </svg>
-    <% end %>
+<%= render ModalPageComponent.new(title: "New Scheduled Task", return_to_uri: scheduled_tasks_path(return_to_uri: @return_to_uri)) do %>
+  <div class="max-w-xl mx-auto p-6">
+    <%= render "form", task: @task, return_to_uri: @return_to_uri %>
   </div>
-  <div class="flex-1 overflow-y-auto">
-    <div class="max-w-xl mx-auto p-6">
-      <%= render "form", task: @task, return_to_uri: @return_to_uri %>
-    </div>
-  </div>
-</div>
+<% end %>
