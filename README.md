@@ -29,6 +29,18 @@ Things you may want to cover:
 
 Tools (`lib/daan/core/*.rb`) need unit tests — they contain logic. Agent `.md` files are just configuration (YAML frontmatter + system prompt) and don't need their own tests. Writing to the real `lib/daan/core/agents/` directory in tests causes race conditions with parallel test runs.
 
+## Tests read like documentation
+
+Assert concrete values, not patterns. If you know what the output should be, say it exactly.
+
+```ruby
+# Good — reads like a spec
+assert_equal "[Sent at: #{msg.created_at.iso8601}]\n\nHello", msg.to_llm.content
+
+# Bad — obscures intent behind noise
+assert_match(/\A\[Sent at: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/, msg.to_llm.content)
+```
+
 ## Scopes use Arel, not SQL strings
 
 Scopes must use Arel node methods rather than raw SQL strings. This keeps them composable and mergeable, and avoids SQL injection risk.

@@ -13,4 +13,12 @@ class Message < ApplicationRecord
   scope :where_content_like, ->(pattern) { where(Message.arel_table[:content].matches(pattern)) }
 
   def summary? = compacted_messages_count > 0
+
+  def to_llm
+    return super unless role == "user" && visible?
+
+    msg = super
+    msg.content = "[Sent at: #{created_at.iso8601}]\n\n#{msg.content}"
+    msg
+  end
 end

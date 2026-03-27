@@ -232,8 +232,10 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     @chat.update!(parent_chat: parent_chat)
 
     # Step fails without creating any assistant messages — triggers failed path
-    @chat.stub(:step, ->(*) { raise "LLM down" }) do
-      assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
+    Daan::Chats::ConfigureLlm.stub(:call, nil) do
+      @chat.stub(:step, ->(*) { raise "LLM down" }) do
+        assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
+      end
     end
     notification = parent_chat.messages.find_by("content LIKE ?", "%thread is now failed%")
     assert notification, "expected parent notification on failure"
@@ -309,11 +311,13 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   test "sets Thread.current[:daan_active_hooks] during RunStep execution" do
     captured = nil
     # Replace RunStep.call so we can inspect thread state mid-execution
-    Daan::Chats::RunStep.stub(:call, ->(chat, **) {
-      captured = Thread.current[:daan_active_hooks]
-      OpenStruct.new("tool_call?" => false, role: "assistant")
-    }) do
-      Daan::ConversationRunner.call(@chat)
+    Daan::Chats::ConfigureLlm.stub(:call, nil) do
+      Daan::Chats::RunStep.stub(:call, ->(chat, **) {
+        captured = Thread.current[:daan_active_hooks]
+        OpenStruct.new("tool_call?" => false, role: "assistant")
+      }) do
+        Daan::ConversationRunner.call(@chat)
+      end
     end
     assert_not_nil captured, "expected [:daan_active_hooks] to be set during RunStep"
     assert_respond_to captured[:hooks], :each
@@ -321,17 +325,21 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
   end
 
   test "clears Thread.current[:daan_active_hooks] after RunStep" do
-    Daan::Chats::RunStep.stub(:call, ->(*) {
-      OpenStruct.new("tool_call?" => false, role: "assistant")
-    }) do
-      Daan::ConversationRunner.call(@chat)
+    Daan::Chats::ConfigureLlm.stub(:call, nil) do
+      Daan::Chats::RunStep.stub(:call, ->(*) {
+        OpenStruct.new("tool_call?" => false, role: "assistant")
+      }) do
+        Daan::ConversationRunner.call(@chat)
+      end
     end
     assert_nil Thread.current[:daan_active_hooks]
   end
 
   test "clears Thread.current[:daan_active_hooks] even when RunStep raises" do
-    Daan::Chats::RunStep.stub(:call, ->(*) { raise RuntimeError, "boom" }) do
-      assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
+    Daan::Chats::ConfigureLlm.stub(:call, nil) do
+      Daan::Chats::RunStep.stub(:call, ->(*) { raise RuntimeError, "boom" }) do
+        assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
+      end
     end
     assert_nil Thread.current[:daan_active_hooks]
   end
@@ -427,7 +435,9 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
       chat.messages.create!(role: "assistant", content: "Hello human")
       OpenStruct.new("tool_call?" => true, role: "assistant", tool_calls: {})
     }
-    @chat.stub(:step, step_callable) { yield }
+    Daan::Chats::ConfigureLlm.stub(:call, nil) do
+      @chat.stub(:step, step_callable) { yield }
+    end
   end
 
   # Simulate n completed tool-call steps. Each step produces an assistant message
@@ -452,9 +462,12 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
       chat.messages.create!(role: "assistant", content: "Hello human")
       step_response
     }
-    @chat.stub(:step, step_callable) do
-      yield
-      assert called, "expected step to be called" unless raise_error
+    # Stub ConfigureLlm to avoid model DB lookup — tests cover runner behavior, not model config
+    Daan::Chats::ConfigureLlm.stub(:call, nil) do
+      @chat.stub(:step, step_callable) do
+        yield
+        assert called, "expected step to be called" unless raise_error
+      end
     end
   end
 end
