@@ -14,7 +14,6 @@ module Daan
 
       Chats::StartConversation.call(chat)
       Chats::PrepareWorkspace.call(agent)
-      Chats::InjectDatetime.call(chat)
       Chats::EnqueueCompaction.call(chat)
       Chats::ConfigureLlm.call(chat, agent)
 
@@ -74,7 +73,7 @@ module Daan
     private_class_method :dispatch_after_conversation
 
     def self.already_responded?(chat)
-      last_user_message      = chat.messages.where(role: "user", visible: true).last
+      last_user_message      = chat.messages.where(role: "user").last
       last_assistant_message = chat.messages.where(role: "assistant").last
       return false unless last_user_message && last_assistant_message
       return false if last_assistant_message.context_user_message_id.nil?

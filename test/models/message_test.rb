@@ -26,6 +26,21 @@ class MessageTest < ActiveSupport::TestCase
     assert_not_includes results, old
   end
 
+  test "to_llm prepends sent-at timestamp to visible user messages" do
+    msg = @chat.messages.create!(role: "user", content: "Hello", visible: true)
+    assert_equal "[Sent at: #{msg.created_at.iso8601}]\n\nHello", msg.to_llm.content
+  end
+
+  test "to_llm does not decorate invisible user messages" do
+    msg = @chat.messages.create!(role: "user", content: "Hello", visible: false)
+    assert_equal "Hello", msg.to_llm.content
+  end
+
+  test "to_llm does not decorate assistant messages" do
+    msg = @chat.messages.create!(role: "assistant", content: "Hi there")
+    assert_equal "Hi there", msg.to_llm.content
+  end
+
   test "where_content_like matches prefix pattern" do
     match    = @chat.messages.create!(role: "user", content: "Engineering Manager: done")
     no_match = @chat.messages.create!(role: "user", content: "Something else entirely")

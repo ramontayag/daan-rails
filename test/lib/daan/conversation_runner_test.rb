@@ -25,15 +25,6 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert @chat.reload.completed?
   end
 
-  test "injects a datetime context message before the LLM call" do
-    with_stub_step { Daan::ConversationRunner.call(@chat) }
-
-    datetime_msg = @chat.messages.find { |m| m.content&.include?("[System] Current datetime:") }
-    assert datetime_msg, "expected a datetime injection message"
-    assert_equal "user", datetime_msg.role
-    assert_equal false, datetime_msg.visible
-  end
-
   test "step_count reflects assistant messages since last user message" do
     with_stub_step { Daan::ConversationRunner.call(@chat) }
     assert_equal 1, @chat.reload.step_count
