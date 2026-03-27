@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_27_164609) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_27_173355) do
   create_table "chat_steps", force: :cascade do |t|
     t.integer "chat_id", null: false
     t.datetime "created_at", null: false
@@ -96,11 +96,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_27_164609) do
     t.boolean "enabled", default: true, null: false
     t.datetime "last_enqueued_at"
     t.text "message", null: false
+    t.datetime "run_at"
     t.string "schedule", null: false
+    t.bigint "source_chat_id"
+    t.integer "task_type", default: 0, null: false
     t.string "timezone", default: "UTC", null: false
     t.datetime "updated_at", null: false
     t.index ["agent_name"], name: "index_scheduled_tasks_on_agent_name"
     t.index ["enabled"], name: "index_scheduled_tasks_on_enabled"
+    t.index ["source_chat_id"], name: "index_scheduled_tasks_on_source_chat_id"
+    t.index ["task_type", "enabled", "run_at"], name: "index_scheduled_tasks_on_type_enabled_run_at"
   end
 
   create_table "tool_calls", force: :cascade do |t|
@@ -124,5 +129,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_27_164609) do
   add_foreign_key "messages", "messages", column: "compacted_message_id"
   add_foreign_key "messages", "models"
   add_foreign_key "messages", "tool_calls"
+  add_foreign_key "scheduled_tasks", "chats", column: "source_chat_id"
   add_foreign_key "tool_calls", "messages"
 end
