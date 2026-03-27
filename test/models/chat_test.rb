@@ -126,6 +126,21 @@ class ChatTest < ActiveSupport::TestCase
     assert_equal 0, chat.total_tokens
   end
 
+  test "estimated_cost_usd works with pricing as stored by ruby_llm:load_models" do
+    model_info = RubyLLM::Models.read_from_json.find { |m| m.id == "claude-haiku-4-5-20251001" }
+    model = Model.create!(
+      name: model_info.name,
+      model_id: model_info.id,
+      provider: model_info.provider,
+      pricing: Daan::RubyLlmModelPricing.call(model_info)
+    )
+    chat = chats(:hello_cos)
+    chat.update!(model: model)
+    chat.messages.create!(role: "user", content: "Hello", input_tokens: 1_000_000)
+
+    assert chat.estimated_cost_usd > 0
+  end
+
   test "estimated_cost_usd returns 0 when no model" do
     chat = Chat.create!(agent_name: "chief_of_staff")
     chat.update!(model: nil)
@@ -150,15 +165,11 @@ class ChatTest < ActiveSupport::TestCase
       model_id: "test-model",
       provider: "test",
       pricing: {
-        "data" => {
-          "text_tokens" => {
-            "standard" => {
-              "values" => {
-                "input_per_million" => 1.0,
-                "output_per_million" => 2.0,
-                "cached_input_per_million" => 0.1
-              }
-            }
+        "text_tokens" => {
+          "standard" => {
+            "input_per_million" => 1.0,
+            "output_per_million" => 2.0,
+            "cached_input_per_million" => 0.1
           }
         }
       }
@@ -185,9 +196,9 @@ class ChatTest < ActiveSupport::TestCase
   test "total_cost_usd returns own cost when no sub_chats" do
     model = Model.create!(
       name: "Test Model", model_id: "test-model", provider: "test",
-      pricing: { "data" => { "text_tokens" => { "standard" => { "values" => {
+      pricing: { "text_tokens" => { "standard" => {
         "input_per_million" => 1.0, "output_per_million" => 2.0, "cached_input_per_million" => 0.1
-      } } } } }
+      } } }
     )
     chat = chats(:hello_cos)
     chat.update!(model: model)
@@ -199,9 +210,9 @@ class ChatTest < ActiveSupport::TestCase
   test "total_cost_usd includes direct sub_chat costs" do
     model = Model.create!(
       name: "Test Model", model_id: "test-model", provider: "test",
-      pricing: { "data" => { "text_tokens" => { "standard" => { "values" => {
+      pricing: { "text_tokens" => { "standard" => {
         "input_per_million" => 1.0, "output_per_million" => 0.0, "cached_input_per_million" => 0.0
-      } } } } }
+      } } }
     )
     parent = Chat.create!(agent_name: "chief_of_staff", model: model)
     child  = Chat.create!(agent_name: "chief_of_staff", model: model, parent_chat: parent)
@@ -215,9 +226,9 @@ class ChatTest < ActiveSupport::TestCase
   test "total_cost_usd is recursive through grandchildren" do
     model = Model.create!(
       name: "Test Model", model_id: "test-model", provider: "test",
-      pricing: { "data" => { "text_tokens" => { "standard" => { "values" => {
+      pricing: { "text_tokens" => { "standard" => {
         "input_per_million" => 1.0, "output_per_million" => 0.0, "cached_input_per_million" => 0.0
-      } } } } }
+      } } }
     )
     grandparent = Chat.create!(agent_name: "chief_of_staff", model: model)
     parent      = Chat.create!(agent_name: "chief_of_staff", model: model, parent_chat: grandparent)
@@ -246,15 +257,11 @@ class ChatTest < ActiveSupport::TestCase
       model_id: "test-model",
       provider: "test",
       pricing: {
-        "data" => {
-          "text_tokens" => {
-            "standard" => {
-              "values" => {
-                "input_per_million" => 10.0,
-                "output_per_million" => 20.0,
-                "cached_input_per_million" => 1.0
-              }
-            }
+        "text_tokens" => {
+          "standard" => {
+            "input_per_million" => 10.0,
+            "output_per_million" => 20.0,
+            "cached_input_per_million" => 1.0
           }
         }
       }

@@ -13,9 +13,9 @@ class ChatCostComponentTest < ViewComponent::TestCase
 
     @model = Model.create!(
       name: "Test Model", model_id: "test-model", provider: "test",
-      pricing: { "data" => { "text_tokens" => { "standard" => { "values" => {
+      pricing: { "text_tokens" => { "standard" => {
         "input_per_million" => 1.0, "output_per_million" => 0.0, "cached_input_per_million" => 0.0
-      } } } } }
+      } } }
     )
   end
 
