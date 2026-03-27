@@ -2,7 +2,7 @@ class ScheduledTaskPollerJob < ApplicationJob
   queue_as :background
 
   def perform
-    ScheduledTask.enabled.each do |task|
+    ScheduledTask.enabled.recurring.each do |task|
       next unless task.due?
 
       ScheduledTaskRunnerJob.perform_later(task)
@@ -11,7 +11,14 @@ class ScheduledTaskPollerJob < ApplicationJob
       Rails.logger.error(
         "[ScheduledTaskPollerJob] task_id=#{task.id} error=#{e.class}: #{e.message}"
       )
-      # Silent failure — log and continue to next task
+    end
+
+    ScheduledTask.one_shot_due.each do |task|
+      ScheduledTaskRunnerJob.perform_later(task)
+    rescue => e
+      Rails.logger.error(
+        "[ScheduledTaskPollerJob] task_id=#{task.id} error=#{e.class}: #{e.message}"
+      )
     end
   end
 end

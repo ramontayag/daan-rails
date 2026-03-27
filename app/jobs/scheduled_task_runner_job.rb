@@ -16,5 +16,6 @@ class ScheduledTaskRunnerJob < ApplicationJob
     chat.messages.create!(role: "user", content: task.message, visible: true)
 
     LlmJob.perform_later(chat)
+    task.update!(enabled: false) if task.one_shot?
   end
 end
