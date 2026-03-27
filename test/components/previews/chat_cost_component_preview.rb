@@ -9,9 +9,9 @@ class ChatCostComponentPreview < ViewComponent::Preview
     Model.find_or_create_by!(model_id: "preview-model") do |m|
       m.name = "Preview Model"
       m.provider = "test"
-      m.pricing = { "data" => { "text_tokens" => { "standard" => { "values" => {
+      m.pricing = { "text_tokens" => { "standard" => {
         "input_per_million" => 3.0, "output_per_million" => 15.0, "cached_input_per_million" => 0.3
-      } } } } }
+      } } }
     end
   end
 

@@ -88,9 +88,9 @@ class Chat < ApplicationRecord
   end
 
   def estimated_cost_usd
-    return 0.0 unless model&.pricing&.dig("data", "text_tokens", "standard", "values")
+    return 0.0 unless model&.pricing&.dig("text_tokens", "standard")
 
-    pricing = model.pricing["data"]["text_tokens"]["standard"]["values"]
+    pricing = model.pricing["text_tokens"]["standard"]
     input_cost_per_million = pricing["input_per_million"] || 0
     output_cost_per_million = pricing["output_per_million"] || 0
     cached_input_cost_per_million = pricing["cached_input_per_million"] || 0

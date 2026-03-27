@@ -4,6 +4,10 @@ module Daan
       module InstanceMethods
         # Default no-op lifecycle methods. Hook classes override what they need.
         def before_llm_call(chat:, last_tool_calls:); end
+        def before_conversation(chat:); end
+        def before_tool_call(chat:, tool_name:, args:); end
+        def after_tool_call(chat:, tool_name:, args:, result:); end
+        def after_conversation(chat:, status:); end
 
         # Returns true if this hook applies to the given tool name.
         # Agent hooks (plain include) always return false — they are not tool hooks.
