@@ -22,39 +22,27 @@ class Daan::Chats::InjectDatetimeTest < ActiveSupport::TestCase
   end
 
   test "message content includes the day of week" do
-    travel_to Time.new(2026, 3, 27, 14, 30, 0, "+00:00") do
-      Daan::Chats::InjectDatetime.call(@chat)
-    end
-
+    Daan::Chats::InjectDatetime.call(@chat)
     msg = @chat.messages.order(:id).last
-    assert_includes msg.content, "Friday"
+    assert_includes msg.content, msg.created_at.strftime("%A")
   end
 
   test "message content includes the full date" do
-    travel_to Time.new(2026, 3, 27, 14, 30, 0, "+00:00") do
-      Daan::Chats::InjectDatetime.call(@chat)
-    end
-
+    Daan::Chats::InjectDatetime.call(@chat)
     msg = @chat.messages.order(:id).last
-    assert_includes msg.content, "March 27, 2026"
+    assert_includes msg.content, msg.created_at.strftime("%B %-d, %Y")
   end
 
   test "message content includes the time" do
-    travel_to Time.new(2026, 3, 27, 14, 30, 0, "+00:00") do
-      Daan::Chats::InjectDatetime.call(@chat)
-    end
-
+    Daan::Chats::InjectDatetime.call(@chat)
     msg = @chat.messages.order(:id).last
-    assert_includes msg.content, "14:30"
+    assert_includes msg.content, msg.created_at.strftime("%H:%M")
   end
 
   test "message content includes UTC offset" do
-    travel_to Time.new(2026, 3, 27, 14, 30, 0, "+00:00") do
-      Daan::Chats::InjectDatetime.call(@chat)
-    end
-
+    Daan::Chats::InjectDatetime.call(@chat)
     msg = @chat.messages.order(:id).last
-    assert_includes msg.content, "+00:00"
+    assert_includes msg.content, msg.created_at.strftime("%:z")
   end
 
   test "does not inject a second message when called again on the same chat" do
