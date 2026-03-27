@@ -1,0 +1,57 @@
+<%= render ModalPageComponent.new(title: "Scheduled Tasks", return_to_uri: @return_to_uri) do |c| %>
+  <% c.with_actions do %>
+    <%= link_to "New task", new_scheduled_task_path(return_to_uri: @return_to_uri),
+          class: "px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700" %>
+  <% end %>
+
+  <div class="max-w-4xl mx-auto p-6">
+    <% if @tasks.empty? %>
+      <p class="text-gray-500 text-sm">No scheduled tasks yet.</p>
+    <% else %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="text-xs text-gray-500 uppercase border-b border-gray-200">
+            <tr>
+              <th class="py-2 pr-4">Agent</th>
+              <th class="py-2 pr-4">Schedule</th>
+              <th class="py-2 pr-4">Timezone</th>
+              <th class="py-2 pr-4">Last fired</th>
+              <th class="py-2 pr-4">Enabled</th>
+              <th class="py-2"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <% @tasks.each do |task| %>
+              <tr data-testid="scheduled-task-row">
+                <td class="py-3 pr-4 font-medium text-gray-900"><%= task.agent_name %></td>
+                <td class="py-3 pr-4 text-gray-700"><%= task.schedule %></td>
+                <td class="py-3 pr-4 text-gray-500"><%= task.timezone %></td>
+                <td class="py-3 pr-4 text-gray-500">
+                  <%= task.last_enqueued_at ? task.last_enqueued_at.strftime("%b %-d %H:%M") : "Never" %>
+                </td>
+                <td class="py-3 pr-4">
+                  <%= form_with url: scheduled_task_path(task, return_to_uri: @return_to_uri), method: :patch,
+                                data: { turbo_submits_with: "" } do |f| %>
+                    <%= f.check_box :enabled,
+                          { checked: task.enabled?,
+                            onchange: "this.form.requestSubmit()",
+                            name: "scheduled_task[enabled]",
+                            class: "h-4 w-4 text-blue-600 border-gray-300 rounded cursor-pointer" },
+                          "1", "0" %>
+                  <% end %>
+                </td>
+                <td class="py-3 text-right whitespace-nowrap">
+                  <%= link_to "Edit", edit_scheduled_task_path(task, return_to_uri: @return_to_uri),
+                        class: "text-blue-600 hover:underline mr-3" %>
+                  <%= button_to "Delete", scheduled_task_path(task, return_to_uri: @return_to_uri), method: :delete,
+                        class: "text-red-500 hover:underline bg-transparent border-none cursor-pointer p-0",
+                        data: { turbo_confirm: "Delete this scheduled task?" } %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+<% end %>

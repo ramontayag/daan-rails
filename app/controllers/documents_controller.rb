@@ -14,11 +14,4 @@ class DocumentsController < ApplicationController
   end
 
   private
-
-  def safe_return_uri(uri)
-    return root_path unless uri.present?
-    URI.parse(uri).path
-  rescue URI::InvalidURIError
-    root_path
-  end
 end

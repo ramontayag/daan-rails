@@ -1,0 +1,16 @@
+daily_digest:
+  agent_name: chief_of_staff
+  message: "Please send the daily digest."
+  schedule: "every day at 8am"
+  timezone: "America/New_York"
+  last_enqueued_at:
+  enabled: true
+
+disabled_task:
+  agent_name: chief_of_staff
+  message: "This task is disabled."
+  schedule: "every day at 9am"
+  timezone: "UTC"
+  last_enqueued_at:
+  enabled: false
+
