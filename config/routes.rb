@@ -14,6 +14,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :scheduled_tasks
+
   resources :documents, only: [ :show ]
 
   get "up" => "rails/health#show", as: :rails_health_check
