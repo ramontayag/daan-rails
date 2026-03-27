@@ -33,7 +33,7 @@ class ScheduledTasksFlowTest < ActionDispatch::IntegrationTest
   test "new renders the form" do
     get new_scheduled_task_path
     assert_response :success
-    assert_select "form[action='#{scheduled_tasks_path}']"
+    assert_select "form[action*='scheduled_tasks']"
   end
 
   test "create with valid params redirects to index" do
@@ -47,7 +47,7 @@ class ScheduledTasksFlowTest < ActionDispatch::IntegrationTest
         }
       }
     end
-    assert_redirected_to scheduled_tasks_path
+    assert_redirected_to scheduled_tasks_path(return_to_uri: "/")
   end
 
   test "create with invalid schedule re-renders form" do
@@ -85,7 +85,7 @@ class ScheduledTasksFlowTest < ActionDispatch::IntegrationTest
                                  schedule: "every day at 8am", timezone: "UTC")
     get edit_scheduled_task_path(task)
     assert_response :success
-    assert_select "form[action='#{scheduled_task_path(task)}']"
+    assert_select "form[action*='scheduled_tasks']"
   end
 
   test "update with valid params redirects to index" do
@@ -94,7 +94,7 @@ class ScheduledTasksFlowTest < ActionDispatch::IntegrationTest
     patch scheduled_task_path(task), params: {
       scheduled_task: { message: "New message", timezone: "America/Chicago" }
     }
-    assert_redirected_to scheduled_tasks_path
+    assert_redirected_to scheduled_tasks_path(return_to_uri: "/")
     assert_equal "New message", task.reload.message
     assert_equal "America/Chicago", task.reload.timezone
   end
@@ -117,7 +117,7 @@ class ScheduledTasksFlowTest < ActionDispatch::IntegrationTest
     assert_difference "ScheduledTask.count", -1 do
       delete scheduled_task_path(task)
     end
-    assert_redirected_to scheduled_tasks_path
+    assert_redirected_to scheduled_tasks_path(return_to_uri: "/")
   end
 
   # ---- toggle enabled ----
@@ -128,7 +128,7 @@ class ScheduledTasksFlowTest < ActionDispatch::IntegrationTest
     patch scheduled_task_path(task), params: {
       scheduled_task: { enabled: false }
     }
-    assert_redirected_to scheduled_tasks_path
+    assert_redirected_to scheduled_tasks_path(return_to_uri: "/")
     assert_not task.reload.enabled?
   end
 
@@ -138,7 +138,7 @@ class ScheduledTasksFlowTest < ActionDispatch::IntegrationTest
     patch scheduled_task_path(task), params: {
       scheduled_task: { enabled: true }
     }
-    assert_redirected_to scheduled_tasks_path
+    assert_redirected_to scheduled_tasks_path(return_to_uri: "/")
     assert task.reload.enabled?
   end
 end

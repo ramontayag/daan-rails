@@ -22,7 +22,7 @@
     <% end %>
   </nav>
   <div class="p-2 border-t border-gray-700">
-    <%= link_to "Scheduled Tasks", helpers.scheduled_tasks_path,
+    <%= link_to "Scheduled Tasks", helpers.scheduled_tasks_path(return_to_uri: helpers.request.fullpath),
           class: "flex items-center gap-2 p-2 rounded text-sm text-gray-400 hover:bg-gray-800 hover:text-white" %>
   </div>
 </aside>
