@@ -92,4 +92,44 @@ class ScheduledTaskPollerJobTest < ActiveSupport::TestCase
       end
     end
   end
+
+  # --- one-shot tests ---
+
+  test "enqueues ScheduledTaskRunnerJob for a due one-shot task" do
+    task = ScheduledTask.create!(agent_name: "chief_of_staff", message: "ping",
+                                 task_type: :one_shot, run_at: 1.minute.ago, enabled: true)
+
+    assert_enqueued_with(job: ScheduledTaskRunnerJob, args: [ task ]) do
+      ScheduledTaskPollerJob.perform_now
+    end
+  end
+
+  test "does not enqueue for a future one-shot task" do
+    ScheduledTask.create!(agent_name: "chief_of_staff", message: "future",
+                          task_type: :one_shot, run_at: 10.minutes.from_now, enabled: true)
+
+    assert_no_enqueued_jobs(only: ScheduledTaskRunnerJob) do
+      ScheduledTaskPollerJob.perform_now
+    end
+  end
+
+  test "does not enqueue for a disabled one-shot task" do
+    ScheduledTask.create!(agent_name: "chief_of_staff", message: "fired",
+                          task_type: :one_shot, run_at: 1.minute.ago, enabled: false)
+
+    assert_no_enqueued_jobs(only: ScheduledTaskRunnerJob) do
+      ScheduledTaskPollerJob.perform_now
+    end
+  end
+
+  test "enqueues for multiple due one-shot tasks in a single poll" do
+    _t1 = ScheduledTask.create!(agent_name: "chief_of_staff", message: "first",
+                                task_type: :one_shot, run_at: 2.minutes.ago, enabled: true)
+    _t2 = ScheduledTask.create!(agent_name: "chief_of_staff", message: "second",
+                                task_type: :one_shot, run_at: 1.minute.ago, enabled: true)
+
+    assert_enqueued_jobs(2, only: ScheduledTaskRunnerJob) do
+      ScheduledTaskPollerJob.perform_now
+    end
+  end
 end

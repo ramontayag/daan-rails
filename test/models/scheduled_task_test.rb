@@ -98,4 +98,66 @@ class ScheduledTaskTest < ActiveSupport::TestCase
     assert_includes ScheduledTask.enabled, scheduled_tasks(:daily_digest)
     assert_not_includes ScheduledTask.enabled, scheduled_tasks(:disabled_task)
   end
+
+  # --- task_type enum ---
+
+  test "task_type defaults to recurring" do
+    task = ScheduledTask.new(agent_name: "chief_of_staff", message: "hi", schedule: "every day", timezone: "UTC")
+    assert task.recurring?
+  end
+
+  test "task_type can be set to one_shot" do
+    task = ScheduledTask.new(agent_name: "chief_of_staff", message: "hi", task_type: :one_shot)
+    assert task.one_shot?
+  end
+
+  # --- source_chat association ---
+
+  test "belongs_to source_chat (optional)" do
+    chat = Chat.create!(agent_name: "chief_of_staff")
+    task = ScheduledTask.create!(agent_name: "chief_of_staff", message: "m", task_type: :one_shot,
+                                 run_at: 5.minutes.from_now, source_chat: chat)
+    assert_equal chat, task.reload.source_chat
+  end
+
+  test "source_chat is optional" do
+    task = ScheduledTask.new(agent_name: "chief_of_staff", message: "hi", task_type: :one_shot,
+                             run_at: 5.minutes.from_now)
+    task.valid?
+    assert_nil task.errors[:source_chat].presence
+  end
+
+  # --- one_shot_due scope ---
+
+  test "one_shot_due returns enabled one_shot tasks whose run_at is in the past" do
+    due      = ScheduledTask.create!(agent_name: "chief_of_staff", message: "due",
+                                     task_type: :one_shot, run_at: 1.minute.ago, enabled: true)
+    _future  = ScheduledTask.create!(agent_name: "chief_of_staff", message: "future",
+                                     task_type: :one_shot, run_at: 5.minutes.from_now, enabled: true)
+    _disabled = ScheduledTask.create!(agent_name: "chief_of_staff", message: "disabled",
+                                      task_type: :one_shot, run_at: 1.minute.ago, enabled: false)
+    _recurring = ScheduledTask.create!(agent_name: "chief_of_staff", message: "recurring",
+                                       schedule: "every day", timezone: "UTC", enabled: true)
+
+    result = ScheduledTask.one_shot_due
+    assert_includes result, due
+    assert_not_includes result, _future
+    assert_not_includes result, _disabled
+    assert_not_includes result, _recurring
+  end
+
+  # --- run_at validation ---
+
+  test "one_shot task is invalid without run_at" do
+    task = ScheduledTask.new(agent_name: "chief_of_staff", message: "m", task_type: :one_shot)
+    assert task.invalid?
+    assert_includes task.errors[:run_at], "can't be blank"
+  end
+
+  test "recurring task does not require run_at" do
+    task = ScheduledTask.new(agent_name: "chief_of_staff", message: "m",
+                             schedule: "every day", timezone: "UTC", task_type: :recurring)
+    task.valid?
+    assert_empty task.errors[:run_at]
+  end
 end

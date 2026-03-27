@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_27_173355) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_27_173639) do
   create_table "chat_steps", force: :cascade do |t|
     t.integer "chat_id", null: false
     t.datetime "created_at", null: false
@@ -97,10 +97,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_27_173355) do
     t.datetime "last_enqueued_at"
     t.text "message", null: false
     t.datetime "run_at"
-    t.string "schedule", null: false
+    t.string "schedule"
     t.bigint "source_chat_id"
     t.integer "task_type", default: 0, null: false
-    t.string "timezone", default: "UTC", null: false
+    t.string "timezone", default: "UTC"
     t.datetime "updated_at", null: false
     t.index ["agent_name"], name: "index_scheduled_tasks_on_agent_name"
     t.index ["enabled"], name: "index_scheduled_tasks_on_enabled"

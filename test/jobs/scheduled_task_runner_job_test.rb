@@ -65,4 +65,23 @@ class ScheduledTaskRunnerJobTest < ActiveSupport::TestCase
       ScheduledTaskRunnerJob.perform_now(task)
     end
   end
+
+  test "sets enabled to false on a one-shot task after firing" do
+    task = ScheduledTask.create!(agent_name: "chief_of_staff", message: "ping",
+                                 task_type: :one_shot, run_at: 1.minute.ago, enabled: true)
+
+    ScheduledTaskRunnerJob.perform_now(task)
+
+    assert_not task.reload.enabled, "expected one-shot task to be disabled after firing"
+  end
+
+  test "does not disable a recurring task after firing" do
+    task = ScheduledTask.create!(agent_name: "chief_of_staff", message: "daily briefing",
+                                 task_type: :recurring, schedule: "every day", timezone: "UTC",
+                                 enabled: true)
+
+    ScheduledTaskRunnerJob.perform_now(task)
+
+    assert task.reload.enabled, "recurring task must remain enabled after firing"
+  end
 end
