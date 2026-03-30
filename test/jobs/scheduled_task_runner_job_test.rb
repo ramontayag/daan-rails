@@ -66,6 +66,49 @@ class ScheduledTaskRunnerJobTest < ActiveSupport::TestCase
     end
   end
 
+  test "uses source_chat instead of creating a new chat when present" do
+    source_chat = Chat.create!(agent_name: "chief_of_staff")
+    task = ScheduledTask.create!(agent_name: "chief_of_staff", message: "follow up",
+                                 task_type: :one_shot, run_at: 1.minute.ago,
+                                 source_chat: source_chat, enabled: true)
+
+    assert_no_difference "Chat.count" do
+      ScheduledTaskRunnerJob.perform_now(task)
+    end
+    assert_equal source_chat.id, Chat.where(agent_name: "chief_of_staff").last.id
+  end
+
+  test "adds the user message to source_chat when present" do
+    source_chat = Chat.create!(agent_name: "chief_of_staff")
+    task = ScheduledTask.create!(agent_name: "chief_of_staff", message: "follow up",
+                                 task_type: :one_shot, run_at: 1.minute.ago,
+                                 source_chat: source_chat, enabled: true)
+
+    ScheduledTaskRunnerJob.perform_now(task)
+
+    assert source_chat.messages.where(role: "user", content: "follow up").exists?
+  end
+
+  test "enqueues LlmJob for source_chat when present" do
+    source_chat = Chat.create!(agent_name: "chief_of_staff")
+    task = ScheduledTask.create!(agent_name: "chief_of_staff", message: "follow up",
+                                 task_type: :one_shot, run_at: 1.minute.ago,
+                                 source_chat: source_chat, enabled: true)
+
+    assert_enqueued_with(job: LlmJob, args: [ source_chat ]) do
+      ScheduledTaskRunnerJob.perform_now(task)
+    end
+  end
+
+  test "creates a new chat when source_chat is absent" do
+    task = ScheduledTask.create!(agent_name: "chief_of_staff", message: "ping",
+                                 task_type: :one_shot, run_at: 1.minute.ago, enabled: true)
+
+    assert_difference "Chat.count", 1 do
+      ScheduledTaskRunnerJob.perform_now(task)
+    end
+  end
+
   test "sets enabled to false on a one-shot task after firing" do
     task = ScheduledTask.create!(agent_name: "chief_of_staff", message: "ping",
                                  task_type: :one_shot, run_at: 1.minute.ago, enabled: true)
