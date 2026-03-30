@@ -29,6 +29,7 @@ tools:
   - Daan::Core::PromoteBranch
   - Daan::Core::CreateSteps
   - Daan::Core::UpdateStep
+  - Daan::Core::ScheduleTask
   - Daan::Core::CreateDocument
   - Daan::Core::UpdateDocument
   - SwarmMemory::Tools::MemoryWrite

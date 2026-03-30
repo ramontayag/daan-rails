@@ -11,6 +11,7 @@ tools:
   - Daan::Core::ListAgents
   - Daan::Core::CreateSteps
   - Daan::Core::UpdateStep
+  - Daan::Core::ScheduleTask
   - SwarmMemory::Tools::MemoryWrite
   - SwarmMemory::Tools::MemoryRead
   - SwarmMemory::Tools::MemoryEdit

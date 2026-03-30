@@ -3,7 +3,8 @@ class ScheduledTasksController < ApplicationController
   before_action :set_return_to_uri
 
   def index
-    @tasks = ScheduledTask.order(created_at: :desc)
+    @recurring_tasks = ScheduledTask.recurring.order(created_at: :desc)
+    @one_shot_tasks  = ScheduledTask.where(task_type: :one_shot).order(run_at: :asc)
   end
 
   def new

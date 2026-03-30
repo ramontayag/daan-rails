@@ -37,6 +37,7 @@ tools:
   - Daan::Core::PromoteBranch
   - Daan::Core::CreateSteps
   - Daan::Core::UpdateStep
+  - Daan::Core::ScheduleTask
 
   # Document management — plans, reports, analysis visible to the human
   - Daan::Core::CreateDocument
