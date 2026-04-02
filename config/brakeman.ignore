@@ -1,16 +1,6 @@
 {
   "ignored_warnings": [
     {
-      "warning_type": "Unmaintained Dependency",
-      "warning_code": 123,
-      "fingerprint": "edf687f759ec9765bd5db185dbc615c80af77d6e7e19386fc42934e7a80307af",
-      "check_name": "EOLRuby",
-      "message": "Support for Ruby 3.2.2 ended on 2026-03-31",
-      "file": ".ruby-version",
-      "line": 1,
-      "note": "Ruby 3.2 EOL acknowledged, upgrade planned"
-    },
-    {
       "warning_type": "Command Injection",
       "warning_code": 14,
       "fingerprint": "8ebccbc77435026e5a315f6220f08660310d4f8b921edf41952a1ce86ab9ff81",
