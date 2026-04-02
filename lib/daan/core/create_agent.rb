@@ -71,7 +71,7 @@ module Daan
         frontmatter["tools"] = tools unless tools.empty?
 
         # Build file content
-        content = "---\n"
+        content = +"---\n"
         frontmatter.each do |key, value|
           if value.is_a?(Array)
             content << "#{key}:\n"
