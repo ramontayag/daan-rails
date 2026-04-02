@@ -7,6 +7,12 @@ module Daan
       chat.reload
       if already_responded?(chat)
         Rails.logger.info("[ConversationRunner] chat_id=#{chat.id} skipping — last user message already has a response")
+        if chat.in_progress?
+          chat.finish!
+          chat.broadcast_agent_status
+          chat.broadcast_chat_cost
+          Chats::NotifyParent.on_completion(chat)
+        end
         return
       end
 

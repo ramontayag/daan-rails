@@ -112,6 +112,24 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     assert @chat.reload.completed?, "expected chat to remain completed"
   end
 
+  test "finishes an in_progress chat when already_responded? is true" do
+    # Reproduces the ReportBack bug: a tool creates an assistant message mid-step and
+    # RunStep stamps context_user_message_id on it. The re-enqueued job sees
+    # already_responded? == true and must call finish! rather than silently returning.
+    @chat.start!
+    last_user_message = @chat.messages.where(role: "user").last
+    @chat.messages.create!(role: "assistant", content: "Engineering Manager: done",
+                           context_user_message_id: last_user_message.id)
+
+    step_called = false
+    @chat.stub(:step, ->(*) { step_called = true }) do
+      Daan::ConversationRunner.call(@chat)
+    end
+
+    assert_not step_called, "expected step NOT to be called"
+    assert @chat.reload.completed?
+  end
+
   test "calls step when assistant context_user_message_id predates a newer user message (race condition)" do
     notification1 = @chat.messages.where(role: "user").last
     @chat.messages.create!(role: "assistant", content: "Handled notification 1",
