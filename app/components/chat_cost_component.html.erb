@@ -1,6 +1,6 @@
 <div id="chat_cost_<%= chat.id %>" class="relative text-xs text-gray-500">
   <% if has_sub_chats? %>
-    <div data-controller="popover">
+    <div data-controller="popover" data-action="click@document->popover#close">
       <button type="button"
               data-action="popover#toggle"
               class="inline-flex items-center gap-1 hover:text-gray-700 cursor-pointer">

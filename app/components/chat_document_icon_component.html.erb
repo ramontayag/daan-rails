@@ -1,6 +1,6 @@
 <div id="chat_documents_icon_<%= chat.id %>" class="relative inline-flex items-center">
   <% if has_documents? %>
-    <div data-controller="popover" class="flex items-center">
+    <div data-controller="popover" class="flex items-center" data-action="click@document->popover#close">
       <button type="button"
               data-action="popover#toggle"
               class="inline-flex items-center gap-1 text-gray-400 hover:text-gray-600 cursor-pointer">
