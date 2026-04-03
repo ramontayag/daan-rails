@@ -194,9 +194,7 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
   end
 
   test "registers updated agent in registry" do
-    real_agents_dir = Rails.root.join("lib/daan/core/agents")
-    real_agent_file = real_agents_dir.join("registry_edit_test.md")
-    real_agent_file.write(<<~AGENT)
+    @test_agents_dir.join("registry_edit_test.md").write(<<~AGENT)
       ---
       name: registry_edit_test
       display_name: Registry Edit Test
@@ -206,12 +204,9 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
       Test agent for registry editing
     AGENT
 
-    tool = Daan::Core::EditAgent.new(chat: @chat, agents_dir: real_agents_dir)
-    result = tool.execute(agent_name: "registry_edit_test", display_name: "Updated Registry Test")
+    result = @tool.execute(agent_name: "registry_edit_test", display_name: "Updated Registry Test")
 
     assert_includes result, "Successfully updated agent 'registry_edit_test'"
     assert_equal "Updated Registry Test", Daan::AgentRegistry.find("registry_edit_test").display_name
-  ensure
-    real_agent_file.delete rescue nil
   end
 end
