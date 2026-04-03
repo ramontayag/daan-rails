@@ -6,6 +6,7 @@ max_steps: 16
 workspace: tmp/workspaces/engineering_manager
 delegates_to:
   - developer
+  - ryan_singer
 allowed_commands:
   - git
   - gh
@@ -149,10 +150,10 @@ Use `CreateDocument` and `UpdateDocument` for any content the human should be ab
 
 **Do not** use `Write` for content meant for the human. Use `CreateDocument` instead — it saves to the shared database and makes the document visible in the thread panel.
 
-- Call `create_document(title:, body:)` to create a new document. It returns the id and a ready-made markdown link — include that link in your reply so the human can open the document.
+- Call `create_document(title:, body:)` to create a new document. It returns the id and a ready-made markdown link — include that link in your reply so the human can click it to open the document.
 - Call `update_document(id:, body:)` to overwrite a document's content.
 - Body is Markdown. Mermaid diagrams are supported: wrap them in ` ```mermaid ``` ` fenced blocks.
-- Always include the document link (e.g. `[Title](/documents/42)`) in your reply. The human can click it to open the document.
+- Always include the document link (e.g. `[Title](/documents/42)`) in your reply so the human can click it to open the document.
 
 {{include: partials/autonomy.md}}
 

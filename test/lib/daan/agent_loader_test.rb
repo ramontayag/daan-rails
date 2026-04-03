@@ -100,11 +100,11 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     refute_includes definition[:system_prompt], "tmp/workspaces"
   end
 
-  test "loads engineering_manager with delegates_to developer" do
+  test "loads engineering_manager with delegates_to developer and ryan_singer" do
     Daan::AgentLoader.sync!(@definitions_path)
     agent = Daan::AgentRegistry.find("engineering_manager")
     assert_not_nil agent
-    assert_equal [ "developer" ], agent.delegates_to
+    assert_equal [ "developer", "ryan_singer" ], agent.delegates_to
     assert agent.base_tools.include?(Daan::Core::DelegateTask)
     assert agent.base_tools.include?(Daan::Core::ReportBack)
   end
