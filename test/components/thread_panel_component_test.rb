@@ -63,13 +63,13 @@ class ThreadPanelComponentTest < ViewComponent::TestCase
   test "displays hide tools toggle" do
     render_inline(ThreadPanelComponent.new(chat: @chat, perspective_name: "me", hide_tools: false))
 
-    assert_selector "a", text: "Hide tools"
+    assert_selector "a[title='Hide tools']"
   end
 
   test "displays show tools toggle when tools hidden" do
     render_inline(ThreadPanelComponent.new(chat: @chat, perspective_name: "me", hide_tools: true))
 
-    assert_selector "a", text: "Show tools"
+    assert_selector "a[title='Show tools']"
   end
 
   test "displays back link on mobile" do
@@ -81,12 +81,12 @@ class ThreadPanelComponentTest < ViewComponent::TestCase
   test "shows documents icon when chat has documents" do
     Document.create!(title: "My Plan", body: "# Plan", chat: @chat)
     render_inline(ThreadPanelComponent.new(chat: @chat, perspective_name: "me"))
-    assert_selector "[data-controller='cost-breakdown']"
+    assert_selector "[data-controller='popover']"
   end
 
   test "does not show documents icon when no documents" do
     render_inline(ThreadPanelComponent.new(chat: @chat, perspective_name: "me"))
-    refute_selector "[data-controller='cost-breakdown']"
+    refute_selector "[data-controller='popover']"
   end
 
   test "dropdown contains document titles" do
