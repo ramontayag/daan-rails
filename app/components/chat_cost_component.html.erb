@@ -1,8 +1,8 @@
 <div id="chat_cost_<%= chat.id %>" class="relative text-xs text-gray-500">
   <% if has_sub_chats? %>
-    <div data-controller="cost-breakdown">
+    <div data-controller="popover">
       <button type="button"
-              data-action="cost-breakdown#toggle"
+              data-action="popover#toggle"
               class="inline-flex items-center gap-1 hover:text-gray-700 cursor-pointer">
         <span id="chat_<%= chat.id %>_cost_totals" class="inline-flex items-center gap-1">
           <span class="font-medium"><%= number_with_delimiter(chat.total_tokens_including_sub_chats) %></span>
@@ -12,7 +12,7 @@
             <span class="font-medium"><%= chat.formatted_total_cost %></span>
           <% end %>
         </span>
-        <svg data-cost-breakdown-target="chevron"
+        <svg data-popover-target="chevron"
              xmlns="http://www.w3.org/2000/svg"
              class="h-3 w-3 transition-transform"
              fill="none" viewBox="0 0 24 24"
@@ -20,7 +20,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      <div data-cost-breakdown-target="panel"
+      <div data-popover-target="panel"
            class="hidden absolute top-full right-0 mt-1 w-52 py-1 bg-white border border-gray-200 rounded shadow-lg z-50 text-gray-700">
         <div id="chat_<%= chat.id %>_cost_rows">
           <div class="px-3 py-1 border-b border-gray-100 flex justify-between gap-4">

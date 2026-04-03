@@ -17,10 +17,10 @@ class DocumentViewerTest < ApplicationSystemTestCase
     visit chat_thread_path(@chat)
 
     # Icon appears with count badge
-    find("[data-controller='cost-breakdown']").click
+    find("[data-controller='popover']").click
 
     # Dropdown opens showing the document title as a link
-    within "[data-cost-breakdown-target='panel']" do
+    within "[data-popover-target='panel']" do
       click_link "Architecture Plan"
     end
 

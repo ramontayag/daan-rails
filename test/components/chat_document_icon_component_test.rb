@@ -21,7 +21,7 @@ class ChatDocumentIconComponentTest < ActiveSupport::TestCase
 
   test "renders no button when no documents exist" do
     render_inline(ChatDocumentIconComponent.new(chat: @chat))
-    assert_not_includes rendered_content, "cost-breakdown"
+    assert_not_includes rendered_content, "popover"
   end
 
   test "renders button with count when documents exist" do

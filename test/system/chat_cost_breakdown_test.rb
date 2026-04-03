@@ -25,7 +25,7 @@ class ChatCostBreakdownTest < ApplicationSystemTestCase
   test "shows grand total tokens and cost in header" do
     visit chat_thread_path(@parent)
 
-    within "[data-controller='cost-breakdown']" do
+    within "[data-controller='popover']" do
       assert_text "3,000,000"
       assert_text "$3.00"
     end
@@ -34,9 +34,9 @@ class ChatCostBreakdownTest < ApplicationSystemTestCase
   test "clicking cost button opens breakdown panel with per-chat rows" do
     visit chat_thread_path(@parent)
 
-    find("[data-action='cost-breakdown#toggle']").click
+    find("[data-action='popover#toggle']").click
 
-    within "[data-cost-breakdown-target='panel']" do
+    within "[data-popover-target='panel']" do
       assert_text "Chief of Staff"
       assert_text "Developer"
     end
@@ -49,6 +49,6 @@ class ChatCostBreakdownTest < ApplicationSystemTestCase
     visit chat_thread_path(solo)
 
     assert_text "500,000"
-    assert_no_selector "[data-controller='cost-breakdown']"
+    assert_no_selector "[data-controller='popover']"
   end
 end

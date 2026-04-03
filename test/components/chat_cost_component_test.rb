@@ -56,7 +56,7 @@ class ChatCostComponentTest < ViewComponent::TestCase
 
     render_inline(ChatCostComponent.new(chat: chat))
 
-    assert_no_selector "[data-controller='cost-breakdown']"
+    assert_no_selector "[data-controller='popover']"
   end
 
   test "shows breakdown toggle when sub_chats exist" do
@@ -65,7 +65,7 @@ class ChatCostComponentTest < ViewComponent::TestCase
 
     render_inline(ChatCostComponent.new(chat: parent))
 
-    assert_selector "[data-controller='cost-breakdown']"
+    assert_selector "[data-controller='popover']"
   end
 
   test "breakdown lists this chat and each sub_chat with costs" do
