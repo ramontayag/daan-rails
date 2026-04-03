@@ -1,4 +1,6 @@
 class ChatMessageComponent < ViewComponent::Base
+  with_collection_parameter :message
+
   def initialize(message:, chat: nil, results: {}, hide_tools: false, agent_display_name: nil, user_display_name: nil)
     @message            = message
     @chat               = chat
