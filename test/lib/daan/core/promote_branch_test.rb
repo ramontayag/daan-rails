@@ -98,7 +98,7 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
     end
   end
 
-  test "dev: success message includes branch name and production hint" do
+  test "dev: success message includes branch name and PR URL" do
     with_dev_tool do |tool|
       tool.define_singleton_method(:run!) { |*| nil }
       tool.define_singleton_method(:branch_exists_in_origin?) { |*| true }
@@ -126,8 +126,17 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
     end
   end
 
+  test "prod: returns existing PR URL when one already exists" do
+    with_prod_tool do |tool|
+      tool.define_singleton_method(:find_existing_pr) { |*| "https://github.com/owner/repo/pull/99" }
+      result = tool.execute(branch: "feature/my-change", tests_passed: true, title: "My change", body: "Details")
+      assert_equal "https://github.com/owner/repo/pull/99", result
+    end
+  end
+
   test "prod: raises on gh failure" do
     with_prod_tool do |tool|
+      tool.define_singleton_method(:find_existing_pr) { |*| nil }
       with_open3([ "", "some error", fake_status(false) ]) do
         error = assert_raises(RuntimeError) { tool.execute(branch: "feature/x", tests_passed: true, title: "T", body: "B") }
         assert_includes error.message, "gh pr create failed"
