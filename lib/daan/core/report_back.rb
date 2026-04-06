@@ -5,7 +5,7 @@ module Daan
       include Daan::Core::Tool.module(timeout: 10.seconds)
 
       description "Report your results back to the delegating agent"
-      param :message, desc: "Your findings or results to report"
+      param :message, desc: "Your findings or results. State what was requested, what you did, and flag anything you added beyond the original ask."
 
       def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil)
         @chat = chat
@@ -21,7 +21,7 @@ module Daan
 
         current_agent = Daan::AgentRegistry.find(@chat.agent_name)
         Daan::CreateMessage.call(parent_chat, role: "user",
-                                 content: "#{current_agent.display_name}: #{message}",
+                                 content: "#{Daan::SystemTag::PREFIX} #{current_agent.display_name} reported back: #{message}",
                                  visible: false)
 
         parent_agent = Daan::AgentRegistry.find(parent_chat.agent_name)

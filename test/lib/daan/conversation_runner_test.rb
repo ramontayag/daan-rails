@@ -174,7 +174,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
     # Agent returns a tool call (wants to continue) — triggers warning path
     with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
 
-    warning = @chat.messages.find_by("content LIKE ?", "%2 steps of work remaining%")
+    warning = @chat.messages.find_by("content LIKE ?", "%3 steps of work remaining%")
     assert warning, "expected step-limit warning message"
     assert_equal "user", warning.role
     assert_equal false, warning.visible
@@ -186,7 +186,7 @@ class Daan::ConversationRunnerTest < ActiveSupport::TestCase
 
     with_stub_tool_step { Daan::ConversationRunner.call(@chat) }
 
-    warning = @chat.messages.find_by("content LIKE ?", "%2 steps of work remaining%")
+    warning = @chat.messages.find_by("content LIKE ?", "%3 steps of work remaining%")
     assert_nil warning
   end
 

@@ -23,7 +23,7 @@ module Daan
       param :title, desc: "Pull request title (production only).", required: false
       param :body,  desc: "Pull request body (production only).", required: false
 
-      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil, allowed_commands: nil)
+      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil)
         @workspace = workspace
       end
 

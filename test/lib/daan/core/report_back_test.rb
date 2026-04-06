@@ -24,11 +24,10 @@ class Daan::Core::ReportBackTest < ActiveSupport::TestCase
     end
   end
 
-  test "message content includes agent display name and the report" do
+  test "message content includes system prefix, agent display name, and the report" do
     @tool.execute(message: "Here are my findings.")
     msg = @parent_chat.messages.where(role: "user").last
-    assert_includes msg.content, "Engineering Manager"
-    assert_includes msg.content, "Here are my findings."
+    assert_equal "[SYSTEM] Engineering Manager reported back: Here are my findings.", msg.content
   end
 
   test "enqueues LlmJob for the parent chat" do

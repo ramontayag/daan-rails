@@ -14,6 +14,29 @@ class Daan::Chats::BuildSystemPromptTest < ActiveSupport::TestCase
     @agent = @chat.agent
   end
 
+  # -- Audience --
+
+  test "appends human audience context for top-level chat" do
+    prompt = with_stub_memories([]) { Daan::Chats::BuildSystemPrompt.call(@chat, @agent) }
+
+    assert_includes prompt, "You are talking directly to the human."
+  end
+
+  test "appends agent audience context for delegated chat" do
+    Daan::AgentRegistry.register(
+      Daan::Agent.new(
+        name: "engineering_manager", display_name: "Engineering Manager",
+        model_name: "m", system_prompt: "p", max_steps: 10
+      )
+    )
+    parent = Chat.create!(agent_name: "engineering_manager")
+    child = Chat.create!(agent_name: "developer", parent_chat: parent)
+
+    prompt = with_stub_memories([]) { Daan::Chats::BuildSystemPrompt.call(child, child.agent) }
+
+    assert_includes prompt, "delegated this task by Engineering Manager"
+  end
+
   # -- Steps --
 
   test "appends steps to system prompt when steps exist" do
@@ -52,10 +75,11 @@ class Daan::Chats::BuildSystemPromptTest < ActiveSupport::TestCase
     assert_includes prompt, "fact/rails/db.md"
   end
 
-  test "does not alter system prompt when no memories exist" do
+  test "does not append memories section when no memories exist" do
     prompt = with_stub_memories([]) { Daan::Chats::BuildSystemPrompt.call(@chat, @agent) }
 
-    assert_equal "You are a developer.", prompt
+    assert_includes prompt, "You are a developer."
+    assert_not_includes prompt, "Relevant memories"
   end
 
   test "memory retrieval failure does not crash and returns base prompt" do
