@@ -29,18 +29,6 @@ Things you may want to cover:
 
 Tools (`lib/daan/core/*.rb`) need unit tests — they contain logic. Agent `.md` files are just configuration (YAML frontmatter + system prompt) and don't need their own tests. Writing to the real `lib/daan/core/agents/` directory in tests causes race conditions with parallel test runs.
 
-## Tests read like documentation
-
-Assert concrete values, not patterns. If you know what the output should be, say it exactly.
-
-```ruby
-# Good — reads like a spec
-assert_equal "[Sent at: #{msg.created_at.iso8601}]\n\nHello", msg.to_llm.content
-
-# Bad — obscures intent behind noise
-assert_match(/\A\[Sent at: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/, msg.to_llm.content)
-```
-
 ## Scopes use Arel, not SQL strings
 
 Scopes must use Arel node methods rather than raw SQL strings. This keeps them composable and mergeable, and avoids SQL injection risk.
@@ -76,29 +64,6 @@ def agent_display_name = @agent_display_name ||= chat.agent.display_name
 
 Production callers just pass `message:`. Tests and Lookbook pass whatever they need to override.
 
-## Logic belongs in the component, not the template
-
-Keep ERB templates free of string interpolation, complex conditions, and computed values. Do that work in the component's Ruby class instead.
-
-```ruby
-# Good — template calls a simple method
-def wrapper_html
-  { class: "flex flex-col h-screen bg-white" }.merge(@html_options)
-end
-```
-
-```erb
-<%# Good — template is declarative %>
-<%= content_tag :div, wrapper_html do %>
-```
-
-```erb
-<%# Bad — logic leaking into the template %>
-<div class="flex flex-col h-screen bg-white"<%= tag.attributes(**html_options) if html_options.any? %>>
-```
-
-If you find yourself writing this kind of logic in a plain ERB view (not a component), that's a signal the view wants to be a component.
-
 ## Name time constants with their unit
 
 Constants that represent durations must include the unit in the name: `DEFAULT_TIMEOUT_SECONDS`, `POLL_INTERVAL_MS`, etc. Bare names like `DEFAULT_TIMEOUT` are ambiguous.
@@ -130,9 +95,9 @@ cp .env{,.local}
 
 Once you've set up your environment and created `.env.local` with your `ANTHROPIC_API_KEY`, you can start developing:
 
-1. **Start the Rails server:**
+1. **Start the development server:**
    ```bash
-   bin/rails server
+   bin/dev
    ```
 
 2. **Run tests to verify everything works:**
@@ -145,7 +110,7 @@ Once you've set up your environment and created `.env.local` with your `ANTHROPI
    grep "agent_name" config/agents/*.md
    ```
 
-For more details on agent development, see `AGENTS.md`.
+For details on modifying the Daan platform and agent configuration, see `AGENTS.md`.
 
 # Development
 
