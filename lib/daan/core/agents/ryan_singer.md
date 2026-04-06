@@ -7,15 +7,6 @@ workspace: tmp/workspaces/ryan_singer
 hooks:
   - Daan::Core::Shaping
 delegates_to: []
-allowed_commands:
-  - git
-  - gh
-  - ls
-  - grep
-  - find
-  - head
-  - tail
-  - wc
 tools:
   - Daan::Core::Read
   - Daan::Core::Bash

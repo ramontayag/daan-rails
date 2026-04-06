@@ -8,7 +8,7 @@ module Daan
                   "Steps appear in your system prompt so you always see them."
       param :steps, type: "array", desc: "Ordered list of step titles"
 
-      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil, allowed_commands: nil)
+      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil)
         @chat = chat
       end
 

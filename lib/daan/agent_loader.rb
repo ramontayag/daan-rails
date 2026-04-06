@@ -26,7 +26,6 @@ module Daan
         base_tools:    base_tools,
         workspace:     workspace,
         delegates_to:     fm.fetch("delegates_to", []),
-        allowed_commands: fm.fetch("allowed_commands", []),
         hook_names:       fm.fetch("hooks", [])
       }
     end
@@ -39,7 +38,8 @@ module Daan
 
     def self.workspace_instructions(workspace)
       lines = []
-      lines << "Your workspace is at #{workspace.root}. It is yours alone — no other agent shares it. You are responsible for keeping it orderly: decide where repos, projects, and temporary files live, and stick to that structure."
+      lines << "Your workspace is at #{workspace.root}. It is yours alone — no other agent shares it. All file operations (Read, Write, Bash) are scoped to this directory — paths outside it will be rejected. Use relative paths or paths under #{workspace.root}."
+      lines << "You are responsible for keeping it orderly: decide where repos, projects, and temporary files live, and stick to that structure."
       lines << "Use #{SwarmMemory::Tools::MemoryWrite.name.demodulize} to record where you put things (repos, projects, temp files) so you can find them again without re-exploring. When starting a task, check memory first — you may have worked in this workspace before and know exactly where things are."
 
       if (self_repo = ENV["DAAN_SELF_REPO"].presence)

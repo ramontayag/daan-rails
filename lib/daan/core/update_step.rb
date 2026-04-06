@@ -8,7 +8,7 @@ module Daan
       param :position, desc: "Position number of the step to update"
       param :status, desc: "New status: pending, in_progress, or completed"
 
-      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil, allowed_commands: nil)
+      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil)
         @chat = chat
       end
 

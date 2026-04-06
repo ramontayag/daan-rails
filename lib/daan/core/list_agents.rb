@@ -7,7 +7,7 @@ module Daan
       description "List all registered agents on the team — their names, descriptions, and tools. " \
                   "Use this to understand who is available and what each agent can do before delegating."
 
-      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil, allowed_commands: nil)
+      def initialize(workspace: nil, chat: nil, storage: nil, agent_name: nil)
       end
 
       def execute

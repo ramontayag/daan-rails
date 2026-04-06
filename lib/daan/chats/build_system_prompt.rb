@@ -4,10 +4,21 @@ module Daan
     class BuildSystemPrompt
       def self.call(chat, agent)
         prompt = agent.system_prompt
+        prompt = append_audience(prompt, chat)
         prompt = append_memories(prompt, chat)
         prompt = append_steps(prompt, chat)
         prompt
       end
+
+      def self.append_audience(prompt, chat)
+        if chat.parent_chat.present?
+          parent_agent = Daan::AgentRegistry.find(chat.parent_chat.agent_name)
+          "#{prompt}\n\nYou were delegated this task by #{parent_agent.display_name} (another agent). Follow their instructions directly unless something is genuinely unclear."
+        else
+          "#{prompt}\n\nYou are talking directly to the human. Always confirm your plan before starting work."
+        end
+      end
+      private_class_method :append_audience
 
       def self.append_memories(prompt, chat)
         memories = retrieve_memories(chat)

@@ -46,7 +46,7 @@ class Daan::Chats::NotifyParentTest < ActiveSupport::TestCase
     Daan::CreateMessage.call(
       @parent_chat,
       role: "user",
-      content: "Child Agent: here are my findings",
+      content: "[SYSTEM] Child Agent reported back: here are my findings",
       visible: false
     )
     Daan::Chats::NotifyParent.on_completion(@child_chat)

@@ -55,7 +55,7 @@ module Daan
 
         chat.messages.create!(
           role: "user",
-          content: "#{Daan::SystemTag::PREFIX} You have 2 steps of work remaining before this thread is blocked. " \
+          content: "#{Daan::SystemTag::PREFIX} You have 3 steps of work remaining before this thread is blocked. " \
                    "Call report_back now with your current findings.",
           visible: false
         )

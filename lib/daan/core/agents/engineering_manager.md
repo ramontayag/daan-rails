@@ -2,23 +2,10 @@
 name: engineering_manager
 display_name: Engineering Manager
 model: claude-haiku-4-5-20251001
-max_steps: 16
+max_steps: 30
 workspace: tmp/workspaces/engineering_manager
 delegates_to:
   - developer
-allowed_commands:
-  - git
-  - gh
-  - ls
-  - grep
-  - find
-  - head
-  - tail
-  - wc
-  - diff
-  - pwd
-  - cat
-  - sort
 tools:
   # Core delegation and reporting
   - Daan::Core::DelegateTask

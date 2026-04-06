@@ -90,7 +90,7 @@ class Daan::Chats::FinishOrReenqueueTest < ActiveSupport::TestCase
     response = OpenStruct.new("tool_call?" => true)
     Daan::Chats::FinishOrReenqueue.call(@chat, @agent, response)
 
-    warning = @chat.messages.find_by("content LIKE ?", "%2 steps of work remaining%")
+    warning = @chat.messages.find_by("content LIKE ?", "%3 steps of work remaining%")
     assert warning
     assert_equal false, warning.visible
   end
@@ -102,7 +102,7 @@ class Daan::Chats::FinishOrReenqueueTest < ActiveSupport::TestCase
     response = OpenStruct.new("tool_call?" => true)
     Daan::Chats::FinishOrReenqueue.call(@chat, @agent, response)
 
-    assert_nil @chat.messages.find_by("content LIKE ?", "%2 steps of work remaining%")
+    assert_nil @chat.messages.find_by("content LIKE ?", "%3 steps of work remaining%")
   end
 
   private

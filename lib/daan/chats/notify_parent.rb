@@ -51,7 +51,7 @@ module Daan
         chat.parent_chat.messages
             .where(role: "user")
             .where_created_at_gt(last_task_message.created_at)
-            .where_content_like("#{agent.display_name}: %")
+            .where_content_like("#{Daan::SystemTag::PREFIX} #{agent.display_name} reported back: %")
             .exists?
       end
       private_class_method :agent_reported_back?

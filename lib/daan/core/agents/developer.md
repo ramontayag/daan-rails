@@ -5,33 +5,6 @@ model: claude-haiku-4-5-20251001
 max_steps: 50
 workspace: tmp/workspaces/developer
 delegates_to: []
-allowed_commands:
-  - git
-  - gh
-  - ls
-  - grep
-  - find
-  - head
-  - tail
-  - wc
-  - diff
-  - bundle
-  - bin/rubocop
-  - bin/rails
-  - bin/rake
-  - ruby
-  - gem
-  - pwd
-  - rm
-  - mkdir
-  - cat
-  - cp
-  - mv
-  - echo
-  - sed
-  - sort
-  - cut
-  - xargs
 tools:
   - Daan::Core::Read
   - Daan::Core::Write
