@@ -76,29 +76,6 @@ def agent_display_name = @agent_display_name ||= chat.agent.display_name
 
 Production callers just pass `message:`. Tests and Lookbook pass whatever they need to override.
 
-## Logic belongs in the component, not the template
-
-Keep ERB templates free of string interpolation, complex conditions, and computed values. Do that work in the component's Ruby class instead.
-
-```ruby
-# Good — template calls a simple method
-def wrapper_html
-  { class: "flex flex-col h-screen bg-white" }.merge(@html_options)
-end
-```
-
-```erb
-<%# Good — template is declarative %>
-<%= content_tag :div, wrapper_html do %>
-```
-
-```erb
-<%# Bad — logic leaking into the template %>
-<div class="flex flex-col h-screen bg-white"<%= tag.attributes(**html_options) if html_options.any? %>>
-```
-
-If you find yourself writing this kind of logic in a plain ERB view (not a component), that's a signal the view wants to be a component.
-
 ## Name time constants with their unit
 
 Constants that represent durations must include the unit in the name: `DEFAULT_TIMEOUT_SECONDS`, `POLL_INTERVAL_MS`, etc. Bare names like `DEFAULT_TIMEOUT` are ambiguous.
@@ -125,6 +102,27 @@ cp .env{,.local}
 |----------|----------|-------------|
 | `ANTHROPIC_API_KEY` | Yes | Anthropic API key for LLM calls |
 | `DAAN_SELF_REPO` | No | GitHub repo this app lives in (e.g. `ramontayag/daan-rails`). When set, agents with a workspace know what repo to clone when asked to modify the team or themselves. |
+
+# Quick Start
+
+Once you've set up your environment and created `.env.local` with your `ANTHROPIC_API_KEY`, you can start developing:
+
+1. **Start the development server:**
+   ```bash
+   bin/dev
+   ```
+
+2. **Run tests to verify everything works:**
+   ```bash
+   bin/ci
+   ```
+
+3. **Check the agent configuration:**
+   ```bash
+   grep "agent_name" config/agents/*.md
+   ```
+
+For details on modifying the Daan platform and agent configuration, see `AGENTS.md`.
 
 # Development
 
