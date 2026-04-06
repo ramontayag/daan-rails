@@ -3,7 +3,7 @@ module Daan
     class Shaping
       include Daan::Core::Hook
 
-      RIPPLE_CHECK_CONTENT = "[System] Ripple check: you updated document(s) in the previous turn. " \
+      RIPPLE_CHECK_CONTENT = "#{Daan::SystemTag::PREFIX} Ripple check: you updated document(s) in the previous turn. " \
         "Verify your changes are consistent with related documents " \
         "(shaping → slices → slice plans) before continuing."
 

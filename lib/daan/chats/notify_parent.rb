@@ -12,7 +12,7 @@ module Daan
           Daan::CreateMessage.call(
             chat.parent_chat,
             role: "user",
-            content: "[System] #{agent.display_name} completed their task without calling report_back. " \
+            content: "#{Daan::SystemTag::PREFIX} #{agent.display_name} completed their task without calling report_back. " \
                      "Their last message: #{last_content}",
             visible: false
           )
@@ -36,7 +36,7 @@ module Daan
         Daan::CreateMessage.call(
           chat.parent_chat,
           role: "user",
-          content: "[System] #{agent.display_name}'s thread is now #{status}. " \
+          content: "#{Daan::SystemTag::PREFIX} #{agent.display_name}'s thread is now #{status}. " \
                    "#{reason} Their last message: #{last_content}",
           visible: false
         )

@@ -45,11 +45,23 @@ class Daan::Chats::FinishOrReenqueueTest < ActiveSupport::TestCase
   # -- max steps --
 
   test "blocks the chat when max steps reached" do
-    # Simulate RunStep having just created the final assistant message
     @agent.max_steps.times { @chat.messages.create!(role: "assistant", content: "step") }
     response = OpenStruct.new("tool_call?" => true)
-    Daan::Chats::FinishOrReenqueue.call(@chat, @agent, response)
+    stub_force_report_back do
+      Daan::Chats::FinishOrReenqueue.call(@chat, @agent, response)
+    end
     assert @chat.reload.blocked?
+  end
+
+  test "calls ForceReportBack before blocking" do
+    @agent.max_steps.times { @chat.messages.create!(role: "assistant", content: "step") }
+    response = OpenStruct.new("tool_call?" => true)
+
+    called = false
+    Daan::Chats::ForceReportBack.stub(:call, ->(_chat) { called = true }) do
+      Daan::Chats::FinishOrReenqueue.call(@chat, @agent, response)
+    end
+    assert called, "Expected ForceReportBack to be called"
   end
 
   test "notifies parent when max steps reached and parent exists" do
@@ -58,7 +70,9 @@ class Daan::Chats::FinishOrReenqueueTest < ActiveSupport::TestCase
     @agent.max_steps.times { @chat.messages.create!(role: "assistant", content: "step") }
 
     response = OpenStruct.new("tool_call?" => true)
-    Daan::Chats::FinishOrReenqueue.call(@chat, @agent, response)
+    stub_force_report_back do
+      Daan::Chats::FinishOrReenqueue.call(@chat, @agent, response)
+    end
 
     notification = parent_chat.messages.find_by("content LIKE ?", "%thread is now blocked%")
     assert notification
@@ -89,5 +103,13 @@ class Daan::Chats::FinishOrReenqueueTest < ActiveSupport::TestCase
     Daan::Chats::FinishOrReenqueue.call(@chat, @agent, response)
 
     assert_nil @chat.messages.find_by("content LIKE ?", "%2 steps of work remaining%")
+  end
+
+  private
+
+  def stub_force_report_back
+    Daan::Chats::ForceReportBack.stub(:call, ->(_chat) { }) do
+      yield
+    end
   end
 end

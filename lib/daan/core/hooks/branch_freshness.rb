@@ -23,7 +23,7 @@ module Daan
 
           chat.messages.create!(
             role: "user",
-            content: "[SYSTEM] New branch created but it is not based on the latest origin/#{branch}. " \
+            content: "#{Daan::SystemTag::PREFIX} New branch created but it is not based on the latest origin/#{branch}. " \
                      "Run: git fetch origin && git rebase origin/#{branch}",
             visible: false
           )
