@@ -6,7 +6,7 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
     @workspace = Daan::Workspace.new(@workspace_dir)
     @tool = Daan::Core::Bash.new(
       workspace: @workspace,
-      allowed_commands: %w[echo git pwd sh]
+      allowed_commands: %w[echo git pwd cat]
     )
   end
 
@@ -42,16 +42,21 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
 
   test "returns error string when a command fails" do
     @tool.singleton_class.prepend(Daan::Core::SafeExecute)
-    result = @tool.execute(commands: [ [ "sh", "-c", "exit 1" ] ])
-    assert_match(/sh -c exit 1/, result)
+    result = @tool.execute(commands: [ [ "git", "log" ] ])
     assert_match(/failed/, result)
   end
 
   test "returns error string on second command failure" do
     @tool.singleton_class.prepend(Daan::Core::SafeExecute)
-    result = @tool.execute(commands: [ [ "echo", "step one" ], [ "sh", "-c", "exit 1" ] ])
-    assert_match(/sh -c exit 1/, result)
+    result = @tool.execute(commands: [ [ "echo", "step one" ], [ "git", "log" ] ])
     assert_match(/failed/, result)
+  end
+
+  test "returns error when shell interpreter is used even if in allowed_commands" do
+    tool = Daan::Core::Bash.new(workspace: @workspace, allowed_commands: %w[sh bash])
+    tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    result = tool.execute(commands: [ [ "sh", "-c", "echo hi" ] ])
+    assert_match(/shell interpreter.*not allowed/, result)
   end
 
   test "runs commands in workspace root by default" do
@@ -95,6 +100,56 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
     assert_includes result, path_inside
   end
 
+  test "returns error when a symlink inside workspace points outside" do
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    File.symlink("/etc/passwd", File.join(@workspace_dir, "sneaky_link"))
+
+    result = @tool.execute(commands: [ [ "echo", "sneaky_link" ] ])
+    assert_match(/escape/, result)
+  end
+
+  test "allows a symlink inside workspace that points to another workspace file" do
+    target = File.join(@workspace_dir, "real_file.txt")
+    File.write(target, "hello")
+    File.symlink(target, File.join(@workspace_dir, "internal_link"))
+
+    result = @tool.execute(commands: [ [ "echo", "internal_link" ] ])
+    assert_includes result, "internal_link"
+  end
+
+  test "returns error when a relative path with slash resolves outside workspace via symlink" do
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    subdir = File.join(@workspace_dir, "sub")
+    FileUtils.mkdir_p(subdir)
+    File.symlink("/etc", File.join(subdir, "escape"))
+
+    result = @tool.execute(commands: [ [ "echo", "sub/escape/passwd" ] ])
+    assert_match(/escape/, result)
+  end
+
+  test "returns error when argument contains null byte" do
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    result = @tool.execute(commands: [ [ "echo", "file\0name" ] ])
+    assert_match(/null byte/, result)
+  end
+
+  test "returns error when flag with = contains path outside workspace" do
+    @tool.singleton_class.prepend(Daan::Core::SafeExecute)
+    result = @tool.execute(commands: [ [ "git", "diff", "--output=/tmp/evil" ] ])
+    assert_match(/escape/, result)
+  end
+
+  test "allows flag with = containing path inside workspace" do
+    path_inside = File.join(@workspace_dir, "output.txt")
+    result = @tool.execute(commands: [ [ "echo", "--output=#{path_inside}" ] ])
+    assert_includes result, "--output=#{path_inside}"
+  end
+
+  test "allows plain arguments that do not look like paths" do
+    result = @tool.execute(commands: [ [ "echo", "hello world" ] ])
+    assert_includes result, "hello world"
+  end
+
   test "includes stderr in successful command output" do
     # git init writes "Initialized..." to stdout and hints to stderr
     # both should appear in the result so LLMs see the full picture
@@ -116,30 +171,14 @@ class Daan::Core::BashTest < ActiveSupport::TestCase
   end
 
   test "returns timed out error promptly when child process holds pipe open after parent is killed" do
-    # Simulate what happens with `git rebase -i`: the command spawns a child that
-    # keeps stdout/stderr pipes open even after the parent process is killed.
-    # Without the fix, out_thread.join in the rescue block blocks forever because
-    # the child still holds the write end of the pipe.
-    script_path = File.join(@workspace_dir, "pipe_hog.sh")
-    File.write(script_path, <<~SH)
-      #!/bin/sh
-      # Spawn a background child that sleeps indefinitely (keeps pipes open).
-      sleep 60 &
-      # Parent then sleeps, waiting to be killed.
-      sleep 60
-    SH
-    File.chmod(0o755, script_path)
-
-    tool = Daan::Core::Bash.new(workspace: @workspace, allowed_commands: %w[sh])
+    tool = Daan::Core::Bash.new(workspace: @workspace, allowed_commands: %w[sleep])
     tool.singleton_class.prepend(Daan::Core::SafeExecute)
 
     started_at = Time.now
-    result = tool.execute(commands: [ [ "sh", script_path ] ], timeout_seconds: 0.5)
+    result = tool.execute(commands: [ [ "sleep", "60" ] ], timeout_seconds: 0.5)
     elapsed = Time.now - started_at
 
     assert_match(/timed out/, result)
     assert elapsed < 3, "expected to return within 3s but took #{elapsed.round(2)}s"
-  ensure
-    File.unlink(script_path) rescue nil
   end
 end
