@@ -29,6 +29,8 @@ module Daan
         strict: true
       })
 
+      DENIED_BINARIES = %w[sh bash zsh dash ksh csh tcsh fish].freeze
+
       def initialize(workspace: nil, chat: nil, allowed_commands: [], **)
         @workspace        = workspace
         @allowed_commands = allowed_commands
@@ -42,6 +44,9 @@ module Daan
 
         outputs = commands.map do |cmd|
           binary = cmd.first
+          if DENIED_BINARIES.include?(binary)
+            raise "shell interpreter '#{binary}' is not allowed"
+          end
           unless @allowed_commands.include?(binary)
             raise "command '#{binary}' is not allowed. Permitted: #{@allowed_commands.join(', ')}"
           end
@@ -57,13 +62,31 @@ module Daan
 
       def validate_path_args!(args, cwd)
         args.each do |arg|
-          next unless arg.start_with?("/") || arg.include?("..")
+          raise ArgumentError, "Argument contains null byte" if arg.include?("\0")
 
-          expanded = File.expand_path(arg, cwd)
-          unless expanded.start_with?("#{@workspace.root}/") || expanded == @workspace.root.to_s
+          value = if arg.start_with?("-") && arg.include?("=")
+            arg.split("=", 2).last
+          elsif arg.start_with?("-")
+            next
+          else
+            arg
+          end
+
+          next unless looks_like_path?(value, cwd)
+
+          expanded = File.expand_path(value, cwd)
+          resolved = File.exist?(expanded) ? File.realpath(expanded) : expanded
+          root = @workspace.root.to_s
+
+          unless resolved.start_with?("#{root}/") || resolved == root
             raise ArgumentError, "Argument '#{arg}' escapes workspace"
           end
         end
+      end
+
+      def looks_like_path?(arg, cwd)
+        arg.start_with?("/") || arg.include?("..") || arg.include?("/") ||
+          File.exist?(File.join(cwd.to_s, arg))
       end
 
       def run_command(cmd, dir:)
