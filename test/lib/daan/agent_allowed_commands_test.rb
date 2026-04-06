@@ -37,7 +37,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
   test "Bash uses universal ALLOWED_COMMANDS by default" do
     workspace = Daan::Workspace.new(Dir.mktmpdir)
     tool = Daan::Core::Bash.new(workspace: workspace)
-    result = tool.execute(commands: [[ "pwd" ]])
+    result = tool.execute(commands: [ [ "pwd" ] ])
     assert_includes result, workspace.root.to_s
   ensure
     FileUtils.rm_rf(workspace.root.to_s)
