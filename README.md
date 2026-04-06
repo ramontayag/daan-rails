@@ -126,6 +126,27 @@ cp .env{,.local}
 | `ANTHROPIC_API_KEY` | Yes | Anthropic API key for LLM calls |
 | `DAAN_SELF_REPO` | No | GitHub repo this app lives in (e.g. `ramontayag/daan-rails`). When set, agents with a workspace know what repo to clone when asked to modify the team or themselves. |
 
+# Quick Start
+
+Once you've set up your environment and created `.env.local` with your `ANTHROPIC_API_KEY`, you can start developing:
+
+1. **Start the development server:**
+   ```bash
+   bin/dev
+   ```
+
+2. **Run tests to verify everything works:**
+   ```bash
+   bin/ci
+   ```
+
+3. **Check the agent configuration:**
+   ```bash
+   grep "agent_name" config/agents/*.md
+   ```
+
+For details on modifying the Daan platform and agent configuration, see `AGENTS.md`.
+
 # Development
 
 ## Commit Conventions
