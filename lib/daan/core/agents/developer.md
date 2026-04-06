@@ -21,6 +21,17 @@ allowed_commands:
   - bin/rake
   - ruby
   - gem
+  - pwd
+  - rm
+  - mkdir
+  - cat
+  - cp
+  - mv
+  - echo
+  - sed
+  - sort
+  - cut
+  - xargs
 tools:
   - Daan::Core::Read
   - Daan::Core::Write
