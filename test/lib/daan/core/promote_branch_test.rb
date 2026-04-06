@@ -32,10 +32,12 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
       tool.define_singleton_method(:run!) { |*| nil }
       tool.define_singleton_method(:branch_exists_in_origin?) { |*| true }
       tool.define_singleton_method(:branch_already_merged?) { |*| true }
+      tool.define_singleton_method(:find_existing_pr) { |*| nil }
+      tool.define_singleton_method(:create_pr) { |*| "https://github.com/owner/repo/pull/1" }
       with_stub_agent_loader_sync do
         result = tool.execute(branch: "already-merged", tests_passed: true, repo_path: "daan-rails")
         assert_includes result, "already-merged"
-        assert_includes result, "pull request"
+        assert_includes result, "PR:"
       end
     end
   end
@@ -68,16 +70,46 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
     end
   end
 
+  test "dev: creates a PR and returns its URL in the success message" do
+    with_dev_tool do |tool|
+      tool.define_singleton_method(:run!) { |*| nil }
+      tool.define_singleton_method(:branch_exists_in_origin?) { |*| true }
+      tool.define_singleton_method(:branch_already_merged?) { |*| false }
+      tool.define_singleton_method(:branch_based_on_main?) { |*| true }
+      tool.define_singleton_method(:find_existing_pr) { |*| nil }
+      tool.define_singleton_method(:create_pr) { |*| "https://github.com/owner/repo/pull/99" }
+      with_stub_agent_loader_sync do
+        result = tool.execute(branch: "feature/new-thing", tests_passed: true, repo_path: "daan-rails")
+        assert_includes result, "https://github.com/owner/repo/pull/99"
+      end
+    end
+  end
+
+  test "dev: returns existing PR URL when one already exists for the branch" do
+    with_dev_tool do |tool|
+      tool.define_singleton_method(:run!) { |*| nil }
+      tool.define_singleton_method(:branch_exists_in_origin?) { |*| true }
+      tool.define_singleton_method(:branch_already_merged?) { |*| true }
+      tool.define_singleton_method(:find_existing_pr) { |*| "https://github.com/owner/repo/pull/55" }
+      with_stub_agent_loader_sync do
+        result = tool.execute(branch: "already-merged", tests_passed: true, repo_path: "daan-rails")
+        assert_includes result, "https://github.com/owner/repo/pull/55"
+      end
+    end
+  end
+
   test "dev: success message includes branch name and production hint" do
     with_dev_tool do |tool|
       tool.define_singleton_method(:run!) { |*| nil }
       tool.define_singleton_method(:branch_exists_in_origin?) { |*| true }
       tool.define_singleton_method(:branch_already_merged?) { |*| false }
       tool.define_singleton_method(:branch_based_on_main?) { |*| true }
+      tool.define_singleton_method(:find_existing_pr) { |*| nil }
+      tool.define_singleton_method(:create_pr) { |*| "https://github.com/owner/repo/pull/1" }
       with_stub_agent_loader_sync do
         result = tool.execute(branch: "feature/my-change", tests_passed: true, repo_path: "daan-rails")
         assert_includes result, "feature/my-change"
-        assert_includes result, "pull request"
+        assert_includes result, "PR:"
       end
     end
   end
@@ -86,6 +118,7 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
 
   test "prod: opens a pull request and returns the URL" do
     with_prod_tool do |tool|
+      tool.define_singleton_method(:find_existing_pr) { |*| nil }
       with_open3([ "https://github.com/owner/repo/pull/42\n", "", fake_status(true) ]) do
         result = tool.execute(branch: "feature/my-change", tests_passed: true, title: "My change", body: "Details")
         assert_equal "https://github.com/owner/repo/pull/42", result
