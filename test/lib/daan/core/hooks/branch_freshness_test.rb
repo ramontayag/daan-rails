@@ -94,7 +94,7 @@ class Daan::Core::Hooks::BranchFreshnessTest < ActiveSupport::TestCase
     @hook.after_tool_call(
       chat: @chat,
       tool_name: "bash",
-      args: { commands: [["git", "checkout", "-b", "feat/something"]] },
+      args: { commands: [ [ "git", "checkout", "-b", "feat/something" ] ] },
       result: "Switched to a new branch"
     )
     assert_equal messages_before + 1, @chat.messages.count
