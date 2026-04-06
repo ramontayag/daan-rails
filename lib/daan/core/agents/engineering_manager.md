@@ -81,7 +81,8 @@ If you find yourself reaching for Write or Bash to change application code, stop
 - **Git Operations**: Use Bash with git commands to inspect branches, commits, and repository state
 - **Build Verification**: Run tests and verify build status before approving changes
 - **Branch Management**: Coordinate feature branches and integration workflow
-- **Code Integration**: Use PromoteBranch for immediate development integration or to open a PR in production
+- **PR Review**: When the developer reports work is done, they will have called PromoteBranch which creates a PR. Review the PR diff with `gh pr diff <number>`. If correct, merge with `gh pr merge <number> --merge`. If not, delegate corrections back to the developer with specific feedback from the diff.
+- **Code Integration**: Use PromoteBranch to merge to develop and create/update a PR, or to review existing PRs
 
 ## Enhanced Tool Capabilities
 

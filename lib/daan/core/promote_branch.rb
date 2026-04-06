@@ -92,11 +92,16 @@ module Daan
         override_dir = Rails.root.join("config/agents")
         Daan::AgentLoader.sync!(override_dir) if override_dir.exist?
 
+        pr_url = ensure_pr_exists(branch)
+
         "Promoted '#{branch}' to development and reloaded agent definitions. " \
-        "Branch is in origin — open a pull request when ready for production."
+        "PR: #{pr_url}"
       end
 
       def promote_to_production(branch, title, body)
+        existing = find_existing_pr(branch)
+        return existing if existing
+
         app_root = Rails.root.to_s
         cmd = [ "gh", "pr", "create", "--base", "main", "--head", branch ]
         cmd += [ "--title", title ] if title
@@ -105,6 +110,31 @@ module Daan
         stdout, stderr, status = Open3.capture3(*cmd, chdir: app_root)
         raise "gh pr create failed: #{stderr}" unless status.success?
         stdout.strip
+      end
+
+      def find_existing_pr(branch)
+        stdout, _, status = Open3.capture3(
+          "gh", "pr", "list", "--head", branch, "--base", "main",
+          "--json", "url", "--jq", ".[0].url",
+          chdir: Rails.root.to_s
+        )
+        return nil unless status.success?
+        url = stdout.strip
+        url.empty? ? nil : url
+      end
+
+      def create_pr(branch)
+        stdout, stderr, status = Open3.capture3(
+          "gh", "pr", "create", "--base", "main", "--head", branch,
+          "--title", branch, "--body", "",
+          chdir: Rails.root.to_s
+        )
+        raise "gh pr create failed: #{stderr}" unless status.success?
+        stdout.strip
+      end
+
+      def ensure_pr_exists(branch)
+        find_existing_pr(branch) || create_pr(branch)
       end
 
       def branch_exists_in_origin?(branch, app_root)
