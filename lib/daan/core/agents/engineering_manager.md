@@ -16,6 +16,9 @@ allowed_commands:
   - tail
   - wc
   - diff
+  - pwd
+  - cat
+  - sort
 tools:
   # Core delegation and reporting
   - Daan::Core::DelegateTask
