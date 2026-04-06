@@ -16,6 +16,18 @@ jobs:
           echo "::error::PRs from 'develop' are not allowed. Use a feature branch (e.g. feat/*, fix/*)."
           exit 1
 
+      - name: Check PR title follows Conventional Commits
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(feat|fix|docs|style|refactor|test|chore)(\([a-z0-9_-]+\))?: .+'
+          if ! echo "$PR_TITLE" | grep -qE "$pattern"; then
+            echo "::error::PR title does not follow Conventional Commits: \"$PR_TITLE\""
+            echo "Expected: type(scope): description"
+            echo "Types: feat, fix, docs, style, refactor, test, chore"
+            exit 1
+          fi
+
   scan_ruby:
     runs-on: ubuntu-latest
 

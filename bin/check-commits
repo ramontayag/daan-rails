@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Validates that commit messages on this branch follow Conventional Commits.
+# Skipped on main/develop or when there are no commits ahead of main.
+
+branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+
+if [ -z "$branch" ] || [ "$branch" = "main" ] || [ "$branch" = "develop" ]; then
+  exit 0
+fi
+
+# Find merge base with main (works even if main is not checked out locally)
+base=$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main 2>/dev/null || echo "")
+
+if [ -z "$base" ]; then
+  exit 0
+fi
+
+commits=$(git log --format="%H %s" "$base..HEAD" 2>/dev/null || echo "")
+
+if [ -z "$commits" ]; then
+  exit 0
+fi
+
+# Conventional Commits pattern: type(scope): description  OR  type: description
+# Types from README: feat, fix, docs, style, refactor, test, chore
+pattern="^(feat|fix|docs|style|refactor|test|chore)(\([a-z0-9_-]+\))?: .+"
+
+errors=0
+
+while IFS= read -r line; do
+  sha="${line%% *}"
+  subject="${line#* }"
+  short_sha="${sha:0:7}"
+
+  if ! echo "$subject" | grep -qE "$pattern"; then
+    echo "ERROR: $short_sha does not follow Conventional Commits:"
+    echo "  \"$subject\""
+    echo "  Expected: type(scope): description"
+    echo "  Types: feat, fix, docs, style, refactor, test, chore"
+    echo ""
+    errors=$((errors + 1))
+  fi
+done <<< "$commits"
+
+if [ "$errors" -gt 0 ]; then
+  echo "Found $errors commit(s) with non-conventional messages."
+  echo "See README.md § Commit Conventions for the format."
+  exit 1
+fi

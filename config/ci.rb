@@ -2,6 +2,7 @@
 
 CI.run do
   step "Branch check", "bin/check-branch"
+  step "Commit message check", "bin/check-commits"
 
   step "Setup", "bin/setup --skip-server"
 
