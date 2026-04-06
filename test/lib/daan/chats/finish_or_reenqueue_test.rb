@@ -108,7 +108,7 @@ class Daan::Chats::FinishOrReenqueueTest < ActiveSupport::TestCase
   private
 
   def stub_force_report_back
-    Daan::Chats::ForceReportBack.stub(:call, ->(_chat) {}) do
+    Daan::Chats::ForceReportBack.stub(:call, ->(_chat) { }) do
       yield
     end
   end

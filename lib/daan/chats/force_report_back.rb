@@ -2,7 +2,7 @@
 module Daan
   module Chats
     class ForceReportBack
-      SUMMARY_PROMPT = "[System] You have reached your step limit. " \
+      SUMMARY_PROMPT = "#{Daan::SystemTag::PREFIX} You have reached your step limit. " \
         "You will not be able to use any more tools. " \
         "Please summarize what you have accomplished and any findings so far."
 
