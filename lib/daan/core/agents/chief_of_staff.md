@@ -1,6 +1,7 @@
 ---
 name: chief_of_staff
 display_name: Chief of Staff
+description: "Primary contact for the team. **Delegates** work to specialists. *Coordinates* priorities and reports outcomes."
 model: claude-haiku-4-5-20251001
 max_steps: 16
 delegates_to:

@@ -1,6 +1,14 @@
 <div id="agent_<%= agent.name %>" <%= debug_attributes_html %>>
   <%= link_to chat_agent_path(agent), class: item_classes, data: { testid: "agent-item" } do %>
     <span class="w-2 h-2 rounded-full <%= dot_classes %>"></span>
-    <span><%= agent.display_name %></span>
+    <% if rendered_description.present? %>
+      <%= render(PopoverComponent.new(
+        trigger_text: agent.display_name,
+        html_content: rendered_description,
+        css_classes: "hover:underline"
+      )) %>
+    <% else %>
+      <span><%= agent.display_name %></span>
+    <% end %>
   <% end %>
 </div>
