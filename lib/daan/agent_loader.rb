@@ -20,6 +20,7 @@ module Daan
       {
         name:          fm.fetch("name"),
         display_name:  fm.fetch("display_name"),
+        description:   fm.fetch("description", ""),
         model_name:    fm.fetch("model"),
         max_steps:     fm.fetch("max_steps"),
         system_prompt: system_prompt,

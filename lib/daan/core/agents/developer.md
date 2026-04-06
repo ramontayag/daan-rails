@@ -1,6 +1,7 @@
 ---
 name: developer
 display_name: Developer
+description: "Writes and modifies files. Executes **code** and `git` commands. Handles *technical* implementation with precision."
 model: claude-haiku-4-5-20251001
 max_steps: 50
 workspace: tmp/workspaces/developer

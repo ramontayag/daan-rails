@@ -1,0 +1,11 @@
+<div class="relative group">
+  <!-- Trigger element -->
+  <span class="cursor-help <%= css_classes %>"><%= trigger_text %></span>
+
+  <!-- Popover content - shown on hover -->
+  <div class="absolute z-50 hidden group-hover:block bg-white text-gray-900 border border-gray-300 rounded shadow-lg p-3 w-64 pointer-events-none group-hover:pointer-events-auto left-0 top-full mt-2">
+    <div class="prose prose-sm prose-gray max-w-none">
+      <%= display_content %>
+    </div>
+  </div>
+</div>

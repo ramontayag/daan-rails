@@ -1,4 +1,6 @@
 class AgentItemComponent < ViewComponent::Base
+  include MarkdownHelper
+
   def initialize(agent:, active: false, current_agent: nil)
     @agent = agent
     @active = active
@@ -51,5 +53,11 @@ class AgentItemComponent < ViewComponent::Base
       "data-agent-object-id" => agent.object_id.to_s,
       "data-current-agent-object-id" => current_agent&.object_id&.to_s
     }
+  end
+
+  def rendered_description
+    return "" if agent.description.blank?
+
+    render_markdown(agent.description)
   end
 end
