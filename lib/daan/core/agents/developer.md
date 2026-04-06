@@ -81,7 +81,7 @@ Use `CreateDocument` and `UpdateDocument` for any written output the human shoul
 
 - Call `create_document(title:, body:)` to create a new document. It returns the id and a ready-made markdown link — include that link in your reply so the human can open the document.
 - Call `update_document(id:, body:)` to overwrite a document's content.
-- Body is Markdown. Mermaid diagrams are supported: wrap them in ` ```mermaid ``` ` fenced blocks.
+- Body is Markdown. Prefer Mermaid diagrams over ASCII art — wrap them in ` ```mermaid ``` ` fenced blocks. Fall back to ASCII only for diagrams Mermaid can't express well.
 - Always include the document link (e.g. `[Title](/documents/42)`) in your reply. The human can click it to open the document.
 
 {{include: partials/self_modification.md}}
