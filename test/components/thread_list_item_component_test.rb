@@ -128,4 +128,28 @@ class ThreadListItemComponentTest < ActiveSupport::TestCase
     # Make sure the raw markdown syntax doesn't appear
     assert_not_includes rendered_content, "**should**"
   end
+
+  # Prose styling tests
+  test "applies prose styling classes to preview text" do
+    @chat.messages.create!(role: "user", content: "Use `code` in preview")
+    render_inline(ThreadListItemComponent.new(chat: @chat))
+    # Should have prose and prose-sm classes for styling
+    assert_includes rendered_content, 'class="prose prose-sm max-w-none line-clamp-2 text-gray-900"'
+  end
+
+  test "applies syntax-highlight controller for code highlighting" do
+    @chat.messages.create!(role: "user", content: "```ruby\nputs 'test'\n```")
+    render_inline(ThreadListItemComponent.new(chat: @chat))
+    # Should have syntax-highlight data controller
+    assert_includes rendered_content, 'data-controller="syntax-highlight"'
+  end
+
+  test "inline code has proper styling via prose" do
+    @chat.messages.create!(role: "user", content: "Use `require` for imports")
+    render_inline(ThreadListItemComponent.new(chat: @chat))
+    # Prose applies styling to <code> tags - check that code is rendered
+    assert_includes rendered_content, "<code>require</code>"
+    # Should be wrapped in prose div for styling
+    assert_includes rendered_content, "prose"
+  end
 end
