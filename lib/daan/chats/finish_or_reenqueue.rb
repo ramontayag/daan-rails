@@ -8,6 +8,7 @@ module Daan
           if agent.max_steps_reached?(step_count)
             tag = "[FinishOrReenqueue] chat_id=#{chat.id}"
             Rails.logger.info("#{tag} max steps reached (#{agent.max_steps}), blocking")
+            ForceReportBack.call(chat)
             Turbo::StreamsChannel.broadcast_replace_to(
               "chat_#{chat.id}",
               target: "typing_indicator",
