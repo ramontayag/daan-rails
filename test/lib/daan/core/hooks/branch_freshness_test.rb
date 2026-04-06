@@ -38,7 +38,7 @@ class Daan::Core::Hooks::BranchFreshnessTest < ActiveSupport::TestCase
   end
 
   test "does not inject message when branch is based on latest" do
-    @hook.define_singleton_method(:fetch_origin) { |*| nil }
+    @hook.define_singleton_method(:fetch_origin) { |*| true }
     @hook.define_singleton_method(:default_branch) { |*| "main" }
     @hook.define_singleton_method(:based_on_latest?) { |*| true }
 
@@ -85,6 +85,20 @@ class Daan::Core::Hooks::BranchFreshnessTest < ActiveSupport::TestCase
 
     assert_equal 1, @chat.messages.count
     assert_includes @chat.messages.last.content, "origin/master"
+  end
+
+  test "injects message when fetch fails (fail open)" do
+    @hook.define_singleton_method(:fetch_origin) { |*| false }
+    @hook.define_singleton_method(:default_branch) { |*| "main" }
+    messages_before = @chat.messages.count
+    @hook.after_tool_call(
+      chat: @chat,
+      tool_name: "bash",
+      args: { commands: [["git", "checkout", "-b", "feat/something"]] },
+      result: "Switched to a new branch"
+    )
+    assert_equal messages_before + 1, @chat.messages.count
+    assert_includes @chat.messages.last.content, "[SYSTEM]"
   end
 
   test "does not inject message when agent has no workspace" do

@@ -17,9 +17,9 @@ module Daan
           dir = args[:path] ? agent.workspace.resolve(args[:path]) : agent.workspace.root
           branch = default_branch(dir)
 
-          fetch_origin(dir)
-
-          return if based_on_latest?(branch, dir)
+          if fetch_origin(dir)
+            return if based_on_latest?(branch, dir)
+          end
 
           chat.messages.create!(
             role: "user",
@@ -41,7 +41,8 @@ module Daan
         end
 
         def fetch_origin(dir)
-          Open3.capture3("git", "fetch", "origin", chdir: dir.to_s)
+          _, _, status = Open3.capture3("git", "fetch", "origin", chdir: dir.to_s)
+          status.success?
         end
 
         def based_on_latest?(branch, dir)
