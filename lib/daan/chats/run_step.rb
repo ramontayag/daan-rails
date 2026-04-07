@@ -24,7 +24,7 @@ module Daan
         Turbo::StreamsChannel.broadcast_replace_to(
           "chat_#{chat.id}",
           target: "typing_indicator",
-          renderable: TypingIndicatorComponent.new(typing: false)
+          renderable: AgentActivityIndicatorComponent.new(status: nil)
         )
         begin
           NotifyParent.on_termination(chat, :failed)

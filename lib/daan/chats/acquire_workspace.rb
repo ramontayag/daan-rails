@@ -11,6 +11,11 @@ module Daan
           true
         else
           Rails.logger.info("[AcquireWorkspace] chat_id=#{chat.id} lock held for agent=#{chat.agent_name}, re-enqueuing in #{RETRY_DELAY}")
+          Turbo::StreamsChannel.broadcast_replace_to(
+            "chat_#{chat.id}",
+            target: "typing_indicator",
+            renderable: AgentActivityIndicatorComponent.new(status: :queued)
+          )
           LlmJob.set(wait: RETRY_DELAY).perform_later(chat)
           false
         end
