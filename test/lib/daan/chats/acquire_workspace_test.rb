@@ -14,8 +14,21 @@ class Daan::Chats::AcquireWorkspaceTest < ActiveSupport::TestCase
     @chat = Chat.create!(agent_name: "developer")
   end
 
-  test "returns true when lock is acquired" do
-    assert Daan::Chats::AcquireWorkspace.call(@chat)
+  test "returns acquire result when lock is acquired" do
+    result = Daan::Chats::AcquireWorkspace.call(@chat)
+    assert result
+    assert result.acquired?
+    assert_nil result.previous_holder_chat_id
+  end
+
+  test "returns result with previous holder when workspace changed hands" do
+    other_chat = Chat.create!(agent_name: "developer")
+    WorkspaceLock.acquire(chat: other_chat, agent_name: "developer")
+    WorkspaceLock.release(chat: other_chat, agent_name: "developer")
+
+    result = Daan::Chats::AcquireWorkspace.call(@chat)
+    assert result.acquired?
+    assert_equal other_chat.id, result.previous_holder_chat_id
   end
 
   test "returns false and re-enqueues when lock is held by another chat with active job" do
@@ -28,7 +41,7 @@ class Daan::Chats::AcquireWorkspaceTest < ActiveSupport::TestCase
       queue_name: "default",
       arguments: { "job_class" => "LlmJob", "arguments" => [ { "_aj_globalid" => gid } ] }.to_json
     )
-    assert_not Daan::Chats::AcquireWorkspace.call(@chat)
+    assert_nil Daan::Chats::AcquireWorkspace.call(@chat)
     assert_enqueued_with(job: LlmJob, args: [ @chat ])
   end
 

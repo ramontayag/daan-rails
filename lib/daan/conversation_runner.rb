@@ -17,7 +17,12 @@ module Daan
         return
       end
 
-      return unless Chats::AcquireWorkspace.call(chat)
+      acquire_result = Chats::AcquireWorkspace.call(chat)
+      return unless acquire_result
+
+      if acquire_result.previous_holder_chat_id
+        Chats::InjectWorkspaceOrientation.call(chat, agent.workspace)
+      end
 
       context_user_message_id = chat.messages.where(role: "user").maximum(:id)
 

@@ -16,7 +16,7 @@ module Daan
         tag = "[FinishOrReenqueue] chat_id=#{chat.id}"
         Rails.logger.info("#{tag} max steps reached (#{agent.max_steps}), blocking")
         ForceReportBack.call(chat)
-        dismiss_typing_indicator(chat)
+        dismiss_agent_activity_indicator(chat)
         chat.block! if chat.may_block?
         ReleaseWorkspace.call(chat)
         NotifyParent.on_termination(chat, :blocked)
@@ -32,7 +32,7 @@ module Daan
 
       def self.finish_conversation(chat, agent)
         tag = "[FinishOrReenqueue] chat_id=#{chat.id}"
-        dismiss_typing_indicator(chat)
+        dismiss_agent_activity_indicator(chat)
         chat.reload
         chat.finish! if chat.may_finish?
         ReleaseWorkspace.call(chat)
@@ -43,14 +43,14 @@ module Daan
       end
       private_class_method :finish_conversation
 
-      def self.dismiss_typing_indicator(chat)
+      def self.dismiss_agent_activity_indicator(chat)
         Turbo::StreamsChannel.broadcast_replace_to(
           "chat_#{chat.id}",
-          target: "typing_indicator",
+          target: "agent_activity_indicator",
           renderable: AgentActivityIndicatorComponent.new(status: nil)
         )
       end
-      private_class_method :dismiss_typing_indicator
+      private_class_method :dismiss_agent_activity_indicator
 
       def self.warn_approaching_step_limit(chat, remaining)
         return unless remaining == 3 && chat.parent_chat.present?

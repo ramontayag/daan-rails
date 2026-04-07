@@ -1,0 +1,91 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.anthropic.com/v1/messages
+    body:
+      encoding: UTF-8
+      string: '{"model":"claude-sonnet-4-20250514","messages":[{"role":"user","content":[{"type":"text","text":"[Sent
+        at: 2026-04-07T13:30:36Z]\n\nSay exactly: ok"}]}],"stream":false,"max_tokens":64000,"system":[{"type":"text","text":"You
+        are a developer.\n\nYou are talking directly to the human. Always confirm
+        your plan before starting work."}]}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      X-Api-Key:
+      - "<ANTHROPIC_API_KEY>"
+      Anthropic-Version:
+      - '2023-06-01'
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Tue, 07 Apr 2026 13:30:38 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Anthropic-Ratelimit-Input-Tokens-Limit:
+      - '2000000'
+      Anthropic-Ratelimit-Input-Tokens-Remaining:
+      - '2000000'
+      Anthropic-Ratelimit-Input-Tokens-Reset:
+      - '2026-04-07T13:30:37Z'
+      Anthropic-Ratelimit-Output-Tokens-Limit:
+      - '400000'
+      Anthropic-Ratelimit-Output-Tokens-Remaining:
+      - '400000'
+      Anthropic-Ratelimit-Output-Tokens-Reset:
+      - '2026-04-07T13:30:38Z'
+      Anthropic-Ratelimit-Requests-Limit:
+      - '20000'
+      Anthropic-Ratelimit-Requests-Remaining:
+      - '19999'
+      Anthropic-Ratelimit-Requests-Reset:
+      - '2026-04-07T13:30:37Z'
+      Anthropic-Ratelimit-Tokens-Limit:
+      - '2400000'
+      Anthropic-Ratelimit-Tokens-Remaining:
+      - '2400000'
+      Anthropic-Ratelimit-Tokens-Reset:
+      - '2026-04-07T13:30:37Z'
+      Request-Id:
+      - req_011CZpVXKMPGViAxhvhjJSUL
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Anthropic-Organization-Id:
+      - 77dfb819-a005-46a1-9627-212f8995b514
+      Server:
+      - cloudflare
+      X-Envoy-Upstream-Service-Time:
+      - '761'
+      Vary:
+      - Accept-Encoding
+      Server-Timing:
+      - x-originResponse;dur=763
+      Set-Cookie:
+      - _cfuvid=PwboR3RkVuv8Jlmca8bt8u3IP_2tbxyXGcVrPpPoEhw-1775568637.2678874-1.0.1.1-VYPgCnBlTd9VOn92EFXwerkCeTREGIKyBsRjUzKFFQ0;
+        HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com
+      X-Robots-Tag:
+      - none
+      Cf-Cache-Status:
+      - DYNAMIC
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Cf-Ray:
+      - 9e89634eec7cad67-MAD
+    body:
+      encoding: ASCII-8BIT
+      string: '{"model":"claude-sonnet-4-20250514","id":"msg_017nijaK2Qp8JqVHXgCvA5Qi","type":"message","role":"assistant","content":[{"type":"text","text":"ok"}],"stop_reason":"end_turn","stop_sequence":null,"stop_details":null,"usage":{"input_tokens":54,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":4,"service_tier":"standard","inference_geo":"not_available"}}'
+  recorded_at: Tue, 07 Apr 2026 13:30:38 GMT
+recorded_with: VCR 6.4.0

@@ -6,7 +6,7 @@
     <div id="messages">
       <%= render ChatMessageComponent.with_collection(chat_messages, results: tool_results, hide_tools: hide_tools) %>
     </div>
-    <div id="typing_indicator"></div>
+    <div id="agent_activity_indicator"></div>
   </div>
   <%= render ComposeBarComponent.new(action: chat_thread_messages_path(chat), readonly: readonly, input_id: "thread-panel-message-input") %>
 </div>
