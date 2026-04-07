@@ -13,8 +13,11 @@ module Daan
           chat.broadcast_chat_cost
           Chats::NotifyParent.on_completion(chat)
         end
+        Chats::ReleaseWorkspace.call(chat)
         return
       end
+
+      return unless Chats::AcquireWorkspace.call(chat)
 
       context_user_message_id = chat.messages.where(role: "user").maximum(:id)
 

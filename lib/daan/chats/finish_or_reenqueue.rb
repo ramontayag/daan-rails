@@ -18,6 +18,7 @@ module Daan
         ForceReportBack.call(chat)
         dismiss_typing_indicator(chat)
         chat.block! if chat.may_block?
+        ReleaseWorkspace.call(chat)
         NotifyParent.on_termination(chat, :blocked)
         chat.broadcast_agent_status
       end
@@ -34,6 +35,7 @@ module Daan
         dismiss_typing_indicator(chat)
         chat.reload
         chat.finish! if chat.may_finish?
+        ReleaseWorkspace.call(chat)
         Rails.logger.info("#{tag} finished status=#{chat.task_status} step=#{chat.step_count}/#{agent.max_steps}")
         chat.broadcast_agent_status
         chat.broadcast_chat_cost

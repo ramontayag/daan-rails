@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_27_173639) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_07_095453) do
   create_table "chat_steps", force: :cascade do |t|
     t.integer "chat_id", null: false
     t.datetime "created_at", null: false
@@ -121,6 +121,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_27_173639) do
     t.index ["tool_call_id"], name: "index_tool_calls_on_tool_call_id", unique: true
   end
 
+  create_table "workspace_locks", force: :cascade do |t|
+    t.string "agent_name", null: false
+    t.datetime "created_at", null: false
+    t.integer "holder_chat_id"
+    t.integer "previous_holder_chat_id"
+    t.datetime "updated_at", null: false
+    t.index ["agent_name"], name: "index_workspace_locks_on_agent_name", unique: true
+    t.index ["holder_chat_id"], name: "index_workspace_locks_on_holder_chat_id"
+    t.index ["previous_holder_chat_id"], name: "index_workspace_locks_on_previous_holder_chat_id"
+  end
+
   add_foreign_key "chat_steps", "chats"
   add_foreign_key "chats", "chats", column: "parent_chat_id"
   add_foreign_key "chats", "models"
@@ -131,4 +142,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_27_173639) do
   add_foreign_key "messages", "tool_calls"
   add_foreign_key "scheduled_tasks", "chats", column: "source_chat_id"
   add_foreign_key "tool_calls", "messages"
+  add_foreign_key "workspace_locks", "chats", column: "holder_chat_id"
+  add_foreign_key "workspace_locks", "chats", column: "previous_holder_chat_id"
 end
