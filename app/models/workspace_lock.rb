@@ -42,14 +42,26 @@ class WorkspaceLock < ApplicationRecord
   GRACE_PERIOD = 30.seconds
 
   def stale?
-    return true unless holder_chat&.in_progress?
-    return false if updated_at > GRACE_PERIOD.ago
+    tag = "[WorkspaceLock] holder_chat_id=#{holder_chat_id}"
+
+    unless holder_chat&.in_progress?
+      Rails.logger.info("#{tag} stale: chat not in_progress (status=#{holder_chat&.task_status})")
+      return true
+    end
+
+    if updated_at > GRACE_PERIOD.ago
+      Rails.logger.info("#{tag} not stale: within grace period (updated_at=#{updated_at})")
+      return false
+    end
 
     gid = holder_chat.to_global_id.to_s
     job_table = SolidQueue::Job.arel_table
-    !SolidQueue::Job
+    has_job = SolidQueue::Job
       .where(class_name: "LlmJob", finished_at: nil)
       .where(job_table[:arguments].matches("%\"_aj_globalid\":\"#{gid}\"%"))
       .exists?
+
+    Rails.logger.info("#{tag} grace expired (updated_at=#{updated_at}), has_job=#{has_job}")
+    !has_job
   end
 end
