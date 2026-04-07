@@ -15,6 +15,7 @@ class LlmJob < ApplicationJob
     Rails.logger.error("[LlmJob] failed chat_id=#{chat.id} agent=#{chat.agent_name} elapsed=#{elapsed}s error=#{e.class}: #{e.message}")
     chat.reload
     chat.fail! if chat.may_fail?
+    Daan::Chats::ReleaseWorkspace.call(chat)
     chat.broadcast_agent_status
     raise
   end
