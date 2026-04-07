@@ -20,7 +20,7 @@ module Daan
         chat.broadcast_agent_status
         Turbo::StreamsChannel.broadcast_replace_to(
           "chat_#{chat.id}",
-          target: "typing_indicator",
+          target: "agent_activity_indicator",
           renderable: AgentActivityIndicatorComponent.new(status: :typing)
         )
       end

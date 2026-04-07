@@ -30,8 +30,8 @@ class FocusPreservationTest < ApplicationSystemTestCase
     # Agent starts typing
     Turbo::StreamsChannel.broadcast_replace_to(
       "chat_#{@chat.id}",
-      target: "typing_indicator",
-      html: '<div id="typing_indicator"><p class="text-sm text-gray-400 italic px-4 py-1">Typing...</p></div>'
+      target: "agent_activity_indicator",
+      html: '<div id="agent_activity_indicator"><p class="text-sm text-gray-400 italic px-4 py-1">Typing...</p></div>'
     )
     assert_text "Typing..."
 

@@ -23,7 +23,7 @@ module Daan
         chat.broadcast_chat_cost
         Turbo::StreamsChannel.broadcast_replace_to(
           "chat_#{chat.id}",
-          target: "typing_indicator",
+          target: "agent_activity_indicator",
           renderable: AgentActivityIndicatorComponent.new(status: nil)
         )
         begin

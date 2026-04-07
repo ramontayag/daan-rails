@@ -8,16 +8,16 @@ module Daan
 
         if result.acquired?
           Rails.logger.info("[AcquireWorkspace] chat_id=#{chat.id} acquired lock for agent=#{chat.agent_name}")
-          true
+          result
         else
           Rails.logger.info("[AcquireWorkspace] chat_id=#{chat.id} lock held for agent=#{chat.agent_name}, re-enqueuing in #{RETRY_DELAY}")
           Turbo::StreamsChannel.broadcast_replace_to(
             "chat_#{chat.id}",
-            target: "typing_indicator",
+            target: "agent_activity_indicator",
             renderable: AgentActivityIndicatorComponent.new(status: :queued)
           )
           LlmJob.set(wait: RETRY_DELAY).perform_later(chat)
-          false
+          nil
         end
       end
     end
