@@ -162,15 +162,7 @@ class ChatTest < ActiveSupport::TestCase
       name: "Test Model",
       model_id: "test-model",
       provider: "test",
-      pricing: {
-        "text_tokens" => {
-          "standard" => {
-            "input_per_million" => 1.0,
-            "output_per_million" => 2.0,
-            "cached_input_per_million" => 0.1
-          }
-        }
-      }
+      pricing: build_pricing(input_per_million: 1.0, output_per_million: 2.0, cached_input_per_million: 0.1)
     )
 
     chat = chats(:hello_cos)
@@ -194,9 +186,7 @@ class ChatTest < ActiveSupport::TestCase
   test "total_cost_usd returns own cost when no sub_chats" do
     model = Model.create!(
       name: "Test Model", model_id: "test-model", provider: "test",
-      pricing: { "text_tokens" => { "standard" => {
-        "input_per_million" => 1.0, "output_per_million" => 2.0, "cached_input_per_million" => 0.1
-      } } }
+      pricing: build_pricing(input_per_million: 1.0, output_per_million: 2.0, cached_input_per_million: 0.1)
     )
     chat = chats(:hello_cos)
     chat.update!(model: model)
@@ -208,9 +198,7 @@ class ChatTest < ActiveSupport::TestCase
   test "total_cost_usd includes direct sub_chat costs" do
     model = Model.create!(
       name: "Test Model", model_id: "test-model", provider: "test",
-      pricing: { "text_tokens" => { "standard" => {
-        "input_per_million" => 1.0, "output_per_million" => 0.0, "cached_input_per_million" => 0.0
-      } } }
+      pricing: build_pricing
     )
     parent = Chat.create!(agent_name: "chief_of_staff", model: model)
     child  = Chat.create!(agent_name: "chief_of_staff", model: model, parent_chat: parent)
@@ -224,9 +212,7 @@ class ChatTest < ActiveSupport::TestCase
   test "total_cost_usd is recursive through grandchildren" do
     model = Model.create!(
       name: "Test Model", model_id: "test-model", provider: "test",
-      pricing: { "text_tokens" => { "standard" => {
-        "input_per_million" => 1.0, "output_per_million" => 0.0, "cached_input_per_million" => 0.0
-      } } }
+      pricing: build_pricing
     )
     grandparent = Chat.create!(agent_name: "chief_of_staff", model: model)
     parent      = Chat.create!(agent_name: "chief_of_staff", model: model, parent_chat: grandparent)
@@ -255,13 +241,7 @@ class ChatTest < ActiveSupport::TestCase
       model_id: "test-model",
       provider: "test",
       pricing: {
-        "text_tokens" => {
-          "standard" => {
-            "input_per_million" => 10.0,
-            "output_per_million" => 20.0,
-            "cached_input_per_million" => 1.0
-          }
-        }
+        **build_pricing(input_per_million: 10.0, output_per_million: 20.0, cached_input_per_million: 1.0)
       }
     )
 

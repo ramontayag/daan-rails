@@ -88,12 +88,13 @@ class Chat < ApplicationRecord
   end
 
   def estimated_cost_usd
-    return 0.0 unless model&.pricing&.dig("text_tokens", "standard")
+    rates = model&.pricing&.dig("data", "text_tokens", "standard", "values") ||
+            model&.pricing&.dig("text_tokens", "standard")
+    return 0.0 unless rates
 
-    pricing = model.pricing["text_tokens"]["standard"]
-    input_cost_per_million = pricing["input_per_million"] || 0
-    output_cost_per_million = pricing["output_per_million"] || 0
-    cached_input_cost_per_million = pricing["cached_input_per_million"] || 0
+    input_cost_per_million = rates["input_per_million"] || 0
+    output_cost_per_million = rates["output_per_million"] || 0
+    cached_input_cost_per_million = rates["cached_input_per_million"] || 0
 
     # Calculate costs in USD
     input_cost = (total_input_tokens.to_f / 1_000_000) * input_cost_per_million

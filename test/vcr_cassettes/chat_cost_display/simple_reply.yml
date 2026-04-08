@@ -1,0 +1,392 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.anthropic.com/v1/messages
+    body:
+      encoding: UTF-8
+      string: '{"model":"claude-haiku-4-5-20251001","messages":[{"role":"user","content":[{"type":"text","text":"[Sent
+        at: 2026-04-08T13:23:00Z]\n\nSay hello in one word"}]}],"stream":false,"max_tokens":64000,"tools":[{"name":"daan--core--delegate_task","description":"Delegate
+        a task or follow-up message to a sub-agent. Each agent has one persistent
+        thread — if a thread already exists, your message is added to it and the agent
+        continues from where they left off. For follow-ups to an existing thread,
+        keep the message brief; the agent already has the full context.","input_schema":{"type":"object","properties":{"agent_name":{"type":"string","description":"The
+        agent to delegate to (e.g. ''engineering_manager'', ''developer'')"},"task":{"type":"string","description":"The
+        task or follow-up message. For initial delegation, include full context. For
+        follow-ups to an existing thread, be brief — do not repeat what was already
+        sent."},"timeout_seconds":{"type":"number","description":"Override execution
+        timeout in seconds (default: 10, max: 1800)"}},"required":["agent_name","task"],"additionalProperties":false,"strict":true}},{"name":"daan--core--list_agents","description":"List
+        all registered agents on the team — their names, descriptions, and tools.
+        Use this to understand who is available and what each agent can do before
+        delegating.","input_schema":{"type":"object","properties":{"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":[]}},{"name":"daan--core--create_steps","description":"Create
+        a checklist of steps for the current task. Use this at the start of a task
+        to plan your work. Steps appear in your system prompt so you always see them.","input_schema":{"type":"object","properties":{"steps":{"type":"array","description":"Ordered
+        list of step titles","items":{"type":"string"}},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["steps"],"additionalProperties":false,"strict":true}},{"name":"daan--core--update_step","description":"Update
+        the status of a step in your checklist. Use the position number shown in your
+        system prompt.","input_schema":{"type":"object","properties":{"position":{"type":"string","description":"Position
+        number of the step to update"},"status":{"type":"string","description":"New
+        status: pending, in_progress, or completed"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["position","status"],"additionalProperties":false,"strict":true}},{"name":"daan--core--schedule_task","description":"Schedule
+        a one-shot task to fire a message to an agent at a future time. The agent
+        will receive the message as a new conversation thread. Use this for deferred
+        follow-ups such as ''check CI in 5 minutes'' or ''remind the team about the
+        standup tomorrow morning''.","input_schema":{"type":"object","properties":{"agent_name":{"type":"string","description":"The
+        agent who should receive the message (e.g. ''chief_of_staff'', ''developer'')"},"message":{"type":"string","description":"The
+        message to send to the agent when the task fires"},"run_at":{"type":"string","description":"When
+        to fire the task, as an ISO8601 datetime string (e.g. ''2026-03-27T09:00:00+01:00'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["agent_name","message","run_at"],"additionalProperties":false,"strict":true}},{"name":"MemoryWrite","description":"Store
+        content in persistent memory with structured metadata for semantic search
+        and retrieval.\n\nCRITICAL: ALL 8 required parameters MUST be provided. Do
+        NOT skip any. If you''re missing information, ask the user or infer reasonable
+        defaults.\n\nREQUIRED PARAMETERS (provide ALL 8):\n1. file_path - Where to
+        store (e.g., ''concept/ruby/classes.md'', ''skill/debugging/trace-errors.md'')\n2.
+        content - Pure markdown content (no frontmatter)\n3. title - Brief descriptive
+        title\n4. type - Entry category: \"concept\", \"fact\", \"skill\", or \"experience\"\n5.
+        confidence - How sure you are: \"high\", \"medium\", or \"low\"\n6. tags -
+        JSON string of array of search keywords (e.g., ''[\"ruby\", \"classes\", \"oop\"]'')
+        - be comprehensive!\n7. related - JSON string of array of related memory paths
+        (e.g., ''[\"memory://concept/ruby/modules.md\", \"memory://concept/ruby/classes.md\"]'')
+        or ''[]'' if none\n8. domain - Category like ''programming/ruby'', ''people'',
+        ''debugging''\n9. source - Where this came from: \"user\", \"documentation\",
+        \"experimentation\", or \"inference\"\n\nOPTIONAL (for skills only):\n- tools
+        - JSON string of array of tool names needed (e.g., ''[\"Read\", \"Edit\",
+        \"Bash\"]'') or ''[]'' if none\n- permissions - Tool restrictions hash or
+        {}\n\nPATH STRUCTURE (EXACTLY 4 TOP-LEVEL CATEGORIES - NEVER CREATE OTHERS):\nMemory
+        has EXACTLY 4 fixed top-level categories. ALL paths MUST start with one of
+        these:\n\n1. concept/{domain}/{name}.md - Abstract ideas (e.g., concept/ruby/classes.md)\n2.
+        fact/{subfolder}/{name}.md - Concrete info (e.g., fact/people/john.md)\n3.
+        skill/{domain}/{name}.md - How-to procedures (e.g., skill/debugging/api-errors.md)\n4.
+        experience/{name}.md - Lessons learned (e.g., experience/fixed-cors-bug.md)\n\nINVALID
+        (do NOT create): documentation/, reference/, tutorial/, knowledge/, notes/\nThese
+        categories do NOT exist. Use concept/, fact/, skill/, or experience/ instead.\n\nTAGS
+        ARE CRITICAL: Think \"What would I search for in 6 months?\" For skills especially,
+        be VERY comprehensive with tags - they''re your search index.\n\nEXAMPLES:\n-
+        For concept: tags: [''ruby'', ''oop'', ''classes'', ''inheritance'', ''methods'']\n-
+        For skill: tags: [''debugging'', ''api'', ''http'', ''errors'', ''trace'',
+        ''network'', ''rest'']\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        with .md extension (e.g., ''concept/ruby/classes.md'', ''fact/people/john.md'')"},"content":{"type":"string","description":"Content
+        to store (pure markdown, no frontmatter needed)"},"title":{"type":"string","description":"Brief
+        title describing the content"},"type":{"type":"string","description":"Entry
+        type: concept, fact, skill, or experience (matches category: concept/, fact/,
+        skill/, experience/)"},"confidence":{"type":"string","description":"Confidence
+        level: high, medium, or low (defaults to ''medium'' if not specified)"},"tags":{"type":"string","description":"JSON
+        string of array of tag strings for searching (e.g., ''[\"ruby\", \"oop\"]'')"},"related":{"type":"string","description":"JSON
+        string of array of related memory path strings (e.g., ''[\"memory://concept/ruby/modules.md\",
+        \"memory://concept/ruby/classes.md\"]'')"},"domain":{"type":"string","description":"Category/subcategory
+        (e.g., ''programming/ruby'', ''people'')"},"source":{"type":"string","description":"Source
+        of information: user, documentation, experimentation, or inference (defaults
+        to ''user'' if not specified)"},"tools":{"type":"string","description":"JSON
+        string of array of tool name strings required for this skill (e.g., ''[\"Read\",
+        \"Edit\", \"Bash\"]''). Only for type: skill"},"permissions":{"type":"object","description":"Tool
+        permission restrictions (same format as swarm config). Only for type: skill"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path","content","title","type","tags","related","domain"],"additionalProperties":false,"strict":true}},{"name":"MemoryRead","description":"Read
+        content from your memory storage and retrieve all associated metadata.\n\nREQUIRED:
+        Provide the file_path parameter - the path to the memory entry you want to
+        read.\n\n**Parameters:**\n- file_path (REQUIRED): Path to memory entry - MUST
+        start with concept/, fact/, skill/, or experience/\n\n**MEMORY STRUCTURE -
+        EXACTLY 4 Top-Level Categories (NEVER create others):**\nALL paths MUST start
+        with one of these 4 fixed categories:\n- concept/{domain}/{name}.md - Abstract
+        ideas (e.g., concept/ruby/classes.md)\n- fact/{subfolder}/{name}.md - Concrete
+        info (e.g., fact/people/john.md)\n- skill/{domain}/{name}.md - Procedures
+        (e.g., skill/debugging/api-errors.md)\n- experience/{name}.md - Lessons (e.g.,
+        experience/fixed-bug.md)\n\nINVALID: documentation/, reference/, tutorial/,
+        parallel/, analysis/, notes/\n\n**Returns:**\nJSON with two fields:\n- content:
+        Markdown content with line numbers (same format as Read tool)\n- metadata:
+        All metadata (title, type, tags, tools, permissions, confidence, etc.)\n\n**Examples:**\n-
+        MemoryRead(file_path: \"concept/ruby/classes.md\") - Read a concept\n- MemoryRead(file_path:
+        \"fact/people/john.md\") - Read a fact\n- MemoryRead(file_path: \"skill/debugging/api-errors.md\")
+        - Read a skill before loading it\n\n**Important:**\n- Always read entries
+        before editing them with MemoryEdit or MemoryMultiEdit\n- Line numbers in
+        output are for reference only - don''t include them when editing\n- Each read
+        is tracked to enforce read-before-edit patterns\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to read from memory - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/ruby/classes.md'', ''skill/debugging/api.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path"],"additionalProperties":false,"strict":true}},{"name":"MemoryEdit","description":"Perform
+        exact string replacements in memory entries (works like Edit tool but for
+        memory content).\n\nREQUIRED: Provide ALL THREE parameters - file_path, old_string,
+        and new_string.\n\n**Required Parameters:**\n- file_path (REQUIRED): Path
+        to memory entry - MUST start with concept/, fact/, skill/, or experience/\n-
+        old_string (REQUIRED): The exact text to replace - must match exactly including
+        all whitespace and indentation\n- new_string (REQUIRED): The replacement text
+        - must be different from old_string\n\n**MEMORY STRUCTURE (4 Fixed Categories
+        Only):**\n- concept/{domain}/{name}.md - Abstract ideas\n- fact/{subfolder}/{name}.md
+        - Concrete information\n- skill/{domain}/{name}.md - Procedures\n- experience/{name}.md
+        - Lessons\nINVALID: documentation/, reference/, analysis/, parallel/, tutorial/\n\n**Optional
+        Parameters:**\n- replace_all: Set to true to replace all occurrences (default:
+        false, replaces only first occurrence)\n\n**CRITICAL - Before Using This Tool:**\n1.
+        You MUST use MemoryRead on the entry first - edits without reading will FAIL\n2.
+        Copy text exactly from MemoryRead output, EXCLUDING the line number prefix\n3.
+        Line number format: \"    123→actual content\" - only use text AFTER the arrow\n4.
+        Preserve exact indentation and whitespace from the original content\n\n**How
+        It Works:**\n- If old_string appears once: replacement succeeds\n- If old_string
+        appears multiple times: FAILS unless replace_all=true\n- If old_string not
+        found: FAILS with helpful error\n- Make old_string unique by including more
+        surrounding context\n\n**Examples:**\n```\n# Update a fact\nMemoryEdit(\n  file_path:
+        \"fact/people/john.md\",\n  old_string: \"status: active\",\n  new_string:
+        \"status: inactive\"\n)\n\n# Update a skill\nMemoryEdit(\n  file_path: \"skill/debugging/api-errors.md\",\n  old_string:
+        \"TODO: Add error codes\",\n  new_string: \"Common error codes: 401, 403,
+        404, 500\",\n  replace_all: true\n)\n\n# Update a concept\nMemoryEdit(\n  file_path:
+        \"concept/ruby/classes.md\",\n  old_string: \"def calculate_total(items)\n  return
+        sum(items)\nend\",\n  new_string: \"def compute_sum(items)\n  items.sum\nend\"\n)\n```\n\n**Common
+        Mistakes to Avoid:**\n- Including line numbers in old_string or new_string\n-
+        Not reading the entry first with MemoryRead\n- Not matching whitespace exactly\n-
+        Trying to replace non-unique text without replace_all\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to memory entry - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/ruby/classes.md'', ''skill/debugging/api.md'')"},"old_string":{"type":"string","description":"The
+        exact text to replace (must match exactly including whitespace)"},"new_string":{"type":"string","description":"The
+        text to replace it with (must be different from old_string)"},"replace_all":{"type":"string","description":"Replace
+        all occurrences of old_string (default false)"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path","old_string","new_string"],"additionalProperties":false,"strict":true}},{"name":"MemoryDelete","description":"Delete
+        entries from your memory storage when they''re no longer needed.\n\nREQUIRED:
+        Provide the file_path parameter - the path to the entry you want to delete.\n\n**Parameters:**\n-
+        file_path (REQUIRED): Path to memory entry - MUST start with concept/, fact/,
+        skill/, or experience/\n\n**MEMORY STRUCTURE (4 Fixed Categories Only):**\n-
+        concept/{domain}/{name}.md - Abstract ideas\n- fact/{subfolder}/{name}.md
+        - Concrete information\n- skill/{domain}/{name}.md - Procedures\n- experience/{name}.md
+        - Lessons\nINVALID: documentation/, reference/, analysis/, parallel/, temp/,
+        notes/\n\n**When to Delete:**\n- Outdated information that''s been superseded\n-
+        Completed tasks that are no longer relevant\n- Duplicate entries (after consolidating)\n-
+        Test data or temporary calculations\n- Low-quality entries with minimal value\n\n**IMPORTANT
+        WARNINGS:**\n- Deletion is PERMANENT - content cannot be recovered\n- Think
+        carefully before deleting - consider if it might be useful later\n- Use MemoryDefrag
+        to identify candidates for deletion (find_archival_candidates, compact)\n-
+        Consider reading the entry first to verify you''re deleting the right thing\n\n**Examples:**\n```\n#
+        Delete outdated concept\nMemoryDelete(file_path: \"concept/old-api/deprecated.md\")\n\n#
+        Delete completed experience\nMemoryDelete(file_path: \"experience/temp-experiment.md\")\n\n#
+        Delete obsolete fact\nMemoryDelete(file_path: \"fact/orgs/defunct-company.md\")\n```\n\n**Best
+        Practices:**\n1. Read entry first with MemoryRead to confirm it''s the right
+        one\n2. Use MemoryDefrag(action: \"find_archival_candidates\") to find old,
+        unused entries\n3. Delete in batches during memory maintenance sessions\n4.
+        Keep entries that might provide historical context\n5. Don''t delete skills
+        unless you''re certain they won''t be needed\n\n**Alternative to Deletion:**\nInstead
+        of deleting, consider:\n- Updating entries to mark them as archived\n- Consolidating
+        multiple entries into one comprehensive entry\n- Moving entries to an \"archive/\"
+        hierarchy for later reference\n","input_schema":{"type":"object","properties":{"file_path":{"type":"string","description":"Path
+        to delete from memory - MUST start with concept/, fact/, skill/, or experience/
+        (e.g., ''concept/old-api/deprecated.md'', ''experience/temp.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["file_path"],"additionalProperties":false,"strict":true}},{"name":"MemoryGlob","description":"Search
+        your memory entries using glob patterns (like filesystem glob).\n\nREQUIRED:
+        Provide the pattern parameter - the glob pattern to match entries against.\n\n**Parameters:**\n-
+        pattern (REQUIRED): Glob pattern with wildcards (e.g., ''**/*.txt'', ''parallel/*/task_*'',
+        ''skill/**'')\n\n**Glob Pattern Syntax (Standard Ruby Glob):**\n- `*` - matches
+        .md files at a single directory level (e.g., ''fact/*'' → fact/*.md)\n- `**`
+        - matches .md files recursively at any depth (e.g., ''fact/**'' → fact/**/*.md)\n-
+        `?` - matches any single character (e.g., ''task_?'')\n- `[abc]` - matches
+        any character in the set (e.g., ''task_[0-9]'')\n\n**Returns:**\nList of matching
+        .md memory entries with:\n- Full memory:// path\n- Entry title\n- Size in
+        bytes/KB/MB\n\n**Note**: Only returns .md files (actual memory entries), not
+        directory entries.\n\n**MEMORY STRUCTURE (4 Fixed Categories Only):**\nALL
+        patterns MUST target one of these 4 categories:\n- concept/{domain}/** - Abstract
+        ideas\n- fact/{subfolder}/** - Concrete information\n- skill/{domain}/** -
+        Procedures\n- experience/** - Lessons\nINVALID: documentation/, reference/,
+        parallel/, analysis/, tutorial/\n\n**Common Use Cases:**\n```\n# Find direct
+        .md files in fact/\nMemoryGlob(pattern: \"fact/*\")\nResult: fact/api.md (only
+        direct children, not nested)\n\n# Find ALL facts recursively\nMemoryGlob(pattern:
+        \"fact/**\")\nResult: fact/api.md, fact/people/john.md, fact/people/jane.md,
+        ...\n\n# Find all skills recursively\nMemoryGlob(pattern: \"skill/**\")\nResult:
+        skill/debugging/api-errors.md, skill/meta/deep-learning.md, ...\n\n# Find
+        all concepts in a domain\nMemoryGlob(pattern: \"concept/ruby/**\")\nResult:
+        concept/ruby/classes.md, concept/ruby/modules.md, ...\n\n# Find direct files
+        in fact/people/\nMemoryGlob(pattern: \"fact/people/*\")\nResult: fact/people/john.md,
+        fact/people/jane.md (not fact/people/teams/x.md)\n\n# Find all experiences\nMemoryGlob(pattern:
+        \"experience/**\")\nResult: experience/fixed-cors-bug.md, experience/optimization.md,
+        ...\n\n# Find debugging skills recursively\nMemoryGlob(pattern: \"skill/debugging/**\")\nResult:
+        skill/debugging/api-errors.md, skill/debugging/performance.md, ...\n\n# Find
+        all entries (all categories)\nMemoryGlob(pattern: \"**/*\")\nResult: All .md
+        entries across all 4 categories\n```\n\n**Understanding * vs **:**\n- `fact/*`
+        matches only direct .md files: fact/api.md\n- `fact/**` matches ALL .md files
+        recursively: fact/api.md, fact/people/john.md, ...\n- To explore subdirectories,
+        use recursive pattern and examine returned paths\n\n**When to Use MemoryGlob:**\n-
+        Discovering what''s in a memory hierarchy\n- Finding all entries matching
+        a naming convention\n- Locating related entries by path pattern\n- Exploring
+        memory structure before reading specific entries\n- Batch operations preparation
+        (find all, then process each)\n\n**Combining with Other Tools:**\n1. Use MemoryGlob
+        to find candidates\n2. Use MemoryRead to examine specific entries\n3. Use
+        MemoryEdit/MemoryDelete to modify/remove them\n\n**Tips:**\n- Start with broad
+        patterns and narrow down\n- Use `**` for recursive searching entire hierarchies\n-
+        Combine with MemoryGrep if you need content-based search\n- Check entry sizes
+        to identify large entries\n","input_schema":{"type":"object","properties":{"pattern":{"type":"string","description":"Glob
+        pattern - target concept/, fact/, skill/, or experience/ only (e.g., ''skill/**'',
+        ''concept/ruby/*'', ''fact/people/*.md'')"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["pattern"],"additionalProperties":false,"strict":true}},{"name":"MemoryGrep","description":"Search
+        your memory content using regular expression patterns (like grep).\n\nREQUIRED:
+        Provide the pattern parameter - the regex pattern to search for in entry content.\n\nMEMORY
+        STRUCTURE: Searches across all 4 fixed categories (concept/, fact/, skill/,
+        experience/)\nNO OTHER top-level categories exist.\n\n**Required Parameters:**\n-
+        pattern (REQUIRED): Regular expression pattern to search for (e.g., ''status:
+        pending'', ''TODO.*urgent'', ''\\btask_\\d+\\b'')\n\n**Optional Parameters:**\n-
+        path: Limit search to specific path (e.g., ''concept/'', ''fact/api-design/'',
+        ''skill/ruby'')\n- case_insensitive: Set to true for case-insensitive search
+        (default: false)\n- output_mode: Choose output format - ''files_with_matches''
+        (default), ''content'', or ''count''\n\n**Output Modes Explained:**\n1. **files_with_matches**
+        (default): Just shows which entries contain matches\n   - Fast and efficient
+        for discovery\n   - Use when you want to know WHERE matches exist\n\n2. **content**:
+        Shows matching lines with line numbers\n   - See the actual matching content\n   -
+        Use when you need to read the matches in context\n\n3. **count**: Shows how
+        many matches in each entry\n   - Quantify occurrences\n   - Use for statistics
+        or finding entries with most matches\n\n**Regular Expression Syntax:**\n-
+        Literal text: ''status: pending''\n- Any character: ''task.done''\n- Character
+        classes: ''[0-9]+'' (digits), ''[a-z]+'' (lowercase)\n- Word boundaries: ''\\btodo\\b''
+        (exact word)\n- Anchors: ''^Start'' (line start), ''end$'' (line end)\n- Quantifiers:
+        ''*'' (0+), ''+'' (1+), ''?'' (0 or 1), ''{3}'' (exactly 3)\n- Alternation:
+        ''pending|in-progress|blocked''\n\n**Path Parameter - Directory-Style Filtering:**\nThe
+        path parameter works just like searching in directories:\n- ''concept/'' -
+        Search only concept entries\n- ''fact/api-design'' - Search only in fact/api-design
+        (treats as directory)\n- ''fact/api-design/'' - Same as above\n- ''skill/ruby/blocks.md''
+        - Search only that specific file\n\n**Examples:**\n```\n# Find entries containing
+        \"TODO\" (case-sensitive)\nMemoryGrep(pattern: \"TODO\")\n\n# Search only
+        in concepts\nMemoryGrep(pattern: \"TODO\", path: \"concept/\")\n\n# Search
+        in a specific subdirectory\nMemoryGrep(pattern: \"endpoint\", path: \"fact/api-design\")\n\n#
+        Search a specific file\nMemoryGrep(pattern: \"lambda\", path: \"skill/ruby/blocks.md\")\n\n#
+        Find entries with any status (case-insensitive)\nMemoryGrep(pattern: \"status:\",
+        case_insensitive: true)\n\n# Show actual content of matches in skills only\nMemoryGrep(pattern:
+        \"error|warning|failed\", path: \"skill/\", output_mode: \"content\")\n\n#
+        Count how many times \"completed\" appears in experiences\nMemoryGrep(pattern:
+        \"completed\", path: \"experience/\", output_mode: \"count\")\n\n# Find task
+        numbers in facts\nMemoryGrep(pattern: \"task_\\d+\", path: \"fact/\")\n\n#
+        Find incomplete tasks\nMemoryGrep(pattern: \"^- \\[ \\]\", output_mode: \"content\")\n\n#
+        Find entries mentioning specific functions\nMemoryGrep(pattern: \"\\bprocess_data\\(\")\n```\n\n**Use
+        Cases:**\n- Finding entries by keyword or phrase\n- Locating TODO items or
+        action items\n- Searching for error messages or debugging info\n- Finding
+        entries about specific code/functions\n- Identifying patterns in your memory\n-
+        Content-based discovery (vs MemoryGlob''s path-based discovery)\n\n**Combining
+        with Other Tools:**\n1. Use MemoryGrep to find entries containing specific
+        content\n2. Use MemoryRead to examine full entries\n3. Use MemoryEdit to update
+        the found content\n\n**Tips:**\n- Start with simple literal patterns before
+        using complex regex\n- Use case_insensitive=true for broader matches\n- Use
+        path parameter to limit search scope (faster and more precise)\n- Use output_mode=\"content\"
+        to see context around matches\n- Escape special regex characters with backslash:
+        \\. \\* \\? \\[ \\]\n- Test patterns on a small set before broad searches\n-
+        Use word boundaries (\\b) for exact word matching\n","input_schema":{"type":"object","properties":{"pattern":{"type":"string","description":"Regular
+        expression pattern to search for"},"path":{"type":"string","description":"Limit
+        search to specific path (e.g., ''concept/'', ''fact/api-design/'', ''skill/ruby/blocks.md'')"},"case_insensitive":{"type":"boolean","description":"Set
+        to true for case-insensitive search (default: false)"},"output_mode":{"type":"string","description":"Output
+        mode: ''files_with_matches'' (default), ''content'', or ''count''"},"timeout_seconds":{"type":"number","description":"Override
+        execution timeout in seconds (default: 10, max: 1800)"}},"required":["pattern"],"additionalProperties":false,"strict":true}}],"system":[{"type":"text","text":"You
+        are the Chief of Staff for the Daan agent team. You are the human''s primary
+        contact. You receive requests, delegate work to appropriate team members,
+        and report results back to the human.\n\n**Autonomy principle**: Resolve questions
+        at the level they arise. Before escalating, search memory, try alternate approaches,
+        and make reasonable assumptions. If you''re genuinely stuck on something your
+        delegator would know, ask them — but exhaust your own resources first. When
+        you receive questions from agents you''ve delegated to, absorb and answer
+        them at your level rather than passing them up. The goal is that questions
+        get resolved within the team, not forwarded to the human.\n\n**Confirm before
+        executing.** When you receive a task, restate what you plan to do before starting
+        work. If anything is unclear or ambiguous, ask — don''t assume. Use `CreateSteps`
+        to outline your plan and wait for confirmation before proceeding. For short,
+        obvious tasks a brief restatement in your reply is enough. When working directly
+        with the human, always confirm your plan. When delegated by another agent
+        with clear, specific instructions, proceed without waiting — but still ask
+        if something is genuinely unclear. If a follow-up message corrects or narrows
+        the original task, treat it as a replacement — do not combine it with the
+        earlier instructions.\n\n**Reporting back**: If you have a `report_back` tool,
+        send interim reports as you make progress rather than waiting until everything
+        is done. Don''t risk running out of turns with nothing reported.\n\nBefore
+        delegating, search memory for relevant context about the human''s preferences,
+        past decisions, or similar tasks. Use what you find to write a richer delegation
+        brief — so the team has what they need to act independently.\n\nWhen you need
+        to delegate a task and are unsure who to assign it to, call ListAgents first
+        to get a current view of the team — their roles and capabilities.\n\nWhen
+        a report comes back, present it in terms of outcomes and decisions made, not
+        process. Use memory to frame results around what the human has previously
+        cared about. After each interaction, write or update memories that capture
+        what the human seemed satisfied or dissatisfied with.\n\nWhen you receive
+        a task:\n\n**For Technical Work:**\n1. Use DelegateTask with agent_name \"engineering_manager\"
+        to assign development, coding, or technical tasks.\n2. Let the human know
+        you''ve delegated and will update them when results are in.\n3. When the Engineering
+        Manager''s report arrives in this thread, synthesize it and respond to the
+        human clearly and concisely.\n\n**For Agent Management Work:**\n1. Use DelegateTask
+        with agent_name \"agent_resource_manager\" to assign tasks related to creating
+        new agents, modifying existing agents, or managing the agent team structure.\n2.
+        Let the human know you''ve delegated and will update them when results are
+        in.\n3. When the Agent Resource Manager''s report arrives in this thread,
+        synthesize it and respond to the human clearly and concisely.\n\nYour response
+        after receiving a report is your final message in this cycle.\n\nUse MemoryWrite
+        to preserve important context, decisions, and patterns you encounter. Use
+        MemoryGrep or MemoryGlob to search past memory before starting a task. If
+        a memory contradicts information you have encountered, correct it with MemoryEdit
+        or remove it with MemoryDelete.\n\nYou are talking directly to the human.
+        Always confirm your plan before starting work."}]}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      X-Api-Key:
+      - "<ANTHROPIC_API_KEY>"
+      Anthropic-Version:
+      - '2023-06-01'
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Wed, 08 Apr 2026 13:23:02 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Anthropic-Ratelimit-Input-Tokens-Limit:
+      - '4000000'
+      Anthropic-Ratelimit-Input-Tokens-Remaining:
+      - '3996000'
+      Anthropic-Ratelimit-Input-Tokens-Reset:
+      - '2026-04-08T13:23:02Z'
+      Anthropic-Ratelimit-Output-Tokens-Limit:
+      - '800000'
+      Anthropic-Ratelimit-Output-Tokens-Remaining:
+      - '800000'
+      Anthropic-Ratelimit-Output-Tokens-Reset:
+      - '2026-04-08T13:23:02Z'
+      Anthropic-Ratelimit-Requests-Limit:
+      - '20000'
+      Anthropic-Ratelimit-Requests-Remaining:
+      - '19999'
+      Anthropic-Ratelimit-Requests-Reset:
+      - '2026-04-08T13:23:01Z'
+      Anthropic-Ratelimit-Tokens-Limit:
+      - '4800000'
+      Anthropic-Ratelimit-Tokens-Remaining:
+      - '4796000'
+      Anthropic-Ratelimit-Tokens-Reset:
+      - '2026-04-08T13:23:02Z'
+      Request-Id:
+      - req_011CZrNkeSPrTYUof2Gu9tz9
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Anthropic-Organization-Id:
+      - 77dfb819-a005-46a1-9627-212f8995b514
+      Server:
+      - cloudflare
+      X-Envoy-Upstream-Service-Time:
+      - '802'
+      Vary:
+      - Accept-Encoding
+      Server-Timing:
+      - x-originResponse;dur=812
+      Set-Cookie:
+      - _cfuvid=zjwV5py9EoB6_pd0qmpZ.um2NQhp4mz13eJIlS395dA-1775654581.6226318-1.0.1.1-.gBjkqwiZcsp_LUWDDX62wMnez7Mgt9MUPBVz93CaqM;
+        HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com
+      X-Robots-Tag:
+      - none
+      Cf-Cache-Status:
+      - DYNAMIC
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Cf-Ray:
+      - 9e91958f2ce40422-MAD
+    body:
+      encoding: ASCII-8BIT
+      string: '{"model":"claude-haiku-4-5-20251001","id":"msg_01CmAEpipdkNdcLR66FwM6qa","type":"message","role":"assistant","content":[{"type":"text","text":"Hello!"}],"stop_reason":"end_turn","stop_sequence":null,"stop_details":null,"usage":{"input_tokens":8318,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":5,"service_tier":"standard","inference_geo":"not_available"}}'
+  recorded_at: Wed, 08 Apr 2026 13:23:02 GMT
+recorded_with: VCR 6.4.0

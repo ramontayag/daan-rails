@@ -9,15 +9,7 @@ class ThreadPanelComponentTest < ViewComponent::TestCase
       name: "Test Model",
       model_id: "test-model",
       provider: "test",
-      pricing: {
-        "text_tokens" => {
-          "standard" => {
-            "input_per_million" => 1.0,
-            "output_per_million" => 2.0,
-            "cached_input_per_million" => 0.1
-          }
-        }
-      }
+      pricing: build_pricing(input_per_million: 1.0, output_per_million: 2.0, cached_input_per_million: 0.1)
     )
 
     @chat = Chat.create!(agent_name: @agent.name, model: @model)

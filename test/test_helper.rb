@@ -32,6 +32,14 @@ module ActiveSupport
       Daan::Core::Agent.new(name: name, model_name: "claude-haiku-4-5-20251001", max_steps: 10, **overrides)
     end
 
+    def build_pricing(input_per_million: 1.0, output_per_million: 0.0, cached_input_per_million: 0.0)
+      { "data" => { "text_tokens" => { "standard" => { "values" => {
+        "input_per_million" => input_per_million,
+        "output_per_million" => output_per_million,
+        "cached_input_per_million" => cached_input_per_million
+      } } } } }
+    end
+
     def fake_anthropic_response(text: "ok")
       {
         id: "msg_fake",

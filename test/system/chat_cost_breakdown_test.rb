@@ -8,9 +8,7 @@ class ChatCostBreakdownTest < ApplicationSystemTestCase
     @model = Model.find_or_create_by!(model_id: "test-cost-model") do |m|
       m.name = "Test Model"
       m.provider = "test"
-      m.pricing = { "text_tokens" => { "standard" => {
-        "input_per_million" => 1.0, "output_per_million" => 0.0, "cached_input_per_million" => 0.0
-      } } }
+      m.pricing = build_pricing
     end
 
     @parent = Chat.create!(agent_name: "chief_of_staff", model: @model)
