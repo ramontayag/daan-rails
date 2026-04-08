@@ -31,13 +31,7 @@ module Daan
 
       DENIED_BINARIES = %w[sh bash zsh dash ksh csh tcsh fish].freeze
 
-      ALLOWED_COMMANDS = %w[
-        cd git gh ls grep find head tail wc diff pwd cat sort
-        bundle bin/rubocop bin/rails bin/rake bin/ci ruby gem
-        rm mkdir cp mv echo sed cut xargs
-      ].freeze
-
-      def initialize(workspace: nil, chat: nil, allowed_commands: ALLOWED_COMMANDS, **)
+      def initialize(workspace: nil, chat: nil, allowed_commands: Daan::Core.configuration.allowed_commands, **)
         @workspace        = workspace
         @allowed_commands = allowed_commands
       end

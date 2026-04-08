@@ -46,6 +46,7 @@ gem "tailwindcss-rails", "~> 4.0"
 gem "view_component"
 gem "front_matter_parser"
 gem "aasm"
+gem "gem_config"
 # swarm_sdk 2.7.x patches RubyLLM::Chat#initialize to set @on = nil, but
 # ruby_llm 1.14.0 (upstream and our fork) still uses @on[:new_message] etc.
 # internally. Keep these pinned until ruby_llm drops @on and swarm_sdk 2.7.x

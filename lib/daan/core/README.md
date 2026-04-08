@@ -4,9 +4,16 @@ Core agent infrastructure. Agents are defined in `agents/*.md`, loaded at boot v
 
 ## Allowed Commands
 
-`Daan::Core::Bash` exposes a shell tool to agents. A global allowlist (`Bash::ALLOWED_COMMANDS`) defines which binaries are available. Agents inherit the full list by default.
+`Daan::Core::Bash` exposes a shell tool to agents. The host app configures which binaries are available at boot:
 
-Restrict an agent to a subset via `allowed_commands` in its frontmatter:
+```ruby
+# config/initializers/daan.rb
+Daan::Core.configure do |c|
+  c.allowed_commands = %w[git gh ls cat bundle bin/rails]
+end
+```
+
+Agents inherit the full configured list by default. Restrict an agent to a subset via `allowed_commands` in its frontmatter:
 
 ```yaml
 # agents/developer.md
@@ -15,7 +22,7 @@ allowed_commands:
   - gh
 ```
 
-When `allowed_commands` is omitted, the agent gets every command in the global list. When set, it must be a strict subset — declaring a command not in the global list raises `ArgumentError` at load time.
+When `allowed_commands` is omitted, the agent gets every command in the configured list. When set, it must be a strict subset — declaring a command not in the configured list raises `ArgumentError` at load time.
 
 ## Hooks
 

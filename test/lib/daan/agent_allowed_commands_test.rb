@@ -34,7 +34,8 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
     assert instance.singleton_class.ancestors.include?(Daan::Core::SafeExecute)
   end
 
-  test "Bash uses universal ALLOWED_COMMANDS by default" do
+  test "Bash uses configured allowed_commands by default" do
+    Daan::Core.configure { |c| c.allowed_commands = %w[pwd] }
     workspace = Daan::Workspace.new(Dir.mktmpdir)
     tool = Daan::Core::Bash.new(workspace: workspace)
     result = tool.execute(commands: [ [ "pwd" ] ])
@@ -43,16 +44,18 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
     FileUtils.rm_rf(workspace.root.to_s)
   end
 
-  test "effective_allowed_commands returns global list when agent has no allowed_commands" do
+  test "effective_allowed_commands returns configured list when agent has no allowed_commands" do
+    Daan::Core.configure { |c| c.allowed_commands = %w[git gh ls] }
     agent = Daan::Agent.new(
       name: "test", display_name: "Test",
       model_name: "claude-sonnet-4-20250514",
       system_prompt: "You help.", max_steps: 5
     )
-    assert_equal Daan::Core::Bash::ALLOWED_COMMANDS, agent.effective_allowed_commands
+    assert_equal %w[git gh ls], agent.effective_allowed_commands
   end
 
   test "effective_allowed_commands returns agent list when set" do
+    Daan::Core.configure { |c| c.allowed_commands = %w[git gh ls] }
     agent = Daan::Agent.new(
       name: "test", display_name: "Test",
       model_name: "claude-sonnet-4-20250514",
@@ -62,7 +65,8 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
     assert_equal %w[git gh], agent.effective_allowed_commands
   end
 
-  test "raises at construction when agent declares command not in global list" do
+  test "raises at construction when agent declares command not in configured list" do
+    Daan::Core.configure { |c| c.allowed_commands = %w[git gh] }
     error = assert_raises(ArgumentError) do
       Daan::Agent.new(
         name: "test", display_name: "Test",
@@ -75,6 +79,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
   end
 
   test "tools passes effective_allowed_commands to Bash" do
+    Daan::Core.configure { |c| c.allowed_commands = %w[echo pwd git] }
     workspace = Daan::Workspace.new(Dir.mktmpdir)
     agent = Daan::Agent.new(
       name: "test", display_name: "Test",
