@@ -1,12 +1,10 @@
 class CreateMessagesFts < ActiveRecord::Migration[8.1]
   def up
-    execute <<~SQL
-      CREATE VIRTUAL TABLE messages_fts USING fts5(
-        content,
-        content='messages',
-        content_rowid='id'
-      );
-    SQL
+    create_virtual_table :messages_fts, :fts5, [
+      "content",
+      "content='messages'",
+      "content_rowid='id'"
+    ]
 
     execute <<~SQL
       CREATE TRIGGER messages_fts_ai AFTER INSERT ON messages
@@ -43,6 +41,10 @@ class CreateMessagesFts < ActiveRecord::Migration[8.1]
     execute "DROP TRIGGER IF EXISTS messages_fts_au"
     execute "DROP TRIGGER IF EXISTS messages_fts_ad"
     execute "DROP TRIGGER IF EXISTS messages_fts_ai"
-    execute "DROP TABLE IF EXISTS messages_fts"
+    drop_virtual_table :messages_fts, :fts5, [
+      "content",
+      "content='messages'",
+      "content_rowid='id'"
+    ]
   end
 end

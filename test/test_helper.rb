@@ -23,6 +23,12 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
+    parallelize_setup do
+      # schema.rb can't represent SQLite triggers, so recreate FTS triggers
+      # in each parallel worker's database.
+      Daan::Core::FtsTriggers.create(ActiveRecord::Base.connection)
+    end
+
     setup    { Daan::Core::AgentRegistry.clear; Daan::Core::Hook::Registry.clear; Daan::Core.configuration.reset }
     teardown { Daan::Core::AgentRegistry.clear; Daan::Core::Hook::Registry.clear; Daan::Core.configuration.reset }
 
