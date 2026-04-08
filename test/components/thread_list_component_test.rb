@@ -4,8 +4,8 @@ class ThreadListComponentTest < ActiveSupport::TestCase
   include ViewComponent::TestHelpers
 
   setup do
-    @agent = Daan::AgentRegistry.register(
-      Daan::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
+    @agent = Daan::Core::AgentRegistry.register(
+      Daan::Core::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
                       model_name: "claude-3-5-haiku-20241022", system_prompt: "p", max_steps: 10)
     )
     @agent.define_singleton_method(:busy?) { false }

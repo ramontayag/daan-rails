@@ -3,7 +3,7 @@ require "application_system_test_case"
 class PerspectiveSwitchingTest < ApplicationSystemTestCase
   setup do
     Chat.destroy_all
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
     @em_workspace = Rails.root.join("tmp", "workspaces", "engineering_manager")
     FileUtils.mkdir_p(@em_workspace)
   end

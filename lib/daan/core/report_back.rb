@@ -14,17 +14,17 @@ module Daan
       def execute(message:)
         parent_chat = @chat.parent_chat
         unless parent_chat
-          current_agent = Daan::AgentRegistry.find(@chat.agent_name)
-          Daan::CreateMessage.call(@chat, role: "assistant", content: "#{current_agent.display_name}: #{message}", broadcast_action: :append)
+          current_agent = Daan::Core::AgentRegistry.find(@chat.agent_name)
+          Daan::Core::CreateMessage.call(@chat, role: "assistant", content: "#{current_agent.display_name}: #{message}", broadcast_action: :append)
           return "Message displayed to the user directly."
         end
 
-        current_agent = Daan::AgentRegistry.find(@chat.agent_name)
-        Daan::CreateMessage.call(parent_chat, role: "user",
-                                 content: "#{Daan::SystemTag::PREFIX} #{current_agent.display_name} reported back: #{message}",
+        current_agent = Daan::Core::AgentRegistry.find(@chat.agent_name)
+        Daan::Core::CreateMessage.call(parent_chat, role: "user",
+                                 content: "#{Daan::Core::SystemTag::PREFIX} #{current_agent.display_name} reported back: #{message}",
                                  visible: false)
 
-        parent_agent = Daan::AgentRegistry.find(parent_chat.agent_name)
+        parent_agent = Daan::Core::AgentRegistry.find(parent_chat.agent_name)
         "Report sent to #{parent_agent.display_name}."
       end
     end

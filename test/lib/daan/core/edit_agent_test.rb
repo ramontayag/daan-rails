@@ -29,7 +29,7 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
 
   teardown do
     FileUtils.rm_rf(@test_agents_dir) if @test_agents_dir&.exist?
-    Daan::AgentRegistry.clear
+    Daan::Core::AgentRegistry.clear
   end
 
   test "returns error for nonexistent agent" do
@@ -207,6 +207,6 @@ class Daan::Core::EditAgentTest < ActiveSupport::TestCase
     result = @tool.execute(agent_name: "registry_edit_test", display_name: "Updated Registry Test")
 
     assert_includes result, "Successfully updated agent 'registry_edit_test'"
-    assert_equal "Updated Registry Test", Daan::AgentRegistry.find("registry_edit_test").display_name
+    assert_equal "Updated Registry Test", Daan::Core::AgentRegistry.find("registry_edit_test").display_name
   end
 end

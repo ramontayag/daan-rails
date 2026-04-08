@@ -4,9 +4,9 @@ require "tmpdir"
 class Daan::Core::Hooks::BranchFreshnessTest < ActiveSupport::TestCase
   setup do
     @tmpdir = Dir.mktmpdir
-    workspace = Daan::Workspace.new(@tmpdir)
-    Daan::AgentRegistry.register(
-      Daan::Agent.new(name: "test_agent", display_name: "T", model_name: "m",
+    workspace = Daan::Core::Workspace.new(@tmpdir)
+    Daan::Core::AgentRegistry.register(
+      Daan::Core::Agent.new(name: "test_agent", display_name: "T", model_name: "m",
                       system_prompt: "s", max_steps: 1, workspace: workspace)
     )
     @chat = Chat.create!(agent_name: "test_agent")
@@ -102,9 +102,9 @@ class Daan::Core::Hooks::BranchFreshnessTest < ActiveSupport::TestCase
   end
 
   test "does not inject message when agent has no workspace" do
-    Daan::AgentRegistry.clear
-    Daan::AgentRegistry.register(
-      Daan::Agent.new(name: "test_agent", display_name: "T", model_name: "m",
+    Daan::Core::AgentRegistry.clear
+    Daan::Core::AgentRegistry.register(
+      Daan::Core::Agent.new(name: "test_agent", display_name: "T", model_name: "m",
                       system_prompt: "s", max_steps: 1, workspace: nil)
     )
 

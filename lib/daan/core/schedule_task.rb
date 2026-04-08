@@ -17,7 +17,7 @@ module Daan
       end
 
       def execute(agent_name:, message:, run_at:)
-        Daan::AgentRegistry.find(agent_name)
+        Daan::Core::AgentRegistry.find(agent_name)
 
         parsed_run_at = begin
           Time.iso8601(run_at)
@@ -35,7 +35,7 @@ module Daan
         )
 
         "Scheduled task ##{task.id} created. Agent '#{agent_name}' will receive the message at #{parsed_run_at.iso8601}."
-      rescue Daan::AgentNotFoundError
+      rescue Daan::Core::AgentNotFoundError
         "Error: agent '#{agent_name}' not found in the registry."
       end
     end

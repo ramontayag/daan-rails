@@ -11,7 +11,7 @@ module Daan
       end
 
       def execute
-        agents = Daan::AgentRegistry.all
+        agents = Daan::Core::AgentRegistry.all
         return "No agents are currently registered." if agents.empty?
 
         agents.map do |agent|

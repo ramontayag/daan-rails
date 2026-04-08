@@ -4,7 +4,7 @@ require "test_helper"
 class ChatsControllerTest < ActionDispatch::IntegrationTest
   setup do
     Chat.destroy_all
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
   end
 
   test "GET /chat shows sidebar with agents" do

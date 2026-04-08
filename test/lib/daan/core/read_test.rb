@@ -4,7 +4,7 @@ require "test_helper"
 class Daan::Core::ReadTest < ActiveSupport::TestCase
   setup do
     dir = Dir.mktmpdir
-    @workspace = Daan::Workspace.new(dir)
+    @workspace = Daan::Core::Workspace.new(dir)
     @tool = Daan::Core::Read.new(workspace: @workspace)
     File.write(File.join(dir, "hello.txt"), "Hello, world!")
   end

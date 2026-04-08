@@ -4,7 +4,7 @@ require "test_helper"
 class Daan::Core::WriteTest < ActiveSupport::TestCase
   setup do
     dir = Dir.mktmpdir
-    @workspace = Daan::Workspace.new(dir)
+    @workspace = Daan::Core::Workspace.new(dir)
     @tool = Daan::Core::Write.new(workspace: @workspace)
   end
 

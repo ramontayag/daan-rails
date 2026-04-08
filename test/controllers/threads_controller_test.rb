@@ -5,8 +5,8 @@ class ThreadsControllerTest < ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
 
   setup do
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
-    @agent = Daan::AgentRegistry.find("chief_of_staff")
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    @agent = Daan::Core::AgentRegistry.find("chief_of_staff")
   end
 
   test "GET shows thread panel with messages" do

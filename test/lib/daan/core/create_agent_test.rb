@@ -13,7 +13,7 @@ class Daan::Core::CreateAgentTest < ActiveSupport::TestCase
 
   teardown do
     FileUtils.rm_rf(@test_agents_dir) if @test_agents_dir.exist?
-    Daan::AgentRegistry.clear
+    Daan::Core::AgentRegistry.clear
   end
 
   test "creates a basic agent with minimal parameters" do
@@ -111,7 +111,7 @@ class Daan::Core::CreateAgentTest < ActiveSupport::TestCase
     )
 
     assert_includes result, "Successfully created agent 'registry_test'"
-    assert_equal "Registry Test", Daan::AgentRegistry.find("registry_test").display_name
+    assert_equal "Registry Test", Daan::Core::AgentRegistry.find("registry_test").display_name
   end
 
   test "handles empty arrays correctly" do

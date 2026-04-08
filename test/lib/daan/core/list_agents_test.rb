@@ -3,7 +3,7 @@ require "test_helper"
 
 class Daan::Core::ListAgentsTest < ActiveSupport::TestCase
   test "returns formatted list of all registered agents" do
-    agent = Daan::Agent.new(
+    agent = Daan::Core::Agent.new(
       name: "developer",
       display_name: "Developer",
       model_name: "claude-sonnet-4-20250514",
@@ -11,7 +11,7 @@ class Daan::Core::ListAgentsTest < ActiveSupport::TestCase
       max_steps: 10,
       base_tools: [ Daan::Core::Read ]
     )
-    Daan::AgentRegistry.register(agent)
+    Daan::Core::AgentRegistry.register(agent)
 
     tool = Daan::Core::ListAgents.new
     result = tool.execute

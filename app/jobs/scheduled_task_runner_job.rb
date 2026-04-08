@@ -2,7 +2,7 @@ class ScheduledTaskRunnerJob < ApplicationJob
   queue_as :default
 
   def perform(task)
-    agent = Daan::AgentRegistry.find(task.agent_name)
+    agent = Daan::Core::AgentRegistry.find(task.agent_name)
 
     chat = if task.source_chat.present?
       task.source_chat.tap { |c| c.continue! if c.completed? || c.failed? || c.blocked? }

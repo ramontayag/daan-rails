@@ -6,13 +6,13 @@ class Daan::Core::DelegateTaskTest < ActiveSupport::TestCase
 
   setup do
     RubyLLM::Models.instance.load_from_json!
-    Daan::AgentRegistry.register(
-      Daan::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
+    Daan::Core::AgentRegistry.register(
+      Daan::Core::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
                       model_name: "gpt-5.4", system_prompt: "p", max_steps: 10,
                       delegates_to: [ "engineering_manager" ])
     )
-    Daan::AgentRegistry.register(
-      Daan::Agent.new(name: "engineering_manager", display_name: "Engineering Manager",
+    Daan::Core::AgentRegistry.register(
+      Daan::Core::Agent.new(name: "engineering_manager", display_name: "Engineering Manager",
                       model_name: "gpt-5.4", system_prompt: "p", max_steps: 10)
     )
     @parent_chat = Chat.create!(agent_name: "chief_of_staff")
@@ -86,12 +86,12 @@ class Daan::Core::DelegateTaskTest < ActiveSupport::TestCase
   end
 
   test "assigns the target agent's model to the new sub-chat" do
-    Daan::AgentRegistry.register(
-      Daan::Agent.new(name: "developer", display_name: "Developer",
+    Daan::Core::AgentRegistry.register(
+      Daan::Core::Agent.new(name: "developer", display_name: "Developer",
                       model_name: "claude-haiku-4-5-20251001", system_prompt: "p", max_steps: 10)
     )
-    Daan::AgentRegistry.register(
-      Daan::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
+    Daan::Core::AgentRegistry.register(
+      Daan::Core::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
                       model_name: "claude-haiku-4-5-20251001", system_prompt: "p", max_steps: 10,
                       delegates_to: [ "engineering_manager", "developer" ])
     )
@@ -105,13 +105,13 @@ class Daan::Core::DelegateTaskTest < ActiveSupport::TestCase
   end
 
   test "raises when target agent is in delegates_to but absent from registry" do
-    Daan::AgentRegistry.register(
-      Daan::Agent.new(name: "ghost_delegator", display_name: "Ghost",
+    Daan::Core::AgentRegistry.register(
+      Daan::Core::Agent.new(name: "ghost_delegator", display_name: "Ghost",
                       model_name: "m", system_prompt: "p", max_steps: 5,
                       delegates_to: [ "phantom_agent" ])
     )
     ghost_chat = Chat.create!(agent_name: "ghost_delegator")
     tool = Daan::Core::DelegateTask.new(chat: ghost_chat)
-    assert_raises(Daan::AgentNotFoundError) { tool.execute(agent_name: "phantom_agent", task: "do it") }
+    assert_raises(Daan::Core::AgentNotFoundError) { tool.execute(agent_name: "phantom_agent", task: "do it") }
   end
 end

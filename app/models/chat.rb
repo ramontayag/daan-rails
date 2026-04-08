@@ -53,7 +53,7 @@ class Chat < ApplicationRecord
   end
 
   def agent
-    Daan::AgentRegistry.find(agent_name)
+    Daan::Core::AgentRegistry.find(agent_name)
   end
 
   def step_count

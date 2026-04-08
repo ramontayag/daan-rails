@@ -22,8 +22,8 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
-    setup    { Daan::AgentRegistry.clear; Daan::Core::Hook::Registry.clear; Daan::Core.configuration.reset }
-    teardown { Daan::AgentRegistry.clear; Daan::Core::Hook::Registry.clear; Daan::Core.configuration.reset }
+    setup    { Daan::Core::AgentRegistry.clear; Daan::Core::Hook::Registry.clear; Daan::Core.configuration.reset }
+    teardown { Daan::Core::AgentRegistry.clear; Daan::Core::Hook::Registry.clear; Daan::Core.configuration.reset }
 
     private
 

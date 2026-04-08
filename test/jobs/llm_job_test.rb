@@ -4,7 +4,7 @@ require "test_helper"
 class LlmJobTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
   setup do
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
     @chat = Chat.create!(agent_name: "chief_of_staff")
     @chat.messages.create!(role: "user", content: "Say exactly: hello")
   end
@@ -41,7 +41,7 @@ class LlmJobTest < ActiveSupport::TestCase
   end
 
   test "fails chat gracefully when ConversationRunner raises" do
-    Daan::ConversationRunner.stub(:call, ->(_) { raise "LLM exploded" }) do
+    Daan::Core::ConversationRunner.stub(:call, ->(_) { raise "LLM exploded" }) do
       assert_raises(RuntimeError) do
         LlmJob.perform_now(@chat)
       end

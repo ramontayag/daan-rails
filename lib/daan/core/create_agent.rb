@@ -88,9 +88,9 @@ module Daan
 
         # Reload the agent registry to include the new agent
         begin
-          definition = Daan::AgentLoader.parse(agent_file)
-          agent = Daan::Agent.new(**definition)
-          Daan::AgentRegistry.register(agent)
+          definition = Daan::Core::AgentLoader.parse(agent_file)
+          agent = Daan::Core::Agent.new(**definition)
+          Daan::Core::AgentRegistry.register(agent)
 
           "Successfully created agent '#{agent_name}' (#{display_name})"
         rescue => e

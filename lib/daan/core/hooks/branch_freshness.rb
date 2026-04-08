@@ -11,7 +11,7 @@ module Daan
           return unless commands.is_a?(Array)
           return unless commands.any? { |cmd| cmd.is_a?(Array) && cmd[0] == "git" && cmd[1] == "checkout" && cmd[2] == "-b" }
 
-          agent = Daan::AgentRegistry.find(chat.agent_name)
+          agent = Daan::Core::AgentRegistry.find(chat.agent_name)
           return unless agent&.workspace
 
           dir = args[:path] ? agent.workspace.resolve(args[:path]) : agent.workspace.root
@@ -23,7 +23,7 @@ module Daan
 
           chat.messages.create!(
             role: "user",
-            content: "#{Daan::SystemTag::PREFIX} New branch created but it is not based on the latest origin/#{branch}. " \
+            content: "#{Daan::Core::SystemTag::PREFIX} New branch created but it is not based on the latest origin/#{branch}. " \
                      "Run: git fetch origin && git rebase origin/#{branch}",
             visible: false
           )

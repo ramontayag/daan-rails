@@ -6,7 +6,7 @@ class LlmJob < ApplicationJob
     Rails.logger.info("[LlmJob] start chat_id=#{chat.id} agent=#{chat.agent_name} status=#{chat.task_status}")
     started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-    Daan::ConversationRunner.call(chat)
+    Daan::Core::ConversationRunner.call(chat)
 
     elapsed = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at).round(1)
     Rails.logger.info("[LlmJob] done chat_id=#{chat.id} agent=#{chat.agent_name} elapsed=#{elapsed}s")
@@ -15,7 +15,7 @@ class LlmJob < ApplicationJob
     Rails.logger.error("[LlmJob] failed chat_id=#{chat.id} agent=#{chat.agent_name} elapsed=#{elapsed}s error=#{e.class}: #{e.message}")
     chat.reload
     chat.fail! if chat.may_fail?
-    Daan::Chats::ReleaseWorkspace.call(chat)
+    Daan::Core::Chats::ReleaseWorkspace.call(chat)
     chat.broadcast_agent_status
     raise
   end

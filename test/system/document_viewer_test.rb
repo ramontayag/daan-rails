@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class DocumentViewerTest < ApplicationSystemTestCase
   setup do
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
     ActiveJob::Base.queue_adapter = :test
 
     @chat = Chat.create!(agent_name: "chief_of_staff")

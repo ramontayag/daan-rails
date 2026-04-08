@@ -4,8 +4,8 @@ class ThreadPanelHeaderComponentTest < ActiveSupport::TestCase
   include ViewComponent::TestHelpers
 
   setup do
-    Daan::AgentRegistry.register(
-      Daan::Agent.new(
+    Daan::Core::AgentRegistry.register(
+      Daan::Core::Agent.new(
         name: "developer", display_name: "Developer",
         model_name: "claude-sonnet-4-20250514",
         system_prompt: "You code.", max_steps: 10

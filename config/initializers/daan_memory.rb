@@ -26,5 +26,5 @@ end)
 
 # Boot the shared memory storage. The ONNX model loads on first embed call, not here.
 Rails.application.config.after_initialize do
-  Daan::Memory.storage
+  Daan::Core::Memory.storage
 end

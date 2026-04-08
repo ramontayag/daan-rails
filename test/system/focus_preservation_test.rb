@@ -3,8 +3,8 @@ require "application_system_test_case"
 class FocusPreservationTest < ApplicationSystemTestCase
   setup do
     Chat.destroy_all
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
-    @agent = Daan::AgentRegistry.find("chief_of_staff")
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    @agent = Daan::Core::AgentRegistry.find("chief_of_staff")
     @chat = Chat.create!(agent_name: @agent.name)
     @chat.messages.create!(role: "user", content: "Hello", visible: true)
     @chat.messages.create!(role: "assistant", content: "Hi there", visible: true)

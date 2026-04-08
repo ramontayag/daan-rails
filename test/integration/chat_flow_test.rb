@@ -5,7 +5,7 @@ class ChatFlowTest < ActionDispatch::IntegrationTest
 
   setup do
     Chat.destroy_all
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
   end
 
   test "sidebar shows loaded agents" do
@@ -16,7 +16,7 @@ class ChatFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "full flow: send message, job enqueued, message saved" do
-    agent = Daan::AgentRegistry.find("chief_of_staff")
+    agent = Daan::Core::AgentRegistry.find("chief_of_staff")
 
     assert_enqueued_with(job: LlmJob) do
       post chat_agent_threads_path(agent), params: { message: { content: "Hello CoS!" } }
@@ -33,7 +33,7 @@ class ChatFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "full flow with LLM response: assistant message saved and chat completed" do
-    agent = Daan::AgentRegistry.find("chief_of_staff")
+    agent = Daan::Core::AgentRegistry.find("chief_of_staff")
 
     VCR.use_cassette("llm_job/chief_of_staff_hello") do
       perform_enqueued_jobs do
@@ -52,7 +52,7 @@ class ChatFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "system messages are not rendered in the thread view" do
-    agent = Daan::AgentRegistry.find("chief_of_staff")
+    agent = Daan::Core::AgentRegistry.find("chief_of_staff")
     chat = Chat.create!(agent_name: agent.name)
     chat.messages.create!(role: "user", content: "Hello")
     chat.messages.create!(role: "system", content: "You are the Chief of Staff...")

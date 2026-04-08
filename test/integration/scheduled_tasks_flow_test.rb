@@ -3,7 +3,7 @@ require "test_helper"
 class ScheduledTasksFlowTest < ActionDispatch::IntegrationTest
   setup do
     ScheduledTask.destroy_all
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
   end
 
   # ---- index ----

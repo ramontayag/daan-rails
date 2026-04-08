@@ -3,8 +3,8 @@ require "test_helper"
 
 class Daan::Core::UpdateDocumentTest < ActiveSupport::TestCase
   setup do
-    Daan::AgentRegistry.register(
-      Daan::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
+    Daan::Core::AgentRegistry.register(
+      Daan::Core::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
                       model_name: "m", system_prompt: "p", max_steps: 10)
     )
     @chat = Chat.create!(agent_name: "chief_of_staff")

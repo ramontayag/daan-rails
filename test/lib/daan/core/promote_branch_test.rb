@@ -207,6 +207,6 @@ class Daan::Core::PromoteBranchTest < ActiveSupport::TestCase
   end
 
   def with_stub_agent_loader_sync
-    Daan::AgentLoader.stub(:sync!, nil) { yield }
+    Daan::Core::AgentLoader.stub(:sync!, nil) { yield }
   end
 end

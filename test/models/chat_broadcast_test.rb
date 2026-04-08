@@ -5,8 +5,8 @@ class ChatBroadcastTest < ActiveSupport::TestCase
   include ActionCable::TestHelper
 
   setup do
-    Daan::AgentRegistry.clear
-    Daan::AgentRegistry.register(Daan::Agent.new(
+    Daan::Core::AgentRegistry.clear
+    Daan::Core::AgentRegistry.register(Daan::Core::Agent.new(
       name: "chief_of_staff", display_name: "CoS",
       model_name: "claude-3-5-haiku-20241022", system_prompt: "p", max_steps: 10
     ))
@@ -41,7 +41,7 @@ class ChatBroadcastTest < ActiveSupport::TestCase
       @chat.stub(:with_instructions, @chat) do
         @chat.stub(:step, step_response) do
           assert_broadcasts("agents", 2) do
-            Daan::ConversationRunner.call(@chat)
+            Daan::Core::ConversationRunner.call(@chat)
           end
         end
       end
@@ -53,7 +53,7 @@ class ChatBroadcastTest < ActiveSupport::TestCase
       @chat.stub(:with_instructions, @chat) do
         @chat.stub(:step, ->(*) { raise "LLM error" }) do
           assert_broadcasts("agents", 2) do
-            assert_raises(RuntimeError) { Daan::ConversationRunner.call(@chat) }
+            assert_raises(RuntimeError) { Daan::Core::ConversationRunner.call(@chat) }
           end
         end
       end

@@ -8,6 +8,6 @@ class PerspectivePickerComponent < ViewComponent::Base
   attr_reader :current_perspective
 
   def agents
-    Daan::AgentRegistry.all
+    Daan::Core::AgentRegistry.all
   end
 end
