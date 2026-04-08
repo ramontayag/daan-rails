@@ -22,6 +22,13 @@ Vertical slices of Shape A (Event-Driven Agent Team). Each slice ends in demo-ab
 | **V8** | CoS discovers team | NA1, NA10 | "Who is on your team?" → CoS calls ListAgents, describes all agents |
 | **V9** | Developer self-modifies in dev | NA2, NA5, NA7, NA8 | Developer makes a code change, pushes branch, MergeBranchToSelf → visible immediately |
 | **V10** | ARM self-modifies agent definitions | NA6 (updated), NA9 | CoS asks ARM to add QA Engineer → ARM clones, CreateAgent, commits, pushes, merges → new agent in sidebar |
+| **V11** | Chat search | A4 (SearchChats, ReadChat), FTS5 | "Have we discussed authentication before?" → agent searches history, finds prior thread, reports context |
+
+---
+
+## V11: Chat Search
+
+See [docs/plans/chat-search-plan.md](plans/chat-search-plan.md) for full slice detail.
 
 ---
 

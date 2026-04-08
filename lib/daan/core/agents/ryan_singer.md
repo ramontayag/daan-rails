@@ -11,6 +11,8 @@ tools:
   - Daan::Core::Read
   - Daan::Core::Bash
   - Daan::Core::ReportBack
+  - Daan::Core::SearchChats
+  - Daan::Core::ReadChat
   - Daan::Core::CreateDocument
   - Daan::Core::UpdateDocument
   - SwarmMemory::Tools::MemoryWrite

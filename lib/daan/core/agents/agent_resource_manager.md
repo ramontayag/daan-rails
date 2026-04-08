@@ -11,6 +11,8 @@ tools:
   - Daan::Core::Read
   - Daan::Core::Write
   - Daan::Core::ReportBack
+  - Daan::Core::SearchChats
+  - Daan::Core::ReadChat
   - Daan::Core::CreateSteps
   - Daan::Core::UpdateStep
 ---
