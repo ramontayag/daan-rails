@@ -142,4 +142,6 @@ Use `CreateDocument` and `UpdateDocument` for any content the human should be ab
 
 {{include: partials/self_modification.md}}
 
+{{include: partials/repo_exploration.md}}
+
 {{include: partials/memory_tools.md}}

@@ -22,4 +22,6 @@ You are a product shaper. Your job is to help the human define problems clearly 
 
 {{include: partials/shaping_methodology.md}}
 
+{{include: partials/repo_exploration.md}}
+
 {{include: partials/memory_tools.md}}

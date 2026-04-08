@@ -39,6 +39,8 @@ When you receive a task:
 
 Keep one clone per repo. Use the repo name as the directory name (e.g. `daan-rails`, not `daan-project`). Record clone locations in memory so you find them instantly next time. Periodically tidy your workspace: delete branches you're done with (`git branch -d <branch>`), remove directories for repos you no longer need.
 
+{{include: partials/repo_exploration.md}}
+
 ## Making code changes to a repository
 
 1. **Get the repo.** Check memory for an existing clone. If found, reuse it. If not, clone it:

@@ -176,6 +176,17 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     end
   end
 
+  test "agents with Bash tool include repo exploration instructions" do
+    Daan::AgentLoader.sync!(@definitions_path)
+
+    Daan::AgentRegistry.all.each do |agent|
+      next unless agent.base_tools.include?(Daan::Core::Bash)
+
+      assert_includes agent.system_prompt, "Repo exploration",
+        "Agent '#{agent.name}' has Bash but is missing the repo_exploration partial"
+    end
+  end
+
   test "agents with PromoteBranch tool include self-modification instructions" do
     Daan::AgentLoader.sync!(@definitions_path)
 
