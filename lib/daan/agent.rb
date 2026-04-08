@@ -13,16 +13,16 @@ module Daan
     end
 
     def validate_allowed_commands!
-      invalid = allowed_commands - Core::Bash::ALLOWED_COMMANDS
+      invalid = allowed_commands - Core.configuration.allowed_commands
       return if invalid.empty?
 
       raise ArgumentError,
         "Agent '#{name}' declares disallowed commands: #{invalid.join(', ')}. " \
-        "Permitted: #{Core::Bash::ALLOWED_COMMANDS.join(', ')}"
+        "Permitted: #{Core.configuration.allowed_commands.join(', ')}"
     end
 
     def effective_allowed_commands
-      allowed_commands || Core::Bash::ALLOWED_COMMANDS
+      allowed_commands || Core.configuration.allowed_commands
     end
 
     def tools(chat: nil)
