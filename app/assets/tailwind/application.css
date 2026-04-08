@@ -5,6 +5,13 @@
   button, [role="button"] {
     cursor: pointer;
   }
+
+  /* Hide spinner arrows on textareas */
+  textarea::-webkit-outer-spin-button,
+  textarea::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 }
 
 /* Slack-like inline code */
