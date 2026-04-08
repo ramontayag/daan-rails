@@ -6,18 +6,10 @@ class Daan::Core::Chats::NotifyParentTest < ActiveSupport::TestCase
 
   setup do
     Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(
-        name: "child_agent", display_name: "Child Agent",
-        model_name: "claude-sonnet-4-20250514",
-        system_prompt: "You are a child agent.", max_steps: 5
-      )
+      build_agent(name: "child_agent", display_name: "Child Agent")
     )
     Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(
-        name: "parent_agent", display_name: "Parent Agent",
-        model_name: "claude-sonnet-4-20250514",
-        system_prompt: "You are a parent agent.", max_steps: 15
-      )
+      build_agent(name: "parent_agent")
     )
     @parent_chat = Chat.create!(agent_name: "parent_agent")
     @child_chat = Chat.create!(agent_name: "child_agent", parent_chat: @parent_chat)

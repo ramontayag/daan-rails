@@ -2,9 +2,7 @@ require "test_helper"
 
 class ThreadPanelComponentTest < ViewComponent::TestCase
   setup do
-    @agent = Daan::Core::Agent.new(name: "developer", display_name: "Developer",
-                             model_name: "claude-sonnet-4-20250514",
-                             system_prompt: "You are a developer.", max_steps: 10)
+    @agent = build_agent
     Daan::Core::AgentRegistry.register(@agent)
 
     @model = Model.create!(
@@ -22,7 +20,7 @@ class ThreadPanelComponentTest < ViewComponent::TestCase
       }
     )
 
-    @chat = Chat.create!(agent_name: "developer", model: @model)
+    @chat = Chat.create!(agent_name: @agent.name, model: @model)
   end
 
   test "displays token count when chat has messages with tokens" do

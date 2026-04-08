@@ -9,8 +9,6 @@ class Daan::Core::ConversationRunnerTest < ActiveSupport::TestCase
   setup do
     @agent = Daan::Core::Agent.new(
       name: "test_agent", display_name: "Test Agent",
-      model_name: "claude-sonnet-4-20250514",
-      system_prompt: "You are a test agent.",
       max_steps: 3
     )
     Daan::Core::AgentRegistry.register(@agent)
@@ -160,8 +158,7 @@ class Daan::Core::ConversationRunnerTest < ActiveSupport::TestCase
 
   test "injects warning when 3 steps remain and agent wants to continue" do
     parent_agent = Daan::Core::Agent.new(
-      name: "parent_agent", display_name: "Parent Agent",
-      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_steps: 15
+      name: "parent_agent", max_steps: 15
     )
     Daan::Core::AgentRegistry.register(parent_agent)
     parent_chat = Chat.create!(agent_name: "parent_agent")
@@ -192,8 +189,7 @@ class Daan::Core::ConversationRunnerTest < ActiveSupport::TestCase
 
   test "notifies parent when child chat goes blocked" do
     parent_agent = Daan::Core::Agent.new(
-      name: "parent_agent", display_name: "Parent Agent",
-      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_steps: 15
+      name: "parent_agent", max_steps: 15
     )
     Daan::Core::AgentRegistry.register(parent_agent)
     parent_chat = Chat.create!(agent_name: "parent_agent")
@@ -214,8 +210,7 @@ class Daan::Core::ConversationRunnerTest < ActiveSupport::TestCase
 
   test "notifies parent when child chat fails" do
     parent_agent = Daan::Core::Agent.new(
-      name: "parent_agent", display_name: "Parent Agent",
-      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_steps: 15
+      name: "parent_agent", max_steps: 15
     )
     Daan::Core::AgentRegistry.register(parent_agent)
     parent_chat = Chat.create!(agent_name: "parent_agent")
@@ -242,8 +237,7 @@ class Daan::Core::ConversationRunnerTest < ActiveSupport::TestCase
 
   test "parent notification uses fallback when last assistant message is nil" do
     parent_agent = Daan::Core::Agent.new(
-      name: "parent_agent", display_name: "Parent Agent",
-      model_name: "claude-sonnet-4-20250514", system_prompt: "Parent.", max_steps: 15
+      name: "parent_agent", max_steps: 15
     )
     Daan::Core::AgentRegistry.register(parent_agent)
     parent_chat = Chat.create!(agent_name: "parent_agent")

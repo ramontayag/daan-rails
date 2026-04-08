@@ -5,9 +5,8 @@ class Daan::Core::Chats::BuildSystemPromptTest < ActiveSupport::TestCase
   setup do
     Daan::Core::AgentRegistry.register(
       Daan::Core::Agent.new(
-        name: "developer", display_name: "Developer",
-        model_name: "claude-sonnet-4-20250514",
-        system_prompt: "You are a developer.", max_steps: 10
+        name: "developer",
+        system_prompt: "You are a developer."
       )
     )
     @chat = Chat.create!(agent_name: "developer")
@@ -25,8 +24,7 @@ class Daan::Core::Chats::BuildSystemPromptTest < ActiveSupport::TestCase
   test "appends agent audience context for delegated chat" do
     Daan::Core::AgentRegistry.register(
       Daan::Core::Agent.new(
-        name: "engineering_manager", display_name: "Engineering Manager",
-        model_name: "m", system_prompt: "p", max_steps: 10
+        name: "engineering_manager", display_name: "Engineering Manager"
       )
     )
     parent = Chat.create!(agent_name: "engineering_manager")

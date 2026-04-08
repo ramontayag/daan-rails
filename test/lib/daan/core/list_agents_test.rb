@@ -6,9 +6,6 @@ class Daan::Core::ListAgentsTest < ActiveSupport::TestCase
     agent = Daan::Core::Agent.new(
       name: "developer",
       display_name: "Developer",
-      model_name: "claude-sonnet-4-20250514",
-      system_prompt: "You write code.",
-      max_steps: 10,
       base_tools: [ Daan::Core::Read ]
     )
     Daan::Core::AgentRegistry.register(agent)

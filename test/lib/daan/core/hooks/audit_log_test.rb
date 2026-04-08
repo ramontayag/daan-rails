@@ -3,11 +3,9 @@ require "test_helper"
 
 class Daan::Core::Hooks::AuditLogTest < ActiveSupport::TestCase
   setup do
-    Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(name: "test_agent", display_name: "T", model_name: "m",
-                      system_prompt: "s", max_steps: 1)
-    )
-    @chat = Chat.create!(agent_name: "test_agent")
+    @agent = build_agent
+    Daan::Core::AgentRegistry.register(@agent)
+    @chat = Chat.create!(agent_name: @agent.name)
     @hook = Daan::Core::Hooks::AuditLog.new
     Daan::Core::Hook::Registry.register(Daan::Core::Hooks::AuditLog)
   end

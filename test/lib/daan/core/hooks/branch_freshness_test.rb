@@ -5,11 +5,9 @@ class Daan::Core::Hooks::BranchFreshnessTest < ActiveSupport::TestCase
   setup do
     @tmpdir = Dir.mktmpdir
     workspace = Daan::Core::Workspace.new(@tmpdir)
-    Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(name: "test_agent", display_name: "T", model_name: "m",
-                      system_prompt: "s", max_steps: 1, workspace: workspace)
-    )
-    @chat = Chat.create!(agent_name: "test_agent")
+    @agent = build_agent(workspace: workspace)
+    Daan::Core::AgentRegistry.register(@agent)
+    @chat = Chat.create!(agent_name: @agent.name)
     @hook = Daan::Core::Hooks::BranchFreshness.new
     Daan::Core::Hook::Registry.register(Daan::Core::Hooks::BranchFreshness)
   end
@@ -104,8 +102,7 @@ class Daan::Core::Hooks::BranchFreshnessTest < ActiveSupport::TestCase
   test "does not inject message when agent has no workspace" do
     Daan::Core::AgentRegistry.clear
     Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(name: "test_agent", display_name: "T", model_name: "m",
-                      system_prompt: "s", max_steps: 1, workspace: nil)
+      build_agent(name: @agent.name)
     )
 
     @hook.after_tool_call(

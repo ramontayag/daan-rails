@@ -3,9 +3,7 @@ require "test_helper"
 class Daan::Core::Chats::InjectWorkspaceOrientationTest < ActiveSupport::TestCase
   setup do
     @agent = Daan::Core::Agent.new(
-      name: "developer", display_name: "Dev",
-      model_name: "claude-sonnet-4-20250514",
-      system_prompt: "You are a developer.", max_steps: 10,
+      name: "developer",
       workspace: Daan::Core::Workspace.new(Dir.mktmpdir)
     )
     Daan::Core::AgentRegistry.register(@agent)

@@ -3,12 +3,10 @@ require "test_helper"
 class ChatCostComponentTest < ViewComponent::TestCase
   setup do
     Daan::Core::AgentRegistry.register(Daan::Core::Agent.new(
-      name: "chief_of_staff", display_name: "Chief of Staff",
-      model_name: "claude-sonnet-4-20250514", system_prompt: "p", max_steps: 10
+      name: "chief_of_staff", display_name: "Chief of Staff"
     ))
     Daan::Core::AgentRegistry.register(Daan::Core::Agent.new(
-      name: "developer", display_name: "Developer",
-      model_name: "claude-sonnet-4-20250514", system_prompt: "p", max_steps: 10
+      name: "developer", display_name: "Developer"
     ))
 
     @model = Model.create!(

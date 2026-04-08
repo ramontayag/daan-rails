@@ -3,8 +3,7 @@ require "test_helper"
 
 class Daan::Core::AgentRegistryTest < ActiveSupport::TestCase
   setup do
-    @agent = Daan::Core::Agent.new(name: "chief_of_staff", display_name: "CoS",
-                             model_name: "m", system_prompt: "p", max_steps: 10)
+    @agent = build_agent(name: "chief_of_staff")
   end
 
   test "registers and finds an agent by name" do

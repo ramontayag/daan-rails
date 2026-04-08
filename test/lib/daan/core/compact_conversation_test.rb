@@ -5,11 +5,7 @@ class Daan::Core::CompactConversationTest < ActiveSupport::TestCase
   include ActionCable::TestHelper
   setup do
     @chat = chats(:hello_cos)
-    @agent = Daan::Core::Agent.new(
-      name: "test", display_name: "Test",
-      model_name: "claude-haiku-4-5-20251001",
-      system_prompt: "You help.", max_steps: 5
-    )
+    @agent = build_agent
     # 25 active messages — 5 will be compacted, 20 kept
     25.times do |i|
       @chat.messages.create!(role: i.even? ? "user" : "assistant",

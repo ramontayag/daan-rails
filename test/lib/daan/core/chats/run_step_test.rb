@@ -6,20 +6,8 @@ class Daan::Core::Chats::RunStepTest < ActiveSupport::TestCase
   include ActionCable::TestHelper
 
   setup do
-    Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(
-        name: "test_agent", display_name: "Test Agent",
-        model_name: "claude-sonnet-4-20250514",
-        system_prompt: "You are a test agent.", max_steps: 3
-      )
-    )
-    Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(
-        name: "parent_agent", display_name: "Parent Agent",
-        model_name: "claude-sonnet-4-20250514",
-        system_prompt: "Parent.", max_steps: 15
-      )
-    )
+    Daan::Core::AgentRegistry.register(build_agent(name: "test_agent"))
+    Daan::Core::AgentRegistry.register(build_agent(name: "parent_agent"))
     @chat = Chat.create!(agent_name: "test_agent")
     @chat.start!
   end

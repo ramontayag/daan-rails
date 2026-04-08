@@ -6,14 +6,9 @@ class Daan::Core::Chats::EnqueueCompactionTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
   setup do
-    Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(
-        name: "test_agent", display_name: "Test Agent",
-        model_name: "claude-sonnet-4-20250514",
-        system_prompt: "You are a test agent.", max_steps: 3
-      )
-    )
-    @chat = Chat.create!(agent_name: "test_agent")
+    @agent = build_agent
+    Daan::Core::AgentRegistry.register(@agent)
+    @chat = Chat.create!(agent_name: @agent.name)
     @chat.messages.where(compacted_message_id: nil).delete_all
   end
 

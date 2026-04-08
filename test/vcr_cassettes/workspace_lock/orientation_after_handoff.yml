@@ -88,4 +88,119 @@ http_interactions:
       encoding: ASCII-8BIT
       string: '{"model":"claude-sonnet-4-20250514","id":"msg_017nijaK2Qp8JqVHXgCvA5Qi","type":"message","role":"assistant","content":[{"type":"text","text":"ok"}],"stop_reason":"end_turn","stop_sequence":null,"stop_details":null,"usage":{"input_tokens":54,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":4,"service_tier":"standard","inference_geo":"not_available"}}'
   recorded_at: Tue, 07 Apr 2026 13:30:38 GMT
+- request:
+    method: post
+    uri: https://api.openai.com/v1/chat/completions
+    body:
+      encoding: UTF-8
+      string: '{"model":"gpt-5.4","messages":[{"role":"developer","content":"\n\nYou
+        are talking directly to the human. Always confirm your plan before starting
+        work."},{"role":"user","content":"[Sent at: 2026-04-08T10:43:33Z]\n\nSay exactly:
+        ok"},{"role":"user","content":"[SYSTEM] Workspace was used by another chat
+        since your last run. Check the workspace state before proceeding."}],"stream":false}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      Authorization:
+      - Bearer <OPENAI_API_KEY>
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Wed, 08 Apr 2026 10:43:35 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Cf-Ray:
+      - 9e90abf67b8ac8f9-MAD
+      Cf-Cache-Status:
+      - DYNAMIC
+      Server:
+      - cloudflare
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      X-Content-Type-Options:
+      - nosniff
+      Access-Control-Expose-Headers:
+      - X-Request-ID
+      Openai-Organization:
+      - user-gktdc6yu4kaxdrbnl3zsj9aa
+      Openai-Processing-Ms:
+      - '570'
+      Openai-Project:
+      - proj_K10gVH38kCszJ3Wz6Xq5fUd6
+      Openai-Version:
+      - '2020-10-01'
+      X-Openai-Proxy-Wasm:
+      - v0.1
+      X-Ratelimit-Limit-Requests:
+      - '500'
+      X-Ratelimit-Limit-Tokens:
+      - '500000'
+      X-Ratelimit-Remaining-Requests:
+      - '499'
+      X-Ratelimit-Remaining-Tokens:
+      - '499935'
+      X-Ratelimit-Reset-Requests:
+      - 120ms
+      X-Ratelimit-Reset-Tokens:
+      - 7ms
+      X-Request-Id:
+      - req_aa8f564bf2a146339349fda369b2f2ee
+      Set-Cookie:
+      - __cf_bm=gI5O2RcCv829xlFBORVpJSWWnDBB3v_WTYB86886_4s-1775645013.5190873-1.0.1.1-EIz1J_2tTY5GYGHUue6gkDpFHc7d5FwQHTLsuc0FgRERzyrw0BtHPsiGTiylOd.Ju4MBMpnuQ.xZEoqzbdK9rSGh60MObl0bwmu6EI82sCtTWFNrM2O494VRz9mTwMPr;
+        HttpOnly; Secure; Path=/; Domain=api.openai.com; Expires=Wed, 08 Apr 2026
+        11:13:35 GMT
+      Alt-Svc:
+      - h3=":443"; ma=86400
+    body:
+      encoding: ASCII-8BIT
+      string: |
+        {
+          "id": "chatcmpl-DSKfeGb7sYt6qGu8LeO40Eeu2BrzE",
+          "object": "chat.completion",
+          "created": 1775645014,
+          "model": "gpt-5.4-2026-03-05",
+          "choices": [
+            {
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": "ok",
+                "refusal": null,
+                "annotations": []
+              },
+              "finish_reason": "stop"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 75,
+            "completion_tokens": 4,
+            "total_tokens": 79,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "service_tier": "default",
+          "system_fingerprint": null
+        }
+  recorded_at: Wed, 08 Apr 2026 10:43:35 GMT
 recorded_with: VCR 6.4.0

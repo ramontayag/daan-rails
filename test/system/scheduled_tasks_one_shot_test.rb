@@ -3,8 +3,7 @@ require "application_system_test_case"
 class ScheduledTasksOneShotTest < ApplicationSystemTestCase
   setup do
     Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
-                      model_name: "claude-haiku-4-5-20251001", system_prompt: "p", max_steps: 5)
+      build_agent(name: "chief_of_staff", display_name: "Chief of Staff")
     )
     @source_chat = Chat.create!(agent_name: "chief_of_staff")
   end

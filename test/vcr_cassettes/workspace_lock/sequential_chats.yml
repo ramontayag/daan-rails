@@ -176,4 +176,233 @@ http_interactions:
       string: '{"model":"claude-sonnet-4-20250514","id":"msg_015TNjKijdzmhnqtph94Y3Lc","type":"message","role":"assistant","content":[{"type":"text","text":"done
         B"}],"stop_reason":"end_turn","stop_sequence":null,"stop_details":null,"usage":{"input_tokens":55,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":0},"output_tokens":5,"service_tier":"standard","inference_geo":"not_available"}}'
   recorded_at: Tue, 07 Apr 2026 10:37:59 GMT
+- request:
+    method: post
+    uri: https://api.openai.com/v1/chat/completions
+    body:
+      encoding: UTF-8
+      string: '{"model":"gpt-5.4","messages":[{"role":"developer","content":"\n\nYou
+        are talking directly to the human. Always confirm your plan before starting
+        work."},{"role":"user","content":"[Sent at: 2026-04-08T10:43:33Z]\n\nSay exactly:
+        done A"}],"stream":false}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      Authorization:
+      - Bearer <OPENAI_API_KEY>
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Wed, 08 Apr 2026 10:43:35 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Cf-Ray:
+      - 9e90abf53b9bf40c-MAD
+      Cf-Cache-Status:
+      - DYNAMIC
+      Server:
+      - cloudflare
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      X-Content-Type-Options:
+      - nosniff
+      Access-Control-Expose-Headers:
+      - X-Request-ID
+      Openai-Organization:
+      - user-gktdc6yu4kaxdrbnl3zsj9aa
+      Openai-Processing-Ms:
+      - '773'
+      Openai-Project:
+      - proj_K10gVH38kCszJ3Wz6Xq5fUd6
+      Openai-Version:
+      - '2020-10-01'
+      X-Openai-Proxy-Wasm:
+      - v0.1
+      X-Ratelimit-Limit-Requests:
+      - '500'
+      X-Ratelimit-Limit-Tokens:
+      - '500000'
+      X-Ratelimit-Remaining-Requests:
+      - '499'
+      X-Ratelimit-Remaining-Tokens:
+      - '499962'
+      X-Ratelimit-Reset-Requests:
+      - 120ms
+      X-Ratelimit-Reset-Tokens:
+      - 4ms
+      X-Request-Id:
+      - req_ced94ccfcdae403ca68dd9e9b78ee1e1
+      Set-Cookie:
+      - __cf_bm=nD64377FF7Y9cE4Whaac2w0u5Rn1V3nScq2vYAG7IcI-1775645013.3118088-1.0.1.1-K1wRF6UxvD.5W0lUgktlF1hJP1bYt_F20phNIs3E4Zp48wo2TyZG5cyjDhHbN75P1fXrTFiJGRhSrlcMjWoGNXO4Frw4rqj_xq2t7.pVzG5A1mXPXh5Ity2QJ5uvhNVP;
+        HttpOnly; Secure; Path=/; Domain=api.openai.com; Expires=Wed, 08 Apr 2026
+        11:13:35 GMT
+      Alt-Svc:
+      - h3=":443"; ma=86400
+    body:
+      encoding: ASCII-8BIT
+      string: |
+        {
+          "id": "chatcmpl-DSKfeRzurBSGAYCClDCyLrVqLDnYG",
+          "object": "chat.completion",
+          "created": 1775645014,
+          "model": "gpt-5.4-2026-03-05",
+          "choices": [
+            {
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": "Plan: I will reply with the exact requested text.\n\ndone A",
+                "refusal": null,
+                "annotations": []
+              },
+              "finish_reason": "stop"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 51,
+            "completion_tokens": 16,
+            "total_tokens": 67,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "service_tier": "default",
+          "system_fingerprint": null
+        }
+  recorded_at: Wed, 08 Apr 2026 10:43:35 GMT
+- request:
+    method: post
+    uri: https://api.openai.com/v1/chat/completions
+    body:
+      encoding: UTF-8
+      string: '{"model":"gpt-5.4","messages":[{"role":"developer","content":"\n\nYou
+        are talking directly to the human. Always confirm your plan before starting
+        work."},{"role":"user","content":"[Sent at: 2026-04-08T10:43:33Z]\n\nSay exactly:
+        done B"},{"role":"user","content":"[SYSTEM] Workspace was used by another
+        chat since your last run. Check the workspace state before proceeding."}],"stream":false}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      Authorization:
+      - Bearer <OPENAI_API_KEY>
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Wed, 08 Apr 2026 10:43:36 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Cf-Ray:
+      - 9e90ac02c93d2195-MAD
+      Cf-Cache-Status:
+      - DYNAMIC
+      Server:
+      - cloudflare
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      X-Content-Type-Options:
+      - nosniff
+      Access-Control-Expose-Headers:
+      - X-Request-ID
+      Openai-Organization:
+      - user-gktdc6yu4kaxdrbnl3zsj9aa
+      Openai-Processing-Ms:
+      - '767'
+      Openai-Project:
+      - proj_K10gVH38kCszJ3Wz6Xq5fUd6
+      Openai-Version:
+      - '2020-10-01'
+      X-Openai-Proxy-Wasm:
+      - v0.1
+      X-Ratelimit-Limit-Requests:
+      - '500'
+      X-Ratelimit-Limit-Tokens:
+      - '500000'
+      X-Ratelimit-Remaining-Requests:
+      - '499'
+      X-Ratelimit-Remaining-Tokens:
+      - '499934'
+      X-Ratelimit-Reset-Requests:
+      - 120ms
+      X-Ratelimit-Reset-Tokens:
+      - 7ms
+      X-Request-Id:
+      - req_88ea7bb5434949508819ca63656fbb4a
+      Set-Cookie:
+      - __cf_bm=9SJWqo0Qe2Obg24b3IEm_NCkJiLzVayVkNxCa.UL968-1775645015.4889467-1.0.1.1-r7tO6N9rgwUlfMq_ATSDajywwNdsqMRyNu.o1dLENGl19eg4MeIeAHuZsfAETRarAaA2gq.sPxMA1YDxFuxCVUQXmjbh6WI7iZr.Nva9f9eSs4dVdIZwS7sPw0i4LjJF;
+        HttpOnly; Secure; Path=/; Domain=api.openai.com; Expires=Wed, 08 Apr 2026
+        11:13:36 GMT
+      Alt-Svc:
+      - h3=":443"; ma=86400
+    body:
+      encoding: ASCII-8BIT
+      string: |
+        {
+          "id": "chatcmpl-DSKffkGa0XJcjaunRchh0I7ctGAtu",
+          "object": "chat.completion",
+          "created": 1775645015,
+          "model": "gpt-5.4-2026-03-05",
+          "choices": [
+            {
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": "Plan: I will comply exactly with your requested output.\n\ndone B",
+                "refusal": null,
+                "annotations": []
+              },
+              "finish_reason": "stop"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 76,
+            "completion_tokens": 16,
+            "total_tokens": 92,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "audio_tokens": 0
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "audio_tokens": 0,
+              "accepted_prediction_tokens": 0,
+              "rejected_prediction_tokens": 0
+            }
+          },
+          "service_tier": "default",
+          "system_fingerprint": null
+        }
+  recorded_at: Wed, 08 Apr 2026 10:43:36 GMT
 recorded_with: VCR 6.4.0
