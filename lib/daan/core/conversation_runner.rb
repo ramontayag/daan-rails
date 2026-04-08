@@ -5,17 +5,7 @@ module Daan
       agent = chat.agent
 
       chat.reload
-      if already_responded?(chat)
-        Rails.logger.info("[ConversationRunner] chat_id=#{chat.id} skipping — last user message already has a response")
-        if chat.in_progress?
-          chat.finish!
-          chat.broadcast_agent_status
-          chat.broadcast_chat_cost
-          Chats::NotifyParent.on_completion(chat)
-        end
-        Chats::ReleaseWorkspace.call(chat)
-        return
-      end
+      return if skip_already_responded!(chat)
 
       acquire_result = Chats::AcquireWorkspace.call(chat)
       return unless acquire_result
@@ -31,60 +21,24 @@ module Daan
       Chats::EnqueueCompaction.call(chat)
       Chats::ConfigureLlm.call(chat, agent)
 
-      hooks = Daan::Core::Hook::Registry.agent_hooks(agent.hook_names) +
-              Daan::Core::Hook::Registry.tool_hooks
-      last_tool_calls = last_tool_calls_for(chat)
-      hooks.each do |h|
-        h.before_llm_call(chat: chat, last_tool_calls: last_tool_calls)
-      rescue => e
-        Rails.logger.error("[Hook] #{h.class} raised during before_llm_call: #{e.message}")
-      end
-
-      if chat.step_count == 0
-        hooks.each do |h|
-          h.before_conversation(chat: chat)
-        rescue => e
-          Rails.logger.error("[Hook] #{h.class} raised during before_conversation: #{e.message}")
-        end
-      end
-
-      Thread.current[:daan_active_hooks] = { hooks: hooks, chat: chat }
-      begin
-        response = Chats::RunStep.call(chat, context_user_message_id: context_user_message_id)
-      rescue => e
-        dispatch_after_conversation(hooks, chat, :failed)
-        raise
-      ensure
-        Thread.current[:daan_active_hooks] = nil
-      end
-      Chats::FinishOrReenqueue.call(chat, agent, response)
-      dispatch_after_conversation(hooks, chat, terminal_status_for(chat.reload))
+      response, hooks = Chats::RunStepWithHooks.call(chat, context_user_message_id: context_user_message_id)
+      Chats::FinishOrReenqueue.call(chat, agent, response, hooks: hooks)
     end
 
-    def self.last_tool_calls_for(chat)
-      last_assistant = chat.messages.where(role: "assistant").order(:id).last
-      return [] unless last_assistant
-      ToolCall.where(message_id: last_assistant.id)
-    end
-    private_class_method :last_tool_calls_for
+    def self.skip_already_responded!(chat)
+      return false unless already_responded?(chat)
 
-    def self.terminal_status_for(chat)
-      return :completed if chat.completed?
-      return :blocked   if chat.blocked?
-      return :failed    if chat.failed?
-      nil
-    end
-    private_class_method :terminal_status_for
-
-    def self.dispatch_after_conversation(hooks, chat, status)
-      return unless status
-      hooks.each do |h|
-        h.after_conversation(chat: chat, status: status)
-      rescue => e
-        Rails.logger.error("[Hook] #{h.class} raised during after_conversation: #{e.message}")
+      Rails.logger.info("[ConversationRunner] chat_id=#{chat.id} skipping — last user message already has a response")
+      if chat.in_progress?
+        chat.finish!
+        chat.broadcast_agent_status
+        chat.broadcast_chat_cost
+        Chats::NotifyParent.on_completion(chat)
       end
+      Chats::ReleaseWorkspace.call(chat)
+      true
     end
-    private_class_method :dispatch_after_conversation
+    private_class_method :skip_already_responded!
 
     def self.already_responded?(chat)
       last_user_message      = chat.messages.where(role: "user").last

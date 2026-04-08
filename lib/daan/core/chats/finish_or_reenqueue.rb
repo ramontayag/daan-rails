@@ -2,7 +2,7 @@ module Daan
   module Core
     module Chats
     class FinishOrReenqueue
-      def self.call(chat, agent, response)
+      def self.call(chat, agent, response, hooks: [])
         if !response.tool_call?
           finish_conversation(chat, agent)
         elsif agent.max_steps_reached?(chat.step_count)
@@ -10,7 +10,18 @@ module Daan
         else
           continue_conversation(chat, agent)
         end
+
+        status = terminal_status_for(chat.reload)
+        RunStepWithHooks.dispatch_after_conversation(hooks, chat, status)
       end
+
+      def self.terminal_status_for(chat)
+        return :completed if chat.completed?
+        return :blocked   if chat.blocked?
+        return :failed    if chat.failed?
+        nil
+      end
+      private_class_method :terminal_status_for
 
       def self.block_conversation(chat, agent)
         tag = "[FinishOrReenqueue] chat_id=#{chat.id}"
