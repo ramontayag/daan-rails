@@ -8,7 +8,7 @@ class DelegationChainTest < ActionDispatch::IntegrationTest
 
   setup do
     Chat.destroy_all
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
     @em_workspace = Rails.root.join("tmp", "workspaces", "engineering_manager")
     FileUtils.mkdir_p(@em_workspace)
   end
@@ -18,7 +18,7 @@ class DelegationChainTest < ActionDispatch::IntegrationTest
   end
 
   test "human task flows down CoS → EM and results report back up" do
-    cos = Daan::AgentRegistry.find("chief_of_staff")
+    cos = Daan::Core::AgentRegistry.find("chief_of_staff")
 
     VCR.use_cassette("delegation_chain/full_chain") do
       post chat_agent_threads_path(cos),

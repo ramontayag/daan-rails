@@ -10,7 +10,7 @@ module Perspective
   def set_perspective
     name = params[:perspective].presence
     if name && name != "me"
-      @perspective_agent = Daan::AgentRegistry.find(name)
+      @perspective_agent = Daan::Core::AgentRegistry.find(name)
       @perspective_name  = name
     else
       @perspective_agent = nil

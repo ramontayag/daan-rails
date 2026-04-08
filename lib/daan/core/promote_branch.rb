@@ -88,9 +88,9 @@ module Daan
         run!(%w[git checkout develop], app_root)
         run!(%w[git reset --hard origin/develop], app_root)
 
-        Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+        Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
         override_dir = Rails.root.join("config/agents")
-        Daan::AgentLoader.sync!(override_dir) if override_dir.exist?
+        Daan::Core::AgentLoader.sync!(override_dir) if override_dir.exist?
 
         pr_url = ensure_pr_exists(branch)
 

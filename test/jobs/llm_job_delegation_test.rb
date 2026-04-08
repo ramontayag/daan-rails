@@ -5,9 +5,9 @@ class LlmJobDelegationTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
   test "CoS calls DelegateTask and creates EM sub-chat" do
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
     chat = Chat.create!(agent_name: "chief_of_staff")
-    Daan::CreateMessage.call(chat, role: "user",
+    Daan::Core::CreateMessage.call(chat, role: "user",
       content: "Please have the team read the file README.md and summarise it for me.")
 
     VCR.use_cassette("cos_delegates_to_em") do

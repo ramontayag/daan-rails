@@ -1,8 +1,8 @@
 class ChatCostComponentPreview < ViewComponent::Preview
   def self.setup_agents
-    Daan::AgentRegistry.find("chief_of_staff")
-  rescue Daan::AgentNotFoundError
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentRegistry.find("chief_of_staff")
+  rescue Daan::Core::AgentNotFoundError
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
   end
 
   def self.model_with_pricing

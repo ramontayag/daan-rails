@@ -3,7 +3,7 @@ require "test_helper"
 class Daan::Core::BashTest < ActiveSupport::TestCase
   setup do
     @workspace_dir = Dir.mktmpdir
-    @workspace = Daan::Workspace.new(@workspace_dir)
+    @workspace = Daan::Core::Workspace.new(@workspace_dir)
     @tool = Daan::Core::Bash.new(
       workspace: @workspace,
       allowed_commands: %w[echo git pwd cat]

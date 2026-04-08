@@ -2,13 +2,13 @@ require "test_helper"
 
 class WorkspaceLockIntegrationTest < ActionDispatch::IntegrationTest
   setup do
-    @agent = Daan::Agent.new(
+    @agent = Daan::Core::Agent.new(
       name: "developer", display_name: "Dev",
       model_name: "claude-sonnet-4-20250514",
       system_prompt: "You are a developer.", max_steps: 10,
-      workspace: Daan::Workspace.new(Dir.mktmpdir)
+      workspace: Daan::Core::Workspace.new(Dir.mktmpdir)
     )
-    Daan::AgentRegistry.register(@agent)
+    Daan::Core::AgentRegistry.register(@agent)
   end
 
   test "second chat waits when first chat holds workspace lock" do

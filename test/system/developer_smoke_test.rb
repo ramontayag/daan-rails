@@ -7,7 +7,7 @@ class DeveloperSmokeTest < ActionDispatch::IntegrationTest
 
   setup do
     Chat.destroy_all
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
     @workspace = Rails.root.join("tmp", "workspaces", "developer")
     FileUtils.mkdir_p(@workspace)
   end
@@ -17,7 +17,7 @@ class DeveloperSmokeTest < ActionDispatch::IntegrationTest
   end
 
   test "developer writes a file and reads it back through the thread panel" do
-    agent = Daan::AgentRegistry.find("developer")
+    agent = Daan::Core::AgentRegistry.find("developer")
 
     # Turn 1: create thread and write the file
     VCR.use_cassette("developer_smoke/write_turn") do

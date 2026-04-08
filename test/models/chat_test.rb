@@ -3,13 +3,13 @@ require "test_helper"
 
 class ChatTest < ActiveSupport::TestCase
   setup do
-    @agent = Daan::Agent.new(name: "chief_of_staff", display_name: "CoS",
+    @agent = Daan::Core::Agent.new(name: "chief_of_staff", display_name: "CoS",
                              model_name: "claude-sonnet-4-20250514",
                              system_prompt: "You are CoS.", max_steps: 10)
-    Daan::AgentRegistry.register(@agent)
+    Daan::Core::AgentRegistry.register(@agent)
   end
 
-  test "agent returns the registered Daan::Agent" do
+  test "agent returns the registered Daan::Core::Agent" do
     chat = Chat.new(agent_name: "chief_of_staff")
     assert_equal @agent, chat.agent
   end
@@ -44,7 +44,7 @@ class ChatTest < ActiveSupport::TestCase
 
   test "raises AgentNotFoundError for unknown agent_name" do
     chat = Chat.new(agent_name: "ghost")
-    assert_raises(Daan::AgentNotFoundError) { chat.agent }
+    assert_raises(Daan::Core::AgentNotFoundError) { chat.agent }
   end
 
   test "parent_chat is optional" do
@@ -132,7 +132,7 @@ class ChatTest < ActiveSupport::TestCase
       name: model_info.name,
       model_id: model_info.id,
       provider: model_info.provider,
-      pricing: Daan::RubyLlmModelPricing.call(model_info)
+      pricing: Daan::Core::RubyLlmModelPricing.call(model_info)
     )
     chat = chats(:hello_cos)
     chat.update!(model: model)

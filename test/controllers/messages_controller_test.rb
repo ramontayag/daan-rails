@@ -6,7 +6,7 @@ class MessagesControllerTest < ActionDispatch::IntegrationTest
 
   setup do
     Chat.destroy_all
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
   end
 
   test "POST adds reply to existing thread" do

@@ -5,7 +5,7 @@ class ScheduledTaskPollerJobTest < ActiveSupport::TestCase
 
   setup do
     ScheduledTask.destroy_all
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
   end
 
   test "enqueues ScheduledTaskRunnerJob for each due task" do

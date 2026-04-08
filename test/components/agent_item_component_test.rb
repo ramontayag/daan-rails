@@ -4,11 +4,11 @@ class AgentItemComponentTest < ActiveSupport::TestCase
   include ViewComponent::TestHelpers
 
   def idle_agent
-    Daan::AgentRegistry.register(
-      Daan::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
+    Daan::Core::AgentRegistry.register(
+      Daan::Core::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
                       model_name: "claude-3-5-haiku-20241022", system_prompt: "p", max_steps: 10)
     )
-    Daan::AgentRegistry.find("chief_of_staff")
+    Daan::Core::AgentRegistry.find("chief_of_staff")
   end
 
   test "idle agent shows green dot" do

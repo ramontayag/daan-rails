@@ -2,7 +2,7 @@ class MessagesController < ApplicationController
   before_action :set_chat
 
   def create
-    Daan::CreateMessage.call(@chat, role: "user", content: message_params[:content])
+    Daan::Core::CreateMessage.call(@chat, role: "user", content: message_params[:content])
     head :no_content
   end
 

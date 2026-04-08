@@ -1,5 +1,5 @@
 class ApplicationController < ActionController::Base
-  rescue_from Daan::AgentNotFoundError, with: :agent_not_found
+  rescue_from Daan::Core::AgentNotFoundError, with: :agent_not_found
 
   private
 

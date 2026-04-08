@@ -3,7 +3,7 @@ require "application_system_test_case"
 class ChatCostBreakdownTest < ApplicationSystemTestCase
   setup do
     Chat.destroy_all
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
 
     @model = Model.find_or_create_by!(model_id: "test-cost-model") do |m|
       m.name = "Test Model"

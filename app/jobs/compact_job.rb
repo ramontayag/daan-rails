@@ -3,6 +3,6 @@ class CompactJob < ApplicationJob
   limits_concurrency to: 1, key: ->(chat) { "chat_#{chat.id}" }
 
   def perform(chat)
-    Daan::CompactConversation.call(chat, chat.agent)
+    Daan::Core::CompactConversation.call(chat, chat.agent)
   end
 end

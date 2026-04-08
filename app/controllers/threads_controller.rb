@@ -6,7 +6,7 @@ class ThreadsController < ApplicationController
   before_action :set_chat, only: :show
 
   def show
-    @agent = Daan::AgentRegistry.find(@chat.agent_name)
+    @agent = Daan::Core::AgentRegistry.find(@chat.agent_name)
     @chats = if perspective_name != "me" && @agent.name != perspective_name
       Chat.where(agent_name: @agent.name, parent_chat_id: perspective_tree_ids)
     else
@@ -18,7 +18,7 @@ class ThreadsController < ApplicationController
 
   def create
     @chat = Chat.create!(agent_name: @agent.name, model: @agent.model_name)
-    Daan::CreateMessage.call(@chat, role: "user", content: message_params[:content])
+    Daan::Core::CreateMessage.call(@chat, role: "user", content: message_params[:content])
 
     redirect_to chat_thread_path(@chat)
   end
@@ -30,7 +30,7 @@ class ThreadsController < ApplicationController
   private
 
   def set_agent_from_params
-    @agent = Daan::AgentRegistry.find(params[:agent_name])
+    @agent = Daan::Core::AgentRegistry.find(params[:agent_name])
   end
 
   def set_chat

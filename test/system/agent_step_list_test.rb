@@ -8,11 +8,11 @@ class AgentStepListTest < ActionDispatch::IntegrationTest
 
   setup do
     Chat.destroy_all
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
   end
 
   test "agent creates a step list when asked and steps appear in the thread panel" do
-    agent = Daan::AgentRegistry.find("developer")
+    agent = Daan::Core::AgentRegistry.find("developer")
 
     VCR.use_cassette("agent_step_list/creates_steps") do
       perform_enqueued_jobs do

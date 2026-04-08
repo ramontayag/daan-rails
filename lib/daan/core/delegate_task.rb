@@ -13,13 +13,13 @@ module Daan
       end
 
       def execute(agent_name:, task:)
-        current_agent = Daan::AgentRegistry.find(@chat.agent_name)
+        current_agent = Daan::Core::AgentRegistry.find(@chat.agent_name)
         unless current_agent.delegates_to.include?(agent_name)
           allowed = current_agent.delegates_to.join(", ")
           return "Error: #{@chat.agent_name} cannot delegate to #{agent_name}. Allowed: #{allowed}"
         end
 
-        target_agent = Daan::AgentRegistry.find(agent_name)
+        target_agent = Daan::Core::AgentRegistry.find(agent_name)
 
         existing = @chat.sub_chats.exists?(agent_name: agent_name)
         sub_chat = @chat.sub_chats.find_or_initialize_by(agent_name: agent_name)
@@ -29,7 +29,7 @@ module Daan
           @chat.broadcast_chat_cost_initial
         end
         sub_chat.continue! if sub_chat.completed? || sub_chat.failed? || sub_chat.blocked?
-        Daan::CreateMessage.call(sub_chat, role: "user", content: task)
+        Daan::Core::CreateMessage.call(sub_chat, role: "user", content: task)
 
         if existing
           "Sent follow-up to #{target_agent.display_name} in existing Thread ##{sub_chat.id}. Awaiting their response."

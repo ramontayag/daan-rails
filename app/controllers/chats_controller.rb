@@ -20,6 +20,6 @@ class ChatsController < ApplicationController
   private
 
   def set_agent
-    @agent = Daan::AgentRegistry.find(params[:name])
+    @agent = Daan::Core::AgentRegistry.find(params[:name])
   end
 end

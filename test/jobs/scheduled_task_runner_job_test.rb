@@ -4,7 +4,7 @@ class ScheduledTaskRunnerJobTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
   setup do
-    Daan::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
+    Daan::Core::AgentLoader.sync!(Rails.root.join("lib/daan/core/agents"))
     @task = ScheduledTask.create!(
       agent_name: "chief_of_staff",
       message: "Run the daily digest",
@@ -61,7 +61,7 @@ class ScheduledTaskRunnerJobTest < ActiveSupport::TestCase
       timezone: "UTC",
       enabled: true
     )
-    assert_raises(Daan::AgentNotFoundError) do
+    assert_raises(Daan::Core::AgentNotFoundError) do
       ScheduledTaskRunnerJob.perform_now(task)
     end
   end

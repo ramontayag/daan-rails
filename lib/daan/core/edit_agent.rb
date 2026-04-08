@@ -111,9 +111,9 @@ module Daan
 
         # Update the registry with the new definition
         begin
-          definition = Daan::AgentLoader.parse(agent_file_path)
-          agent = Daan::Agent.new(**definition)
-          Daan::AgentRegistry.register(agent)
+          definition = Daan::Core::AgentLoader.parse(agent_file_path)
+          agent = Daan::Core::Agent.new(**definition)
+          Daan::Core::AgentRegistry.register(agent)
         rescue => e
           return "Error: Failed to register updated agent - #{e.message}"
         end
