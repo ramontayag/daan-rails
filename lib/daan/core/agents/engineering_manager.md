@@ -20,6 +20,8 @@ tools:
 
   # Team management and oversight
   - Daan::Core::ListAgents
+  - Daan::Core::SearchChats
+  - Daan::Core::ReadChat
   - Daan::Core::CreateAgent
   - Daan::Core::EditAgent
 

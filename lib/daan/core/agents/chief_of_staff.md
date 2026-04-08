@@ -9,6 +9,8 @@ delegates_to:
 tools:
   - Daan::Core::DelegateTask
   - Daan::Core::ListAgents
+  - Daan::Core::SearchChats
+  - Daan::Core::ReadChat
   - Daan::Core::CreateSteps
   - Daan::Core::UpdateStep
   - Daan::Core::ScheduleTask

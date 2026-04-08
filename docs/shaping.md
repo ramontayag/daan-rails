@@ -194,6 +194,9 @@ System prompts instruct agents: after using `ReportBack`, your work in this thre
 - No memory conflict resolution (contradictory memories may coexist).
 - SQLite write contention under heavy concurrent load (D21).
 
+### D40: Chat Search
+Agents can search across all chat history (their own and other agents') using Slack-like query syntax. Two tools: `SearchChats` (FTS5 full-text search with `with:`, `from:`, `before:`, `after:` operators, returns top 10 message snippets with surrounding context) and `ReadChat` (windowed message reader for drilling into specific threads). SQLite FTS5 virtual table with SQL triggers keeps the index in sync. Only user and assistant messages indexed — tool messages excluded. All agents get both tools. Think of it as Slack search for the company.
+
 ### D38: Initial Delegation Graph
 CoS delegates_to: [engineering_manager]. Engineering Manager delegates_to: [developer]. Developer delegates_to: [] (leaf agent).
 

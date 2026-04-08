@@ -10,6 +10,8 @@ tools:
   - Daan::Core::Write
   - Daan::Core::Bash
   - Daan::Core::ReportBack
+  - Daan::Core::SearchChats
+  - Daan::Core::ReadChat
   - Daan::Core::PromoteBranch
   - Daan::Core::CreateSteps
   - Daan::Core::UpdateStep
