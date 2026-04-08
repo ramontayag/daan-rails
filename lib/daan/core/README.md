@@ -1,6 +1,21 @@
-# Daan
+# Daan::Core
 
-Core agent infrastructure. Agents are defined in `core/agents/*.md`, loaded at boot via `AgentLoader`, and stored in `AgentRegistry`. `ConversationRunner` drives each LLM turn.
+Core agent infrastructure. Agents are defined in `agents/*.md`, loaded at boot via `AgentLoader`, and stored in `AgentRegistry`. `ConversationRunner` drives each LLM turn.
+
+## Allowed Commands
+
+`Daan::Core::Bash` exposes a shell tool to agents. A global allowlist (`Bash::ALLOWED_COMMANDS`) defines which binaries are available. Agents inherit the full list by default.
+
+Restrict an agent to a subset via `allowed_commands` in its frontmatter:
+
+```yaml
+# agents/developer.md
+allowed_commands:
+  - git
+  - gh
+```
+
+When `allowed_commands` is omitted, the agent gets every command in the global list. When set, it must be a strict subset — declaring a command not in the global list raises `ArgumentError` at load time.
 
 ## Hooks
 
@@ -29,7 +44,7 @@ end
 ```
 
 ```yaml
-# lib/daan/core/agents/ryan_singer.md
+# agents/ryan_singer.md
 hooks:
   - Daan::Core::Shaping
 ```
@@ -54,8 +69,8 @@ Use the full Ruby constant string — the same convention tools already use:
 
 ```yaml
 hooks:
-  - Daan::Core::Shaping   # ✅
-  - shaping               # ❌ will raise NameError at runtime
+  - Daan::Core::Shaping   # correct
+  - shaping               # will raise NameError at runtime
 ```
 
 ### Error handling

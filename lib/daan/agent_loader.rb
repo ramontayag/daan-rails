@@ -26,7 +26,8 @@ module Daan
         base_tools:    base_tools,
         workspace:     workspace,
         delegates_to:     fm.fetch("delegates_to", []),
-        hook_names:       fm.fetch("hooks", [])
+        hook_names:       fm.fetch("hooks", []),
+        allowed_commands: fm["allowed_commands"]
       }
     end
 

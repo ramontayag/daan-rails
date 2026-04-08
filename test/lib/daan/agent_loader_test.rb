@@ -187,6 +187,47 @@ class Daan::AgentLoaderTest < ActiveSupport::TestCase
     end
   end
 
+  test "parses allowed_commands from frontmatter" do
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "restricted.md")
+      File.write(path, <<~MD)
+        ---
+        name: restricted
+        display_name: Restricted
+        model: claude-haiku-4-5-20251001
+        max_steps: 5
+        tools: []
+        delegates_to: []
+        allowed_commands:
+          - git
+          - gh
+        ---
+        Restricted agent.
+      MD
+      definition = Daan::AgentLoader.parse(path)
+      assert_equal %w[git gh], definition[:allowed_commands]
+    end
+  end
+
+  test "allowed_commands defaults to nil when not in frontmatter" do
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "plain.md")
+      File.write(path, <<~MD)
+        ---
+        name: plain
+        display_name: Plain
+        model: claude-haiku-4-5-20251001
+        max_steps: 5
+        tools: []
+        delegates_to: []
+        ---
+        Plain agent.
+      MD
+      definition = Daan::AgentLoader.parse(path)
+      assert_nil definition[:allowed_commands]
+    end
+  end
+
   test "agents with PromoteBranch tool include self-modification instructions" do
     Daan::AgentLoader.sync!(@definitions_path)
 
