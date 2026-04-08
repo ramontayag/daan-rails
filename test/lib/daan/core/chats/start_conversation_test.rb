@@ -5,14 +5,9 @@ class Daan::Core::Chats::StartConversationTest < ActiveSupport::TestCase
   include ActionCable::TestHelper
 
   setup do
-    Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(
-        name: "test_agent", display_name: "Test Agent",
-        model_name: "claude-sonnet-4-20250514",
-        system_prompt: "You are a test agent.", max_steps: 3
-      )
-    )
-    @chat = Chat.create!(agent_name: "test_agent")
+    @agent = build_agent
+    Daan::Core::AgentRegistry.register(@agent)
+    @chat = Chat.create!(agent_name: @agent.name)
   end
 
   test "transitions a pending chat to in_progress" do

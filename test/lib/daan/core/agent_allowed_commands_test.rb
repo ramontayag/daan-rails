@@ -10,9 +10,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
     end
 
     agent = Daan::Core::Agent.new(
-      name: "test", display_name: "Test",
-      model_name: "claude-sonnet-4-20250514",
-      system_prompt: "You help.", max_steps: 5,
+      name: "test",
       base_tools: [ narrow_tool ]
     )
     agent.tools(chat: nil)
@@ -25,9 +23,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
     end
 
     agent = Daan::Core::Agent.new(
-      name: "test", display_name: "Test",
-      model_name: "claude-sonnet-4-20250514",
-      system_prompt: "You help.", max_steps: 5,
+      name: "test",
       base_tools: [ fake_tool ]
     )
     instance = agent.tools(chat: nil).first
@@ -46,20 +42,14 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
 
   test "effective_allowed_commands returns configured list when agent has no allowed_commands" do
     Daan::Core.configure { |c| c.allowed_commands = %w[git gh ls] }
-    agent = Daan::Core::Agent.new(
-      name: "test", display_name: "Test",
-      model_name: "claude-sonnet-4-20250514",
-      system_prompt: "You help.", max_steps: 5
-    )
+    agent = build_agent(name: "test")
     assert_equal %w[git gh ls], agent.effective_allowed_commands
   end
 
   test "effective_allowed_commands returns agent list when set" do
     Daan::Core.configure { |c| c.allowed_commands = %w[git gh ls] }
     agent = Daan::Core::Agent.new(
-      name: "test", display_name: "Test",
-      model_name: "claude-sonnet-4-20250514",
-      system_prompt: "You help.", max_steps: 5,
+      name: "test",
       allowed_commands: %w[git gh]
     )
     assert_equal %w[git gh], agent.effective_allowed_commands
@@ -69,9 +59,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
     Daan::Core.configure { |c| c.allowed_commands = %w[git gh] }
     error = assert_raises(ArgumentError) do
       Daan::Core::Agent.new(
-        name: "test", display_name: "Test",
-        model_name: "claude-sonnet-4-20250514",
-        system_prompt: "You help.", max_steps: 5,
+        name: "test",
         allowed_commands: %w[git nuclear_launch]
       )
     end
@@ -82,9 +70,7 @@ class AgentAllowedCommandsTest < ActiveSupport::TestCase
     Daan::Core.configure { |c| c.allowed_commands = %w[echo pwd git] }
     workspace = Daan::Core::Workspace.new(Dir.mktmpdir)
     agent = Daan::Core::Agent.new(
-      name: "test", display_name: "Test",
-      model_name: "claude-sonnet-4-20250514",
-      system_prompt: "You help.", max_steps: 5,
+      name: "test",
       base_tools: [ Daan::Core::Bash ],
       workspace: workspace,
       allowed_commands: %w[echo pwd]

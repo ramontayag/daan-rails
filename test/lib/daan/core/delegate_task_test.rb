@@ -7,13 +7,11 @@ class Daan::Core::DelegateTaskTest < ActiveSupport::TestCase
   setup do
     RubyLLM::Models.instance.load_from_json!
     Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
-                      model_name: "gpt-5.4", system_prompt: "p", max_steps: 10,
+      build_agent(name: "chief_of_staff", display_name: "Chief of Staff",
                       delegates_to: [ "engineering_manager" ])
     )
     Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(name: "engineering_manager", display_name: "Engineering Manager",
-                      model_name: "gpt-5.4", system_prompt: "p", max_steps: 10)
+      build_agent(name: "engineering_manager", display_name: "Engineering Manager")
     )
     @parent_chat = Chat.create!(agent_name: "chief_of_staff")
     @tool = Daan::Core::DelegateTask.new(chat: @parent_chat)
@@ -87,12 +85,11 @@ class Daan::Core::DelegateTaskTest < ActiveSupport::TestCase
 
   test "assigns the target agent's model to the new sub-chat" do
     Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(name: "developer", display_name: "Developer",
-                      model_name: "claude-haiku-4-5-20251001", system_prompt: "p", max_steps: 10)
+      build_agent(name: "developer",
+                      model_name: "claude-haiku-4-5-20251001")
     )
     Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
-                      model_name: "claude-haiku-4-5-20251001", system_prompt: "p", max_steps: 10,
+      build_agent(name: "chief_of_staff",
                       delegates_to: [ "engineering_manager", "developer" ])
     )
     parent_chat = Chat.create!(agent_name: "chief_of_staff")
@@ -106,8 +103,7 @@ class Daan::Core::DelegateTaskTest < ActiveSupport::TestCase
 
   test "raises when target agent is in delegates_to but absent from registry" do
     Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(name: "ghost_delegator", display_name: "Ghost",
-                      model_name: "m", system_prompt: "p", max_steps: 5,
+      build_agent(name: "ghost_delegator",
                       delegates_to: [ "phantom_agent" ])
     )
     ghost_chat = Chat.create!(agent_name: "ghost_delegator")

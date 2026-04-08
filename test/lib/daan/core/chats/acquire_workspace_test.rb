@@ -5,13 +5,9 @@ class Daan::Core::Chats::AcquireWorkspaceTest < ActiveSupport::TestCase
   include ActionCable::TestHelper
 
   setup do
-    @agent = Daan::Core::Agent.new(
-      name: "developer", display_name: "Dev",
-      model_name: "claude-sonnet-4-20250514",
-      system_prompt: "You are a developer.", max_steps: 10
-    )
+    @agent = build_agent
     Daan::Core::AgentRegistry.register(@agent)
-    @chat = Chat.create!(agent_name: "developer")
+    @chat = Chat.create!(agent_name: @agent.name)
   end
 
   test "returns acquire result when lock is acquired" do
@@ -22,9 +18,9 @@ class Daan::Core::Chats::AcquireWorkspaceTest < ActiveSupport::TestCase
   end
 
   test "returns result with previous holder when workspace changed hands" do
-    other_chat = Chat.create!(agent_name: "developer")
-    WorkspaceLock.acquire(chat: other_chat, agent_name: "developer")
-    WorkspaceLock.release(chat: other_chat, agent_name: "developer")
+    other_chat = Chat.create!(agent_name: @agent.name)
+    WorkspaceLock.acquire(chat: other_chat, agent_name: @agent.name)
+    WorkspaceLock.release(chat: other_chat, agent_name: @agent.name)
 
     result = Daan::Core::Chats::AcquireWorkspace.call(@chat)
     assert result.acquired?
@@ -32,9 +28,9 @@ class Daan::Core::Chats::AcquireWorkspaceTest < ActiveSupport::TestCase
   end
 
   test "returns false and re-enqueues when lock is held by another chat with active job" do
-    other_chat = Chat.create!(agent_name: "developer")
+    other_chat = Chat.create!(agent_name: @agent.name)
     other_chat.update_column(:task_status, "in_progress")
-    WorkspaceLock.acquire(chat: other_chat, agent_name: "developer")
+    WorkspaceLock.acquire(chat: other_chat, agent_name: @agent.name)
     gid = other_chat.to_global_id.to_s
     SolidQueue::Job.create!(
       class_name: "LlmJob",
@@ -46,9 +42,9 @@ class Daan::Core::Chats::AcquireWorkspaceTest < ActiveSupport::TestCase
   end
 
   test "broadcasts queued status when lock is held" do
-    other_chat = Chat.create!(agent_name: "developer")
+    other_chat = Chat.create!(agent_name: @agent.name)
     other_chat.update_column(:task_status, "in_progress")
-    WorkspaceLock.acquire(chat: other_chat, agent_name: "developer")
+    WorkspaceLock.acquire(chat: other_chat, agent_name: @agent.name)
     gid = other_chat.to_global_id.to_s
     SolidQueue::Job.create!(
       class_name: "LlmJob",

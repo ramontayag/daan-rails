@@ -38,18 +38,12 @@ class Daan::Core::AgentTest < ActiveSupport::TestCase
   end
 
   test "workspace defaults to nil when not provided" do
-    agent = Daan::Core::Agent.new(
-      name: "test", display_name: "Test", model_name: "m",
-      system_prompt: "p", max_steps: 5
-    )
+    agent = build_agent(name: "test")
     assert_nil agent.workspace
   end
 
   test "tools returns empty array when no base_tools" do
-    agent = Daan::Core::Agent.new(
-      name: "test", display_name: "Test", model_name: "m",
-      system_prompt: "p", max_steps: 5
-    )
+    agent = build_agent(name: "test")
     assert_equal [], agent.tools
   end
 
@@ -61,8 +55,7 @@ class Daan::Core::AgentTest < ActiveSupport::TestCase
       def execute = "ok"
     end
     agent = Daan::Core::Agent.new(
-      name: "test", display_name: "Test", model_name: "m",
-      system_prompt: "p", max_steps: 5,
+      name: "test",
       workspace: workspace, base_tools: [ tool_class ]
     )
     bound = agent.tools
@@ -73,17 +66,13 @@ class Daan::Core::AgentTest < ActiveSupport::TestCase
   end
 
   test "delegates_to defaults to empty array" do
-    agent = Daan::Core::Agent.new(
-      name: "test", display_name: "Test", model_name: "m",
-      system_prompt: "p", max_steps: 5
-    )
+    agent = build_agent(name: "test")
     assert_equal [], agent.delegates_to
   end
 
   test "delegates_to is set from constructor" do
     agent = Daan::Core::Agent.new(
-      name: "cos", display_name: "CoS", model_name: "m",
-      system_prompt: "p", max_steps: 10,
+      name: "cos",
       delegates_to: [ "engineering_manager" ]
     )
     assert_equal [ "engineering_manager" ], agent.delegates_to
@@ -100,8 +89,7 @@ class Daan::Core::AgentTest < ActiveSupport::TestCase
     end
 
     agent = Daan::Core::Agent.new(
-      name: "test", display_name: "Test", model_name: "claude-sonnet-4-20250514",
-      system_prompt: "test", max_steps: 5, base_tools: [ spy_tool ]
+      name: "test", base_tools: [ spy_tool ]
     )
     chat = Chat.create!(agent_name: "test")
     agent.tools(chat: chat)

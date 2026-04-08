@@ -27,6 +27,10 @@ module ActiveSupport
 
     private
 
+    def build_agent(name: "test_agent", **overrides)
+      Daan::Core::Agent.new(name: name, model_name: "claude-haiku-4-5-20251001", max_steps: 10, **overrides)
+    end
+
     def fake_anthropic_response(text: "ok")
       {
         id: "msg_fake",

@@ -2,14 +2,9 @@ require "test_helper"
 
 class ChatStepTest < ActiveSupport::TestCase
   setup do
-    Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(
-        name: "chief_of_staff", display_name: "CoS",
-        model_name: "claude-sonnet-4-20250514",
-        system_prompt: "You are the CoS.", max_steps: 10
-      )
-    )
-    @chat = Chat.create!(agent_name: "chief_of_staff")
+    @agent = build_agent
+    Daan::Core::AgentRegistry.register(@agent)
+    @chat = Chat.create!(agent_name: @agent.name)
   end
 
   test "belongs to chat" do

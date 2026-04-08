@@ -4,13 +4,9 @@ require "ostruct"
 class Daan::Core::ShapingTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
   setup do
-    agent = Daan::Core::Agent.new(
-      name: "ryan_singer", display_name: "Ryan Singer",
-      model_name: "claude-sonnet-4-6", system_prompt: "You shape.",
-      max_steps: 20
-    )
-    Daan::Core::AgentRegistry.register(agent)
-    @chat = Chat.create!(agent_name: "ryan_singer")
+    @agent = build_agent
+    Daan::Core::AgentRegistry.register(@agent)
+    @chat = Chat.create!(agent_name: @agent.name)
     @hook = Daan::Core::Shaping.new
   end
 

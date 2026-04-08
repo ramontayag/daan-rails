@@ -6,11 +6,9 @@ class ChatBroadcastTest < ActiveSupport::TestCase
 
   setup do
     Daan::Core::AgentRegistry.clear
-    Daan::Core::AgentRegistry.register(Daan::Core::Agent.new(
-      name: "chief_of_staff", display_name: "CoS",
-      model_name: "claude-3-5-haiku-20241022", system_prompt: "p", max_steps: 10
-    ))
-    @chat = Chat.create!(agent_name: "chief_of_staff")
+    @agent = build_agent
+    Daan::Core::AgentRegistry.register(@agent)
+    @chat = Chat.create!(agent_name: @agent.name)
   end
 
   test "broadcast_agent_status broadcasts AgentItemComponent to agents stream" do
@@ -26,8 +24,8 @@ class ChatBroadcastTest < ActiveSupport::TestCase
   end
 
   test "broadcast_chat_cost also broadcasts to parent chat stream" do
-    parent = Chat.create!(agent_name: "chief_of_staff")
-    child  = Chat.create!(agent_name: "chief_of_staff", parent_chat: parent)
+    parent = Chat.create!(agent_name: @agent.name)
+    child  = Chat.create!(agent_name: @agent.name, parent_chat: parent)
 
     # parent has sub_chats, so 2 targeted broadcasts (totals + rows) are sent
     assert_broadcasts("chat_#{parent.id}", 2) do

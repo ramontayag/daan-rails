@@ -5,11 +5,9 @@ class Daan::Core::CreateMessageTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
   setup do
-    Daan::Core::AgentRegistry.register(Daan::Core::Agent.new(
-      name: "test_agent", display_name: "TA", model_name: "claude-3-5-haiku-20241022",
-      system_prompt: "p", max_steps: 10
-    ))
-    @chat = Chat.create!(agent_name: "test_agent")
+    @agent = build_agent
+    Daan::Core::AgentRegistry.register(@agent)
+    @chat = Chat.create!(agent_name: @agent.name)
   end
 
   test "creates message and broadcasts to chat stream" do

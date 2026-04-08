@@ -3,11 +3,9 @@ require "test_helper"
 
 class Daan::Core::UpdateDocumentTest < ActiveSupport::TestCase
   setup do
-    Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
-                      model_name: "m", system_prompt: "p", max_steps: 10)
-    )
-    @chat = Chat.create!(agent_name: "chief_of_staff")
+    @agent = build_agent
+    Daan::Core::AgentRegistry.register(@agent)
+    @chat = Chat.create!(agent_name: @agent.name)
     @doc = Document.create!(title: "Old Title", body: "Old body", chat: @chat)
     @tool = Daan::Core::UpdateDocument.new(chat: @chat)
   end
@@ -33,7 +31,7 @@ class Daan::Core::UpdateDocumentTest < ActiveSupport::TestCase
   end
 
   test "does not update a document belonging to a different chat" do
-    other_chat = Chat.create!(agent_name: "chief_of_staff")
+    other_chat = Chat.create!(agent_name: @agent.name)
     other_doc = Document.create!(title: "Other", body: "Other body", chat: other_chat)
     result = Daan::Core::UpdateDocument.new(chat: @chat).execute(id: other_doc.id, body: "Hacked")
     assert_includes result, "No document with id=#{other_doc.id} found"

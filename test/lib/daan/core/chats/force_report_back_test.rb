@@ -6,14 +6,9 @@ class Daan::Core::Chats::ForceReportBackTest < ActiveSupport::TestCase
   include ActionCable::TestHelper
 
   setup do
-    Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(
-        name: "test_agent", display_name: "Test Agent",
-        model_name: "claude-sonnet-4-20250514",
-        system_prompt: "You are a test agent.", max_steps: 3
-      )
-    )
-    @chat = Chat.create!(agent_name: "test_agent")
+    @agent = build_agent
+    Daan::Core::AgentRegistry.register(@agent)
+    @chat = Chat.create!(agent_name: @agent.name)
     @chat.messages.create!(role: "user", content: "Do the thing")
     @chat.start!
     3.times { |i| @chat.messages.create!(role: "assistant", content: "step #{i}") }

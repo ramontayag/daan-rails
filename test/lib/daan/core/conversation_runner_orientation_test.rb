@@ -6,10 +6,8 @@ class Daan::Core::ConversationRunnerOrientationTest < ActiveSupport::TestCase
     system("git", "init", @workspace_dir, out: File::NULL, err: File::NULL)
     system("git", "-C", @workspace_dir, "commit", "--allow-empty", "-m", "initial", out: File::NULL, err: File::NULL)
 
-    @agent = Daan::Core::Agent.new(
-      name: "developer", display_name: "Dev",
-      model_name: "claude-sonnet-4-20250514",
-      system_prompt: "You are a developer.", max_steps: 10,
+    @agent = build_agent(
+      name: "developer",
       workspace: Daan::Core::Workspace.new(@workspace_dir)
     )
     Daan::Core::AgentRegistry.register(@agent)

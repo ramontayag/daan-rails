@@ -3,11 +3,9 @@ require "test_helper"
 
 class DocumentsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
-                      model_name: "m", system_prompt: "p", max_steps: 10)
-    )
-    @chat = Chat.create!(agent_name: "chief_of_staff")
+    @agent = build_agent
+    Daan::Core::AgentRegistry.register(@agent)
+    @chat = Chat.create!(agent_name: @agent.name)
     @doc = Document.create!(title: "My Plan", body: "# Hello\n\nWorld", chat: @chat)
   end
 

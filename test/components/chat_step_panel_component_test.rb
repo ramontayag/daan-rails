@@ -4,14 +4,9 @@ class ChatStepPanelComponentTest < ActiveSupport::TestCase
   include ViewComponent::TestHelpers
 
   setup do
-    Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(
-        name: "developer", display_name: "Developer",
-        model_name: "claude-sonnet-4-20250514",
-        system_prompt: "You code.", max_steps: 10
-      )
-    )
-    @chat = Chat.create!(agent_name: "developer")
+    @agent = build_agent
+    Daan::Core::AgentRegistry.register(@agent)
+    @chat = Chat.create!(agent_name: @agent.name)
   end
 
   test "always renders div#chat_step_panel for broadcast targeting" do

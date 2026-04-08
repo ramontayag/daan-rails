@@ -3,11 +3,9 @@ require "test_helper"
 
 class Daan::Core::CreateDocumentTest < ActiveSupport::TestCase
   setup do
-    Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(name: "chief_of_staff", display_name: "Chief of Staff",
-                      model_name: "m", system_prompt: "p", max_steps: 10)
-    )
-    @chat = Chat.create!(agent_name: "chief_of_staff")
+    @agent = build_agent
+    Daan::Core::AgentRegistry.register(@agent)
+    @chat = Chat.create!(agent_name: @agent.name)
     @tool = Daan::Core::CreateDocument.new(chat: @chat)
   end
 

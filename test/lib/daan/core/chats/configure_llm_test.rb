@@ -5,9 +5,9 @@ class Daan::Core::Chats::ConfigureLlmTest < ActiveSupport::TestCase
   setup do
     Daan::Core::AgentRegistry.register(
       Daan::Core::Agent.new(
-        name: "test_agent", display_name: "Test Agent",
+        name: "test_agent",
         model_name: "claude-sonnet-4-20250514",
-        system_prompt: "You are a test agent.", max_steps: 3
+        system_prompt: "You are a test agent."
       )
     )
     @chat = Chat.create!(agent_name: "test_agent")

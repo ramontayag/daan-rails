@@ -13,11 +13,9 @@ class Daan::Core::HookDispatchTest < ActiveSupport::TestCase
   setup do
     @fake_tool = FakeTool.new
     @fake_tool.singleton_class.prepend(Daan::Core::HookDispatch)
-    Daan::Core::AgentRegistry.register(
-      Daan::Core::Agent.new(name: "test_agent", display_name: "T", model_name: "m",
-                      system_prompt: "s", max_steps: 1)
-    )
-    @chat = Chat.create!(agent_name: "test_agent")
+    @agent = build_agent
+    Daan::Core::AgentRegistry.register(@agent)
+    @chat = Chat.create!(agent_name: @agent.name)
   end
 
   teardown { Thread.current[:daan_active_hooks] = nil }

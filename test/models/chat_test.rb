@@ -3,9 +3,7 @@ require "test_helper"
 
 class ChatTest < ActiveSupport::TestCase
   setup do
-    @agent = Daan::Core::Agent.new(name: "chief_of_staff", display_name: "CoS",
-                             model_name: "claude-sonnet-4-20250514",
-                             system_prompt: "You are CoS.", max_steps: 10)
+    @agent = build_agent(name: "chief_of_staff")
     Daan::Core::AgentRegistry.register(@agent)
   end
 
